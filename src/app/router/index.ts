@@ -1,10 +1,23 @@
 import { createRouter, createWebHistory } from "vue-router"
 import { routePaths } from "./routePaths"
+import { useAuth } from "../../composables/useAuth"
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
     routes: [
         { path: "/", redirect: routePaths.dashboard },
+        {
+            path: routePaths.login,
+            name: "login",
+            meta: { public: true },
+            component: () => import("../../pages/LoginPage.vue"),
+        },
+        {
+            path: routePaths.register,
+            name: "register",
+            meta: { public: true },
+            component: () => import("../../pages/RegisterPage.vue"),
+        },
         {
             path: routePaths.dashboard,
             name: "dashboard",
@@ -31,6 +44,21 @@ const router = createRouter({
             component: () => import("../../pages/DefinicoesPage.vue"),
         },
     ],
+})
+
+router.beforeEach(async (to) => {
+    const auth = useAuth()
+    await auth.bootstrap()
+    if (to.meta.public) {
+        if (auth.isAuthenticated.value) {
+            return { path: routePaths.dashboard }
+        }
+        return true
+    }
+    if (!auth.isAuthenticated.value) {
+        return { path: routePaths.login, query: { redirect: to.fullPath } }
+    }
+    return true
 })
 
 export { router }

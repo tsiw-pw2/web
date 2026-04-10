@@ -45,3 +45,21 @@
         appearance: textfield;
     }
 }
+
+input[type="date"]:invalid,
+input[type="time"]:invalid,
+input[type="datetime-local"]:invalid,
+input[type="date"][value=""],
+input[type="time"][value=""],
+input[type="datetime-local"][value=""] {
+    color: var(--color-neutral-600);
+}
+
+input[type="date"]:invalid::-webkit-datetime-edit,
+input[type="time"]:invalid::-webkit-datetime-edit,
+input[type="datetime-local"]:invalid::-webkit-datetime-edit,
+input[type="date"][value=""]::-webkit-datetime-edit,
+input[type="time"][value=""]::-webkit-datetime-edit,
+input[type="datetime-local"][value=""]::-webkit-datetime-edit {
+    color: var(--color-neutral-600);
+}

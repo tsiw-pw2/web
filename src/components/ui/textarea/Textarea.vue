@@ -11,7 +11,7 @@ const props = defineProps<{
 }>()
 
 const TEXTAREA_BASE_CLASSES =
-    "mt-1 h-[94px] w-full rounded-lg border border-neutral-200 px-3.5 py-3 text-sm font-medium leading-5 text-neutral-900 shadow-sm outline-none placeholder:text-neutral-500 focus:border-neutral-400"
+    "mt-1 h-[94px] w-full rounded-lg border border-neutral-200 px-2.5 py-3 text-sm font-medium leading-5 text-neutral-900 shadow-sm outline-none placeholder:text-neutral-600 focus:shadow-[0_1px_2px_0_rgb(0_0_0_/_0.05),inset_0_0_0_1.5px_#008BF8]"
 </script>
 
 <template>

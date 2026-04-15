@@ -1,9 +1,9 @@
 export const routePaths = {
-    dashboard: "/dashboard",
-    campanhas: "/campanhas",
-    praias: "/praias",
-    residuos: "/residuos",
-    definicoes: "/definicoes",
+	dashboard: "/dashboard",
+	campaigns: "/campanhas",
+	beaches: "/praias",
+	waste: "/residuos",
+	settings: "/definicoes",
 } as const
 
 export type AppRoutePath = (typeof routePaths)[keyof typeof routePaths]

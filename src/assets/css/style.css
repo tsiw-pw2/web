@@ -1,47 +1,106 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
-
 @import "tailwindcss";
 
-@import "tw-animate-css";
+/* Buttons ------------------------------------------------------------------------------------------------ */
+.shadow-btn-primary {
+	box-shadow: 0 1px 2px 0 rgba(28, 78, 244, 0.24), 0 -1px 0 0 rgba(0, 0, 0, 0.16) inset, 0 1px 0 0 rgba(255, 255, 255, 0.24) inset;
+	text-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.25);
+}
 
-@custom-variant dark (&:is(.dark *));
+.shadow-btn-secondary {
+	box-shadow: 0 1px 1px 0 var(--color-white) inset, 0 1px 1px 0 rgba(0, 0, 0, 0.06), 0 1px 2px 0 rgba(0, 0, 0, 0.24), 0 0 0 1px var(--color-neutral-200);
+}
 
-@layer base {
-    html,
-    body,
-    #app {
-        height: 100%;
-    }
+.shadow-btn-secondary span {
+	background-color: var(--color-neutral-800);
+	color: transparent;
+	text-shadow: 0 1px 0 0 var(--color-white), 0 2px 1px 0 var(--color-neutral-950) inset;
+	-webkit-background-clip: text;
+	-moz-background-clip: text;
+	background-clip: text;
+}
 
-    body.app-shell {
-        overflow: hidden;
-        overscroll-behavior: none;
-    }
+.shadow-btn-danger {
+	box-shadow: 0 1px 2px 0 rgba(243, 76, 57, 0.24), 0 -1px 0 0 rgba(0, 0, 0, 0.16) inset, 0 1px 0 0 rgba(255, 255, 255, 0.24) inset;
+	text-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.25);
+}
 
-    body.modal-open {
-        overflow: hidden;
-    }
+/* Inputs ------------------------------------------------------------------------------------------------ */
 
-    input[type="date"]::-webkit-calendar-picker-indicator,
-    input[type="time"]::-webkit-calendar-picker-indicator,
-    input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-        display: none;
-        -webkit-appearance: none;
-    }
+.input-shadow {
+	box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.24), 0 0 0 1px var(--color-neutral-200);
+}
 
-    input[type="time"]::-webkit-clear-button,
-    input[type="time"]::-webkit-inner-spin-button {
-        display: none;
-    }
+.input-shadow:focus-within {
+	box-shadow: 0 0 0 1.5px var(--color-blue-500);
+}
 
-    input[type="number"]::-webkit-inner-spin-button,
-    input[type="number"]::-webkit-outer-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-    }
+.input-shadow[data-state="open"] {
+	box-shadow: 0 0 0 1.5px var(--color-blue-500);
+}
 
-    input[type="number"] {
-        -moz-appearance: textfield;
-        appearance: textfield;
-    }
+/* Selects ------------------------------------------------------------------------------------------------ */
+
+.select-shadow {
+	box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.24), 0 0 0 1px var(--color-neutral-200);
+}
+.select-shadow-content {
+	box-shadow: 0 2px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px 0 rgba(0, 0, 0, 0.24), 0 0 0 1px var(--color-neutral-200);
+}
+
+button.select-shadow[data-state="open"] {
+	box-shadow: 0 0 0 1.5px var(--color-blue-500);
+}
+
+.select-panel-enter-active,
+.select-panel-leave-active {
+	transition:
+		opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+		transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.select-panel-enter-from,
+.select-panel-leave-to {
+	opacity: 0;
+	transform: translateY(-4px) scale(0.98);
+}
+
+.select-panel-enter-to,
+.select-panel-leave-from {
+	opacity: 1;
+	transform: translateY(0) scale(1);
+}
+
+/* Input icons hide ------------------------------------------------------------------------------------------------ */
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+	display: none;
+	-webkit-appearance: none;
+}
+
+input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+input[type="datetime-local"]::-webkit-datetime-edit-fields-wrapper {
+	padding-inline-end: 0;
+}
+
+input[type="time"]::-webkit-clear-button,
+input[type="time"]::-webkit-inner-spin-button {
+	display: none;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+input[type="number"] {
+	-moz-appearance: textfield;
+	appearance: textfield;
+}
+
+.shadow-card {
+	box-shadow: 0 2px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px 0 rgba(0, 0, 0, 0.24), 0 0 0 1px var(--color-neutral-200);
 }

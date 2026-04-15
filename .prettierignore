@@ -2,9 +2,3 @@ dist
 node_modules
 coverage
 *.min.*
-
-src/components/ui/BaseButton.vue
-src/components/NavigationButton.vue
-src/components/ui/Modal.vue
-src/components/domain/campaigns/CreateCampaignModal.vue
-src/components/ui/dialog/DialogFooter.vue

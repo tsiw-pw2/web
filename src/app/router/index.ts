@@ -16,6 +16,11 @@ const router = createRouter({
 			component: () => import("../../modules/campaigns/views/pages/CampaignsPage.vue"),
 		},
 		{
+			path: routePaths.campaignDetails,
+			name: "campaign-details",
+			component: () => import("../../modules/campaigns/views/pages/CampaignDetailsPage.vue"),
+		},
+		{
 			path: routePaths.beaches,
 			name: "beaches",
 			component: () => import("../../modules/beaches/pages/BeachesPage.vue"),

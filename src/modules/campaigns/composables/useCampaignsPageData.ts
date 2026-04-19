@@ -1,21 +1,23 @@
 import { onMounted, ref } from "vue"
+import {
+	addCampaign,
+	campaignsListRef,
+	loadCampaignsList,
+	removeCampaign,
+	updateCampaign,
+} from "@/modules/campaigns/services/campaignsList"
 
-export type CampaignListItem = {
-	id: string
-	title: string
-}
+export type { CampaignCreateDraft, CampaignListItem } from "@/modules/campaigns/types/list"
 
 export function useCampaignsPageData() {
 	const loading = ref(true)
 	const error = ref(false)
-	const campaigns = ref<CampaignListItem[]>([])
 
 	async function load() {
 		loading.value = true
 		error.value = false
 		try {
-			await Promise.resolve()
-			campaigns.value = []
+			await loadCampaignsList()
 		} catch {
 			error.value = true
 		} finally {
@@ -25,5 +27,13 @@ export function useCampaignsPageData() {
 
 	onMounted(load)
 
-	return { loading, error, campaigns, reload: load }
+	return {
+		loading,
+		error,
+		campaigns: campaignsListRef,
+		reload: load,
+		removeCampaign,
+		addCampaign,
+		updateCampaign,
+	}
 }

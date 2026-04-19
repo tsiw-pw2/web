@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28" fill="none">
+	<mask
+		id="favicon-mask"
+		style="mask-type:alpha"
+		maskUnits="userSpaceOnUse"
+		x="0"
+		y="0"
+		width="28"
+		height="28">
+		<circle cx="14" cy="14" r="14" fill="#D9D9D9" />
+	</mask>
+	<g mask="url(#favicon-mask)">
+		<circle cx="12" cy="26" r="14" fill="#56BEEE" />
+		<circle cx="25" cy="25" r="14" fill="#42DA54" />
+	</g>
+</svg>

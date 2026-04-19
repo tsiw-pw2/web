@@ -1,6 +1,21 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
+@layer base {
+	button:not(:disabled),
+	input[type="button"]:not(:disabled),
+	input[type="submit"]:not(:disabled),
+	input[type="reset"]:not(:disabled) {
+		cursor: pointer;
+	}
+	button:disabled,
+	input[type="button"]:disabled,
+	input[type="submit"]:disabled,
+	input[type="reset"]:disabled {
+		cursor: not-allowed;
+	}
+}
+
 /* Buttons ------------------------------------------------------------------------------------------------ */
 .shadow-btn-primary {
 	box-shadow: 0 1px 2px 0 rgba(28, 78, 244, 0.24), 0 -1px 0 0 rgba(0, 0, 0, 0.16) inset, 0 1px 0 0 rgba(255, 255, 255, 0.24) inset;
@@ -103,4 +118,33 @@ input[type="number"] {
 
 .shadow-card {
 	box-shadow: 0 2px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px 0 rgba(0, 0, 0, 0.24), 0 0 0 1px var(--color-neutral-200);
+}
+
+/* Modals (Teleport): painel entra de baixo para cima, sai de cima para baixo ------------------------------ */
+
+.modal-frame-enter-active,
+.modal-frame-leave-active {
+	transition: opacity 0.22s ease;
+}
+
+.modal-frame-enter-active .modal-frame-panel,
+.modal-frame-leave-active .modal-frame-panel {
+	transition:
+		transform 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+		opacity 0.24s ease;
+}
+
+.modal-frame-enter-from,
+.modal-frame-leave-to {
+	opacity: 0;
+}
+
+.modal-frame-enter-from .modal-frame-panel {
+	transform: translateY(1rem);
+	opacity: 0;
+}
+
+.modal-frame-leave-to .modal-frame-panel {
+	transform: translateY(0.75rem);
+	opacity: 0;
 }

@@ -1,6 +1,7 @@
 export const routePaths = {
 	dashboard: "/dashboard",
 	campaigns: "/campanhas",
+	campaignDetails: "/campanhas/:campaignId",
 	beaches: "/praias",
 	waste: "/residuos",
 	settings: "/definicoes",

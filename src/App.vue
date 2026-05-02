@@ -1,5 +1,5 @@
 <script setup lang="ts">
-	import { watchEffect } from "vue"
+	import { computed, watchEffect } from "vue"
 	import { RouterView, useRoute } from "vue-router"
 	import AppHeader from "@/shared/components/layout/AppHeader.vue"
 	import MobileBottomNav from "@/shared/components/layout/MobileBottomNav.vue"
@@ -10,10 +10,16 @@
 		const allowBodyScroll = route.meta?.bodyScroll === true
 		document.body.classList.toggle("app-shell", !allowBodyScroll)
 	})
+
+	const hideChrome = computed(() => route.meta?.hideChrome === true)
 </script>
 
 <template>
-	<div class="flex h-screen w-full flex-col overflow-hidden bg-neutral-950 pb-0 md:pb-2">
+	<div v-if="hideChrome" class="min-h-screen bg-white">
+		<RouterView />
+	</div>
+
+	<div v-else class="flex h-screen w-full flex-col overflow-hidden bg-neutral-950 pb-0 md:pb-2">
 		<AppHeader />
 		<div class="flex min-h-0 flex-1 flex-col overflow-hidden">
 			<div class="mx-2 mb-2 flex min-h-0 flex-1 flex-col md:mb-0">

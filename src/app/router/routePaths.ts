@@ -1,4 +1,7 @@
 export const routePaths = {
+	home: "/",
+	requestAccount: "/solicitar-acesso",
+	login: "/entrar",
 	dashboard: "/dashboard",
 	campaigns: "/campanhas",
 	campaignDetails: "/campanhas/:campaignId",

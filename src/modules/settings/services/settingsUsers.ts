@@ -1,67 +1,67 @@
 import type { SettingsUserRow } from "@/modules/settings/types/settingsUser"
+import type { PaginatedResult } from "@/types/pagination"
+import { requestApiData } from "@/infrastructure/request"
 import { ref } from "vue"
 
-function seedUsers(): SettingsUserRow[] {
-	return [
-		{
-			id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-			name: "Maria Silva",
-			email: "maria@exemplo.org",
-			isAdmin: true,
-			isOrganizer: false,
-			isBlocked: false,
-			blockedReason: null,
-			blockedAt: null,
-		},
-		{
-			id: "b2c3d4e5-f6a7-8901-bcde-f12345678901",
-			name: "João Costa",
-			email: "joao@exemplo.org",
-			isAdmin: false,
-			isOrganizer: true,
-			isBlocked: false,
-			blockedReason: null,
-			blockedAt: null,
-		},
-		{
-			id: "c3d4e5f6-a7b8-9012-cdef-123456789012",
-			name: "Ana Ribeiro",
-			email: "ana@exemplo.org",
-			isAdmin: false,
-			isOrganizer: false,
-			isBlocked: true,
-			blockedReason: "Comportamento inadequado durante uma campanha.",
-			blockedAt: "2026-03-15T14:30:00.000Z",
-		},
-	]
-}
+const DEFAULT_PAGE_SIZE = 10
 
 const users = ref<SettingsUserRow[]>([])
-let mockInitialized = false
+export const settingsUsersPage = ref(1)
+export const settingsUsersPageSize = ref(DEFAULT_PAGE_SIZE)
+export const settingsUsersTotal = ref(0)
 
-function ensureSeed() {
-	if (!mockInitialized) {
-		users.value = seedUsers()
-		mockInitialized = true
-	}
+let loadGeneration = 0
+let lastListRoleForReload: string | undefined
+
+export function getSettingsUsersListRoleFilter(): string | undefined {
+    return lastListRoleForReload
 }
 
-ensureSeed()
-
-export function blockUser(userId: string, reason: string) {
-	const u = users.value.find((row) => row.id === userId)
-	if (!u) return
-	u.isBlocked = true
-	u.blockedReason = reason.trim()
-	u.blockedAt = new Date().toISOString()
+export async function loadSettingsUsers(opts?: { page?: number; pageSize?: number; role?: string }): Promise<void> {
+    if (opts != null && Object.prototype.hasOwnProperty.call(opts, "role")) {
+        lastListRoleForReload = opts.role === "volunteer" ? "volunteer" : undefined
+    }
+    const gen = ++loadGeneration
+    if (opts?.page != null) settingsUsersPage.value = opts.page
+    if (opts?.pageSize != null) settingsUsersPageSize.value = opts.pageSize
+    const q = new URLSearchParams({
+        page: String(settingsUsersPage.value),
+        pageSize: String(settingsUsersPageSize.value),
+    })
+    if (lastListRoleForReload === "volunteer") {
+        q.set("role", "volunteer")
+    }
+    const data = await requestApiData<PaginatedResult<SettingsUserRow>>(`/admin/users?${q}`, {
+        method: "GET",
+    })
+    if (gen !== loadGeneration) return
+    users.value = data.items
+    settingsUsersTotal.value = data.total
+    settingsUsersPage.value = data.page
+    settingsUsersPageSize.value = data.pageSize
 }
 
-export function unblockUser(userId: string) {
-	const u = users.value.find((row) => row.id === userId)
-	if (!u) return
-	u.isBlocked = false
-	u.blockedReason = null
-	u.blockedAt = null
+async function reloadListAfterMutation(): Promise<void> {
+    await loadSettingsUsers()
+    if (users.value.length === 0 && settingsUsersPage.value > 1) {
+        await loadSettingsUsers({ page: settingsUsersPage.value - 1 })
+    }
+}
+
+export async function blockUser(userId: string, reason: string): Promise<void> {
+    await requestApiData(`/admin/users/${userId}/block`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason }),
+    })
+    await reloadListAfterMutation()
+}
+
+export async function unblockUser(userId: string): Promise<void> {
+    await requestApiData(`/admin/users/${userId}/unblock`, {
+        method: "PATCH",
+    })
+    await reloadListAfterMutation()
 }
 
 export { users as settingsUsersRef }

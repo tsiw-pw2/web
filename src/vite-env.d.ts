@@ -1,14 +1,15 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-	readonly VITE_APP_NAME?: string
-	readonly VITE_API_URL: string
-	readonly VITE_USE_API_DASHBOARD?: string
-	readonly VITE_USE_API_CAMPAIGNS?: string
-	readonly VITE_USE_API_BEACHES?: string
-	readonly VITE_USE_API_WASTE?: string
+    readonly VITE_APP_NAME?: string
+    readonly VITE_API_URL: string
 }
 
 interface ImportMeta {
-	readonly env: ImportMetaEnv
+    readonly env: ImportMetaEnv
+}
+
+declare module "portuguese-municipalities/municipalities.json" {
+    const value: { name?: string; district?: string }[]
+    export default value
 }

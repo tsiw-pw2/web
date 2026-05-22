@@ -1,0 +1,132 @@
+<script setup lang="ts">
+import { computed } from "vue"
+import { useCampaignDetailsPageInject } from "@/modules/campaigns/composables/campaign-details/useCampaignDetailsPageInject"
+import { beachLocationLine } from "@/modules/campaigns/lib/beachLocationLine"
+import Button from "@/shared/components/ui/Button.vue"
+import FieldLabel from "@/shared/components/ui/FieldLabel.vue"
+
+const { core, display, registration, registrationRows } = useCampaignDetailsPageInject()
+
+const {
+    canEnroll,
+    showMyRegistrationStatus,
+    showEnrollmentClosed,
+    canceling,
+    cancelRegistrationOpen,
+    enrolling,
+    enroll,
+} = registration
+
+const campaign = computed(() => core.campaign.value!)
+const profile = computed(() => core.profile.value)
+</script>
+
+<template>
+    <div
+        id="campaign-panel-informacoes"
+        role="tabpanel"
+        aria-labelledby="campaign-tab-informacoes"
+        class="flex flex-col gap-6"
+    >
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <div class="lg:col-span-2 flex flex-col gap-4">
+                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div>
+                        <FieldLabel as="span" class="block uppercase tracking-wide font-medium !text-neutral-500">Estado</FieldLabel>
+                        <p class="mt-2 text-sm font-medium leading-5 text-neutral-950">{{ display.campaignPhaseLabel }}</p>
+                    </div>
+                    <div>
+                        <FieldLabel as="span" class="block uppercase tracking-wide font-medium !text-neutral-500">Período</FieldLabel>
+                        <p class="mt-2 text-sm font-medium leading-5 text-neutral-950">{{ display.campaignPeriodLabel }}</p>
+                    </div>
+                    <div>
+                        <FieldLabel as="span" class="block uppercase tracking-wide font-medium !text-neutral-500">Distrito</FieldLabel>
+                        <p class="mt-2 text-sm font-medium leading-5 text-neutral-950">{{ display.campaignDistrictLabel }}</p>
+                    </div>
+                    <div>
+                        <FieldLabel as="span" class="block uppercase tracking-wide font-medium !text-neutral-500">Local de encontro</FieldLabel>
+                        <p class="mt-2 text-sm font-medium leading-5 text-neutral-950">{{ campaign.meetingLocation }}</p>
+                        <p v-if="campaign.meetingTime" class="mt-1 text-sm leading-5 text-neutral-600">Hora: {{ campaign.meetingTime }}</p>
+                    </div>
+                    <div class="sm:col-span-2">
+                        <FieldLabel as="span" class="block uppercase tracking-wide font-medium !text-neutral-500">Organizador</FieldLabel>
+                        <p class="mt-2 text-sm font-medium leading-5 text-neutral-950">{{ campaign.organizer?.name ?? "—" }}</p>
+                        <p v-if="campaign.organizer?.email" class="mt-1 text-sm leading-5 text-neutral-600">{{ campaign.organizer.email }}</p>
+                    </div>
+                </div>
+                <div v-if="campaign.beaches.length > 0">
+                    <FieldLabel as="span" class="block uppercase tracking-wide font-medium !text-neutral-500">Praias associadas</FieldLabel>
+                    <ul class="mt-3 space-y-2">
+                        <li v-for="beach in campaign.beaches" :key="beach.id" class="text-sm leading-5 text-neutral-950">
+                            <span class="font-medium">{{ beach.name }}</span>
+                            <span v-if="beachLocationLine(beach)" class="text-neutral-600"> · {{ beachLocationLine(beach) }} </span>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <FieldLabel as="span" class="block uppercase tracking-wide font-medium text-neutral-500">Descrição</FieldLabel>
+                    <p class="mt-2 whitespace-pre-line text-sm leading-5 text-neutral-700">{{ display.descriptionText }}</p>
+                </div>
+            </div>
+            <div class="flex flex-col gap-2">
+                <div class="flex items-center justify-between border-b border-neutral-200 pb-2">
+                    <p class="font-medium text-neutral-500"> Voluntários </p>
+                    <div class="mt-1 text-neutral-950"> {{ campaign.metrics.registrationsCount }} </div>
+                </div>
+                <div class="flex items-center justify-between border-b border-neutral-200 pb-2">
+                    <p class="font-medium text-neutral-500"> Praias </p>
+                    <div class="mt-1 text-neutral-950"> {{ campaign.metrics.beachesCount }} </div>
+                </div>
+                <div class="flex items-center justify-between border-b border-neutral-200 pb-2">
+                    <p class="font-medium text-neutral-500"> Recolhas </p>
+                    <div class="text-neutral-950"> {{ campaign.metrics.wasteCollectionsCount }} </div>
+                </div>
+                <div class="flex items-center justify-between border-b border-neutral-200 pb-2">
+                    <p class="font-medium text-neutral-500"> Resíduos (un.) </p>
+                    <div class="text-neutral-950"> {{ campaign.metrics.totalWasteUnits }} </div>
+                </div>
+                <div class="flex items-center justify-between border-b border-neutral-200 pb-2">
+                    <p class="font-medium text-neutral-500"> Peso recolhido </p>
+                    <div class="text-neutral-950">{{ display.formatWeightKg(campaign.metrics.totalWasteWeightKg) }}</div>
+                </div>
+                <div class="flex items-center justify-between">
+                    <p class="font-medium text-neutral-500"> Comentários </p>
+                    <div class="text-neutral-950"> {{ campaign.metrics.commentsCount }} </div>
+                </div>
+                <div
+                    v-if="profile && (canEnroll || showMyRegistrationStatus || showEnrollmentClosed)"
+                    class="mt-2 flex flex-col gap-3"
+                >
+                    <div v-if="showMyRegistrationStatus" class="flex flex-col gap-3">
+                        <p class="text-sm leading-5 text-neutral-700">
+                            A tua inscrição:
+                            <span class="font-medium text-neutral-950">{{ registrationRows.myRegistrationStatusLabel }}</span>
+                        </p>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            class="w-full touch-manipulation"
+                            :disabled="canceling"
+                            :busy="canceling"
+                            @click="cancelRegistrationOpen = true"
+                        >
+                            Cancelar inscrição
+                        </Button>
+                    </div>
+                    <Button
+                        v-else-if="canEnroll"
+                        type="button"
+                        variant="primary"
+                        class="w-full touch-manipulation"
+                        :disabled="enrolling"
+                        :busy="enrolling"
+                        @click="enroll"
+                    >
+                        Inscrever-me
+                    </Button>
+                    <p v-else-if="showEnrollmentClosed" class="text-sm leading-5 text-neutral-600">Inscrições fechadas.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

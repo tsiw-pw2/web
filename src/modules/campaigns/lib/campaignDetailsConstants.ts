@@ -1,0 +1,3 @@
+export const CAMPAIGN_DETAILS_TAB_PAGE_SIZE = 10
+
+export const CAMPAIGN_COMMENT_MAX = 8000

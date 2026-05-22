@@ -1,12 +1,12 @@
 export type BeachListItem = {
-	id: string
-	name: string
-	municipality: string
-	district: string
+    id: string
+    name: string
+    municipality: string
+    district: string
 }
 
 export type BeachUpsertDraft = {
-	name: string
-	municipality: string
-	district: string
+    name: string
+    municipality: string
+    district: string
 }

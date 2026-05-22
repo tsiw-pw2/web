@@ -5,9 +5,9 @@ import { registerRouterMiddleware } from "@/app/middleware/registerRouterMiddlew
 import { router } from "@/app/router"
 
 export function createApplication() {
-	const app = createApp(App)
-	registerPlugins(app)
-	registerRouterMiddleware(router)
-	app.use(router)
-	return app
+    const app = createApp(App)
+    registerPlugins(app)
+    registerRouterMiddleware(router)
+    app.use(router)
+    return app
 }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { WasteListItem, WasteUpsertDraft } from "@/modules/waste/types/list"
-import { categoryOptions, unitOptions } from "@/modules/waste/lib/wasteDisplayLabels"
+import { unitOptions } from "@/modules/waste/lib/wasteDisplayLabels"
 import CreateWasteModal from "@/modules/waste/views/components/CreateWasteModal.vue"
 import DeleteWasteModal from "@/modules/waste/views/components/DeleteWasteModal.vue"
 import EditWasteModal from "@/modules/waste/views/components/EditWasteModal.vue"
@@ -11,6 +11,11 @@ defineProps<{
     isDeleteModalOpen: boolean
     wasteForEdit: WasteListItem | null
     deleteWasteName: string | undefined
+    categoryOptions: { value: string; label: string }[]
+    categoriesLoading: boolean
+    categoryCreating: boolean
+    isAdmin: boolean
+    onCreateCategory: (name: string) => Promise<string | undefined>
 }>()
 
 const emit = defineEmits<{
@@ -26,16 +31,24 @@ const emit = defineEmits<{
 <template>
     <CreateWasteModal
         :model-value="isCreateModalOpen"
-        :category-options="[...categoryOptions]"
+        :category-options="categoryOptions"
+        :categories-loading="categoriesLoading"
+        :category-creating="categoryCreating"
+        :is-admin="isAdmin"
         :unit-options="[...unitOptions]"
+        :on-create-category="onCreateCategory"
         @update:model-value="emit('update:isCreateModalOpen', $event)"
         @create="emit('create', $event)"
     />
     <EditWasteModal
         :model-value="isEditModalOpen"
         :waste="wasteForEdit"
-        :category-options="[...categoryOptions]"
+        :category-options="categoryOptions"
+        :categories-loading="categoriesLoading"
+        :category-creating="categoryCreating"
+        :is-admin="isAdmin"
         :unit-options="[...unitOptions]"
+        :on-create-category="onCreateCategory"
         @update:model-value="emit('update:isEditModalOpen', $event)"
         @save="emit('save', $event)"
     />

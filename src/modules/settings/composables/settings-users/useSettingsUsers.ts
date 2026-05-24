@@ -1,15 +1,8 @@
-import {
-    blockUser as blockUserApi,
-    getSettingsUsersListRoleFilter,
-    loadSettingsUsers,
-    settingsUsersPage,
-    settingsUsersPageSize,
-    settingsUsersRef,
-    settingsUsersTotal,
-    unblockUser as unblockUserApi,
-} from "@/modules/settings/services/settingsUsers"
+import { blockUser as blockUserApi, getSettingsUsersListRoleFilter, loadSettingsUsers, settingsUsersPage, settingsUsersPageSize, settingsUsersRef, settingsUsersTotal, unblockUser as unblockUserApi, updateUserRole as updateUserRoleApi } from "@/modules/settings/services/settingsUsers"
+import type { SettingsUserRoleKey } from "@/modules/settings/lib/settingsUserRole"
 import { mergeRouteQueryWithPagination, parsePageFromRouteQuery, parsePageSizeFromRouteQuery, type PaginationQueryKeys } from "@/shared/lib/listRouteQuery"
 import { totalPagesFromTotal } from "@/shared/lib/pagination"
+import { describeApiLoadFailure } from "@/infrastructure/apiErrors"
 import { ref, watch } from "vue"
 import { useRoute, useRouter } from "vue-router"
 
@@ -34,8 +27,8 @@ export function useSettingsUsers() {
             await router.replace({
                 query: mergeRouteQueryWithPagination(route.query, settingsUsersPage.value, settingsUsersPageSize.value, DEFAULT_PAGE_SIZE, QUERY_KEYS),
             })
-        } catch {
-            error.value = "Não foi possível carregar os utilizadores."
+        } catch (e) {
+            error.value = describeApiLoadFailure(e, "os utilizadores")
         } finally {
             loading.value = false
         }
@@ -96,6 +89,11 @@ export function useSettingsUsers() {
         await syncRouteFromRefs()
     }
 
+    async function updateUserRole(userId: string, role: SettingsUserRoleKey) {
+        await updateUserRoleApi(userId, role)
+        await syncRouteFromRefs()
+    }
+
     return {
         users: settingsUsersRef,
         page: settingsUsersPage,
@@ -108,5 +106,6 @@ export function useSettingsUsers() {
         reload,
         blockUser,
         unblockUser,
+        updateUserRole,
     }
 }

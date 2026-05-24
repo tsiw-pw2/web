@@ -28,7 +28,7 @@ export function useCampaignDetailsComments(
         if (!profile.value?.isAdmin || visibilitySavingId.value) return
         visibilitySavingId.value = comment.id
         try {
-            await patchCampaignCommentVisibility(comment.id, isVisible)
+            await patchCampaignCommentVisibility(campaignId.value, comment.id, isVisible)
             await reloadCommentsFirstPage()
             await refreshCampaignMetrics()
             toastSuccess(isVisible ? "Comentário visível" : "Comentário oculto")
@@ -52,7 +52,7 @@ export function useCampaignDetailsComments(
             if (isApiRequestError(e) && e.httpStatus === 403) {
                 toastError(
                     "Não podes publicar aqui",
-                    "Confirma a tua inscrição nesta campanha ou fala com o organizador.",
+                    "Inscreve-te nesta campanha para comentar.",
                 )
             } else {
                 toastError("Não foi possível publicar", "Verifica a ligação e tenta outra vez.")

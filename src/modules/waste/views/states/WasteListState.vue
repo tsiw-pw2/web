@@ -1,19 +1,29 @@
 <script setup lang="ts">
 import type { WasteListItem } from "@/modules/waste/types/list"
-import { labelCategory, labelUnit } from "@/modules/waste/lib/wasteDisplayLabels"
+import { normalizeWasteUnit } from "@/modules/waste/lib/wasteDisplayLabels"
+import { formatWasteCatalogWeight } from "@/modules/waste/lib/wasteWeightForm"
+import { wasteCategoryTableBadge, wasteUnitTableBadge } from "@/shared/lib/tableValueBadge"
+import ApiStateBadge from "@/shared/components/ui/ApiStateBadge.vue"
 import DataTableActionsCell from "@/shared/components/data-table/DataTableActionsCell.vue"
 import DataTableScrollWrap from "@/shared/components/data-table/DataTableScrollWrap.vue"
 import DataTableTd from "@/shared/components/data-table/DataTableTd.vue"
 import DataTableTh from "@/shared/components/data-table/DataTableTh.vue"
+import { useCanManageCatalog } from "@/modules/auth/composables/useCanManageCatalog"
 
 const props = defineProps<{
     items: WasteListItem[]
 }>()
 
+const { canManage } = useCanManageCatalog()
+
 const emit = defineEmits<{
     (e: "edit", wasteId: string): void
     (e: "delete", wasteId: string): void
 }>()
+
+function catalogWeightLabel(row: WasteListItem) {
+    return formatWasteCatalogWeight(row.unit, row.averageWeightGrams)
+}
 </script>
 
 <template>
@@ -23,7 +33,7 @@ const emit = defineEmits<{
                 <col class="w-[40%]" />
                 <col class="w-[28%]" />
                 <col class="w-[22%]" />
-                <col class="min-w-[7.5rem] w-[10%]" />
+                <col v-if="canManage" class="min-w-[7.5rem] w-[10%]" />
             </colgroup>
 
             <thead class="sticky top-0 z-10 bg-white">
@@ -32,7 +42,7 @@ const emit = defineEmits<{
                     <DataTableTh>Nome</DataTableTh>
                     <DataTableTh>Categoria</DataTableTh>
                     <DataTableTh align="end">Medida</DataTableTh>
-                    <DataTableTh :padding-end="false" />
+                    <DataTableTh v-if="canManage" :padding-end="false" />
                 </tr>
 
             </thead>
@@ -41,9 +51,26 @@ const emit = defineEmits<{
 
                 <tr v-for="row in props.items" :key="row.id" class="border-b border-neutral-200 last:border-b-0 hover:bg-neutral-50">
                     <DataTableTd emphasis>{{ row.name }}</DataTableTd>
-                    <DataTableTd>{{ labelCategory(row.category) }}</DataTableTd>
-                    <DataTableTd align="end">{{ labelUnit(row.unit) }}</DataTableTd>
-                    <DataTableActionsCell :row-id="row.id" @edit="(id: string) => emit('edit', id)" @delete="(id: string) => emit('delete', id)" />
+                    <DataTableTd :truncate="false">
+                        <ApiStateBadge v-bind="wasteCategoryTableBadge(row.categoryName)" />
+                    </DataTableTd>
+                    <DataTableTd align="end" :truncate="false">
+                        <div class="flex items-center justify-end gap-2">
+                            <span
+                                v-if="catalogWeightLabel(row)"
+                                class="shrink-0 text-sm font-medium leading-5 text-neutral-500 tabular-nums"
+                            >
+                                {{ catalogWeightLabel(row) }}
+                            </span>
+                            <ApiStateBadge v-bind="wasteUnitTableBadge(normalizeWasteUnit(row.unit))" />
+                        </div>
+                    </DataTableTd>
+                    <DataTableActionsCell
+                        v-if="canManage"
+                        :row-id="row.id"
+                        @edit="(id: string) => emit('edit', id)"
+                        @delete="(id: string) => emit('delete', id)"
+                    />
                 </tr>
 
             </tbody>

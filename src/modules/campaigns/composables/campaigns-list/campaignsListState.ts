@@ -1,4 +1,4 @@
-import type { CampaignCreateDraft, CampaignListItem } from "@/modules/campaigns/types/list"
+import type { CampaignCreateDraft, CampaignListFilters, CampaignListItem } from "@/modules/campaigns/types/list"
 import { ref } from "vue"
 import { toastListPossiblyStale } from "@/infrastructure/appToast"
 import { createCampaign } from "@/modules/campaigns/services/campaigns/createCampaign"
@@ -13,6 +13,11 @@ export const campaignsPageSize = ref(PAGINATED_LIST_DEFAULT_PAGE_SIZE)
 export const campaignsTotal = ref(0)
 
 let loadGeneration = 0
+let listFilters: CampaignListFilters = {}
+
+export function setCampaignsListFilters(filters: CampaignListFilters) {
+    listFilters = filters
+}
 
 async function applyPageResult(data: Awaited<ReturnType<typeof fetchCampaignsPage>>) {
     campaigns.value = data.items
@@ -24,7 +29,7 @@ async function applyPageResult(data: Awaited<ReturnType<typeof fetchCampaignsPag
 async function fetchAndApply(opts?: { page?: number; pageSize?: number }): Promise<void> {
     if (opts?.page != null) campaignsPage.value = opts.page
     if (opts?.pageSize != null) campaignsPageSize.value = opts.pageSize
-    const data = await fetchCampaignsPage(campaignsPage.value, campaignsPageSize.value)
+    const data = await fetchCampaignsPage(campaignsPage.value, campaignsPageSize.value, listFilters)
     await applyPageResult(data)
     loadGeneration++
 }
@@ -41,7 +46,7 @@ export async function loadCampaignsList(opts?: { page?: number; pageSize?: numbe
     const gen = ++loadGeneration
     if (opts?.page != null) campaignsPage.value = opts.page
     if (opts?.pageSize != null) campaignsPageSize.value = opts.pageSize
-    const data = await fetchCampaignsPage(campaignsPage.value, campaignsPageSize.value)
+    const data = await fetchCampaignsPage(campaignsPage.value, campaignsPageSize.value, listFilters)
     if (gen !== loadGeneration) return
     await applyPageResult(data)
 }

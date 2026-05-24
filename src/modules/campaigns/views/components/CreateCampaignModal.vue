@@ -3,12 +3,14 @@ import { computed, ref, watch } from "vue"
 import type { CampaignCreateDraft } from "@/modules/campaigns/types/list"
 import type { BeachListItem } from "@/modules/beaches/types/list"
 import { beachesListRef, loadBeachesList } from "@/modules/beaches/services/beachesList"
+import { districtSelectOptionsForBeaches } from "@/modules/beaches/lib/districtSelectOptionsForBeaches"
 import { DISTRICT_SELECT_OPTIONS } from "@/shared/constants/districtSelectOptions"
 import Button from "@/shared/components/ui/Button.vue"
 import FieldLabel from "@/shared/components/ui/FieldLabel.vue"
 import Input from "@/shared/components/ui/Input.vue"
 import ModalCloseButton from "@/shared/components/ui/ModalCloseButton.vue"
 import ModalRoot from "@/shared/components/ui/ModalRoot.vue"
+import SearchableSelect from "@/shared/components/ui/searchable-select/SearchableSelect.vue"
 import Select from "@/shared/components/ui/select/Select.vue"
 import Textarea from "@/shared/components/ui/Textarea.vue"
 import { CAMPAIGN_STATUS_SELECT_OPTIONS } from "@/modules/campaigns/lib/campaignStatus"
@@ -36,7 +38,13 @@ const beachesLoading = ref(false)
 
 const statusOptions = CAMPAIGN_STATUS_SELECT_OPTIONS
 
-const districtOptions = DISTRICT_SELECT_OPTIONS
+const districtOptions = computed(() => districtSelectOptionsForBeaches(beachesListRef.value))
+
+const districtPlaceholder = computed(() => {
+    if (beachesLoading.value) return "A carregar distritos…"
+    if (districtOptions.value.length === 0) return "Regista praias para escolher um distrito"
+    return "Seleciona um distrito"
+})
 
 const districtLabel = computed(() => {
     const d = district.value
@@ -61,6 +69,7 @@ const canStep0Next = computed(() => {
     if (startDate.value.trim().length === 0) return false
     if (!status.value) return false
     if (!district.value) return false
+    if (beachesForDistrict.value.length === 0) return false
     return true
 })
 
@@ -71,6 +80,7 @@ async function goToBeachStep() {
     beachesLoading.value = true
     try {
         await loadBeachesList({ page: 1, pageSize: 100 })
+        if (beachesForDistrict.value.length === 0) return
         step.value = 1
         selectedBeachIds.value = []
     } finally {
@@ -114,8 +124,22 @@ function resetForm() {
     selectedBeachIds.value = []
 }
 
-watch(open, (isOpen) => {
-    if (isOpen) resetForm()
+watch(open, async (isOpen) => {
+    if (!isOpen) return
+    resetForm()
+    beachesLoading.value = true
+    try {
+        await loadBeachesList({ page: 1, pageSize: 100 })
+    } finally {
+        beachesLoading.value = false
+    }
+})
+
+watch(districtOptions, (options) => {
+    if (!district.value) return
+    if (!options.some((option) => option.value === district.value)) {
+        district.value = undefined
+    }
 })
 </script>
 
@@ -127,13 +151,8 @@ watch(open, (isOpen) => {
         </div>
 
         <form class="flex flex-col gap-3" @submit.prevent="handleFormSubmit">
-            <div class="grid grid-cols-1">
-                <div
-                    class="col-start-1 row-start-1 flex h-full min-h-0 flex-col gap-3"
-                    :class="step === 0 ? '' : 'invisible pointer-events-none'"
-                    :inert="step !== 0"
-                    :aria-hidden="step !== 0 ? true : undefined"
-                >
+            <div>
+                <div v-show="step === 0" class="flex flex-col gap-3">
                     <div class="flex flex-col gap-1">
                         <FieldLabel required for="create-campaign-title-input">Título</FieldLabel>
                         <Input id="create-campaign-title-input" v-model="title" class="w-full" placeholder="Onda de mudança" />
@@ -142,7 +161,13 @@ watch(open, (isOpen) => {
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div class="flex flex-col gap-1">
                             <FieldLabel required>Distrito</FieldLabel>
-                            <Select v-model="district" class="w-full" :options="districtOptions" placeholder="Seleciona um distrito" />
+                            <SearchableSelect
+                                v-model="district"
+                                class="w-full"
+                                :options="districtOptions"
+                                :placeholder="districtPlaceholder"
+                                :disabled="beachesLoading || districtOptions.length === 0"
+                            />
                         </div>
 
                         <div class="flex flex-col gap-1">
@@ -161,12 +186,24 @@ watch(open, (isOpen) => {
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div class="flex flex-col gap-1">
                             <FieldLabel required for="create-campaign-start-date">Data de início</FieldLabel>
-                            <Input id="create-campaign-start-date" v-model="startDate" class="w-full" type="date" />
+                            <Input
+                                id="create-campaign-start-date"
+                                v-model="startDate"
+                                class="w-full"
+                                type="date"
+                                left-icon="calendar"
+                            />
                         </div>
 
                         <div class="flex flex-col gap-1">
                             <FieldLabel optional for="create-campaign-end-date">Data de fim</FieldLabel>
-                            <Input id="create-campaign-end-date" v-model="endDate" class="w-full" type="date" />
+                            <Input
+                                id="create-campaign-end-date"
+                                v-model="endDate"
+                                class="w-full"
+                                type="date"
+                                left-icon="calendar"
+                            />
                         </div>
                     </div>
 
@@ -186,12 +223,7 @@ watch(open, (isOpen) => {
                     </div>
                 </div>
 
-                <div
-                    class="col-start-1 row-start-1 flex h-full min-h-0 flex-col gap-3"
-                    :class="step === 1 ? '' : 'invisible pointer-events-none'"
-                    :inert="step !== 1"
-                    :aria-hidden="step !== 1 ? true : undefined"
-                >
+                <div v-show="step === 1" class="flex flex-col gap-3">
                     <p class="text-base font-semibold leading-7 text-neutral-950">{{ districtLabel }}</p>
 
                     <div class="h-64 shrink-0 overflow-y-auto">
@@ -213,43 +245,31 @@ watch(open, (isOpen) => {
                 </div>
             </div>
 
-            <div class="grid grid-cols-1">
-                <div
-                    class="col-start-1 row-start-1 mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
-                    :class="step === 0 ? '' : 'invisible pointer-events-none'"
-                    :inert="step !== 0"
-                    :aria-hidden="step !== 0 ? true : undefined"
-                >
-                    <nav class="flex min-w-0 justify-center sm:justify-start" aria-label="Passos da criação">
-                        <div class="flex items-center gap-2 rounded-full bg-white p-1.5 shadow-card">
-                            <span class="h-2 w-6 shrink-0 rounded-full bg-blue-500" aria-current="step" />
-                            <span class="size-2 shrink-0 rounded-full bg-neutral-200" aria-hidden="true" />
-                        </div>
-                    </nav>
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                <nav class="flex min-w-0 justify-center sm:justify-start" aria-label="Passos da criação">
+                    <div class="flex items-center gap-2 rounded-full bg-white p-1.5 shadow-card">
+                        <span
+                            class="h-2 shrink-0 rounded-full"
+                            :class="step === 0 ? 'w-6 bg-blue-500' : 'size-2 bg-neutral-200'"
+                            :aria-current="step === 0 ? 'step' : undefined"
+                        />
+                        <span
+                            class="h-2 shrink-0 rounded-full"
+                            :class="step === 1 ? 'w-6 bg-blue-500' : 'size-2 bg-neutral-200'"
+                            :aria-current="step === 1 ? 'step' : undefined"
+                        />
+                    </div>
+                </nav>
 
-                    <div class="flex shrink-0 items-center justify-end gap-2">
+                <div class="flex shrink-0 items-center justify-end gap-2">
+                    <template v-if="step === 0">
                         <Button type="button" variant="secondary" @click="close">Cancelar</Button>
                         <Button type="submit" :disabled="!canStep0Next || beachesLoading">Próximo</Button>
-                    </div>
-                </div>
-
-                <div
-                    class="col-start-1 row-start-1 mt-2 flex flex-col gap-3 border-t border-neutral-200 pt-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
-                    :class="step === 1 ? '' : 'invisible pointer-events-none'"
-                    :inert="step !== 1"
-                    :aria-hidden="step !== 1 ? true : undefined"
-                >
-                    <nav class="flex min-w-0 justify-center sm:justify-start" aria-label="Passos da criação">
-                        <div class="flex items-center gap-2 rounded-full bg-white p-1.5 shadow-card">
-                            <span class="size-2 shrink-0 rounded-full bg-neutral-200" aria-hidden="true" />
-                            <span class="h-2 w-6 shrink-0 rounded-full bg-blue-500" aria-current="step" />
-                        </div>
-                    </nav>
-
-                    <div class="flex shrink-0 items-center justify-end gap-2">
+                    </template>
+                    <template v-else>
                         <Button type="button" variant="secondary" @click="goBackToDetails">Voltar</Button>
                         <Button type="submit" :disabled="!canSubmitBeaches">Criar campanha</Button>
-                    </div>
+                    </template>
                 </div>
             </div>
         </form>

@@ -1,10 +1,14 @@
 export function getApiBaseUrl(): string {
-    const raw = import.meta.env.VITE_API_URL
-    if (typeof raw === "string") {
-        const trimmed = raw.trim()
-        if (trimmed.length > 0) {
-            return trimmed.replace(/\/$/, "")
-        }
+    const fromUrl = import.meta.env.VITE_API_URL
+    const fromLegacy = import.meta.env.VITE_API_BASE_URL
+    const raw =
+        typeof fromUrl === "string" && fromUrl.trim().length > 0
+            ? fromUrl
+            : typeof fromLegacy === "string"
+              ? fromLegacy
+              : ""
+    if (raw.trim().length > 0) {
+        return raw.trim().replace(/\/$/, "")
     }
-    return "/api/v1"
+    return ""
 }

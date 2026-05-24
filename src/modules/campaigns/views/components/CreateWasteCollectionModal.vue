@@ -2,9 +2,7 @@
 import { computed, ref, watch } from "vue"
 import type { CampaignDetailsBeach } from "@/modules/campaigns/types/details"
 import type { CreateCampaignWasteCollectionBody } from "@/modules/campaigns/services/campaignWasteCollections"
-import type { WasteListItem } from "@/modules/waste/types/list"
-import type { PaginatedResult } from "@/types/pagination"
-import { requestApiData } from "@/infrastructure/request"
+import { fetchWastePage } from "@/modules/waste/services/waste/fetchWastePage"
 import Button from "@/shared/components/ui/Button.vue"
 import FieldLabel from "@/shared/components/ui/FieldLabel.vue"
 import Input from "@/shared/components/ui/Input.vue"
@@ -25,7 +23,6 @@ const emit = defineEmits<{
 const beachId = ref<string | undefined>(undefined)
 const wasteId = ref<string | undefined>(undefined)
 const unitQuantity = ref("")
-const actualWeightKg = ref("")
 const wasteOptions = ref<{ value: string; label: string }[]>([])
 const loadingWaste = ref(false)
 
@@ -36,11 +33,7 @@ const beachSelectOptions = computed(() =>
 const canProceed = computed(() => {
     const qty = Number(unitQuantity.value)
     if (!beachId.value || !wasteId.value) return false
-    if (!Number.isFinite(qty) || qty < 1) return false
-    const weightRaw = actualWeightKg.value.trim()
-    if (weightRaw.length === 0) return true
-    const weight = Number(weightRaw)
-    return Number.isFinite(weight) && weight >= 0
+    return Number.isFinite(qty) && qty >= 1
 })
 
 function close() {
@@ -51,15 +44,12 @@ function resetForm() {
     beachId.value = props.beaches.length === 1 ? props.beaches[0]?.id : undefined
     wasteId.value = undefined
     unitQuantity.value = ""
-    actualWeightKg.value = ""
 }
 
 async function loadWasteOptions() {
     loadingWaste.value = true
     try {
-        const data = await requestApiData<PaginatedResult<WasteListItem>>("/waste?page=1&pageSize=200", {
-            method: "GET",
-        })
+        const data = await fetchWastePage(1, 200)
         wasteOptions.value = data.items.map((w) => ({ value: w.id, label: w.name }))
     } catch {
         wasteOptions.value = []
@@ -70,16 +60,11 @@ async function loadWasteOptions() {
 
 function onProceed() {
     if (!canProceed.value || !beachId.value || !wasteId.value) return
-    const weightRaw = actualWeightKg.value.trim()
-    const body: CreateCampaignWasteCollectionBody = {
+    emit("create", {
         beachId: beachId.value,
         wasteId: wasteId.value,
         unitQuantity: Number(unitQuantity.value),
-    }
-    if (weightRaw.length > 0) {
-        body.actualWeightKg = Number(weightRaw)
-    }
-    emit("create", body)
+    })
     close()
 }
 
@@ -139,19 +124,6 @@ watch(
                     step="1"
                     class="w-full"
                     placeholder="Unidades recolhidas"
-                />
-            </div>
-
-            <div class="flex flex-col gap-1">
-                <FieldLabel optional for="create-waste-collection-weight">Peso (kg)</FieldLabel>
-                <Input
-                    id="create-waste-collection-weight"
-                    v-model="actualWeightKg"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    class="w-full"
-                    placeholder="Opcional"
                 />
             </div>
 

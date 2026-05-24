@@ -1,3 +1,4 @@
+import { unwrapList } from "@/infrastructure/hateoas"
 import { requestApiData } from "@/infrastructure/request"
 import type { CampaignDetailsComment } from "@/modules/campaigns/types/details"
 import type { PaginatedResult } from "@/types/pagination"
@@ -15,8 +16,9 @@ export async function listCampaignComments(
         page: String(query.page),
         pageSize: String(query.pageSize),
     })
-    return requestApiData<PaginatedResult<CampaignDetailsComment>>(
+    const body = await requestApiData<unknown>(
         `/campaigns/${campaignId}/comments?${q}`,
         { method: "GET" },
     )
+    return unwrapList<CampaignDetailsComment>(body)
 }

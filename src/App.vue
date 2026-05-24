@@ -22,37 +22,40 @@ const toasterToastOptions = {
 
 watchEffect(() => {
     const allowBodyScroll = route.meta?.bodyScroll === true
-    document.body.classList.toggle("app-shell", !allowBodyScroll)
+    const useShell = !allowBodyScroll
+    document.documentElement.classList.toggle("app-shell", useShell)
+    document.body.classList.toggle("app-shell", useShell)
 })
 
 const hideChrome = computed(() => route.meta?.hideChrome === true)
 </script>
 
 <template>
-     <Toaster position="bottom-right" theme="light" :mobile-offset="toasterMobileOffset" :toast-options="toasterToastOptions"
-        > <template #success-icon> <ToastSuccessIcon /> </template> </Toaster
-    >
-    <div v-if="hideChrome" class="min-h-screen bg-white"> <RouterView /> </div>
+    <Toaster position="bottom-right" theme="light" :mobile-offset="toasterMobileOffset" :toast-options="toasterToastOptions">
+        <template #success-icon>
+            <ToastSuccessIcon />
+        </template>
+    </Toaster>
 
-    <div v-else class="flex h-screen w-full flex-col overflow-hidden bg-neutral-950 pb-0 md:pb-2">
-         <AppHeader />
-        <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
-
-            <div class="mx-2 mb-2 flex min-h-0 flex-1 flex-col md:mb-0">
-
-                <main class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-2xl bg-white md:rounded-b-sm md:rounded-t-lg">
-
-                    <div class="mx-auto flex min-h-0 w-full min-w-0 max-w-5xl flex-1 flex-col overflow-hidden px-3 py-6 sm:px-4 md:py-8">
-                         <RouterView v-slot="{ Component }"> <component :is="Component" class="flex min-h-0 min-w-0 flex-1 flex-col" /> </RouterView>
-                    </div>
-
-                </main>
-
-            </div>
-             <MobileBottomNav />
-        </div>
-
+    <div v-if="hideChrome" class="min-h-screen bg-white">
+        <RouterView />
     </div>
 
+    <div v-else class="flex h-dvh w-full flex-col bg-neutral-950 pb-0 md:pb-2">
+        <AppHeader />
+        <div class="flex min-h-0 flex-1 flex-col">
+            <div class="mx-2 mb-2 flex min-h-0 flex-1 flex-col md:mb-0">
+                <main class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl bg-white md:rounded-b-sm md:rounded-t-lg">
+                    <div class="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain">
+                        <div class="mx-auto flex w-full min-h-0 max-w-5xl flex-1 flex-col px-3 pt-6 pb-8 sm:px-4 md:pt-8">
+                            <RouterView v-slot="{ Component }">
+                                <component :is="Component" class="flex min-h-0 w-full flex-1 flex-col" />
+                            </RouterView>
+                        </div>
+                    </div>
+                </main>
+            </div>
+            <MobileBottomNav />
+        </div>
+    </div>
 </template>
-

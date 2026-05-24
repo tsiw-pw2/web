@@ -13,6 +13,7 @@ export function useSettingsProfileForm(profile: Ref<SettingsProfile | null | und
     const profileName = ref("")
     const profileEmail = ref("")
     const profilePhone = ref("")
+    const profileBirthDate = ref("")
     const profileAvatarUrl = ref("")
     const previewAvatarErrored = ref(false)
     const pendingAvatarFile = ref<File | null>(null)
@@ -91,6 +92,7 @@ export function useSettingsProfileForm(profile: Ref<SettingsProfile | null | und
         profileName.value = p.name
         profileEmail.value = p.email
         profilePhone.value = p.phone ?? ""
+        profileBirthDate.value = p.birthDate ?? ""
         profileAvatarUrl.value = p.avatarUrl ?? ""
         if (options?.bumpAvatarCache && (p.avatarUrl ?? "").trim().length > 0) {
             bumpProfileAvatarDisplayCache()
@@ -115,6 +117,7 @@ export function useSettingsProfileForm(profile: Ref<SettingsProfile | null | und
             profileName.value !== p.name ||
             profileEmail.value !== p.email ||
             profilePhone.value !== (p.phone ?? "") ||
+            profileBirthDate.value !== (p.birthDate ?? "") ||
             profileAvatarUrl.value.trim() !== (p.avatarUrl ?? "").trim()
         )
     })
@@ -127,6 +130,7 @@ export function useSettingsProfileForm(profile: Ref<SettingsProfile | null | und
         profileName,
         profileEmail,
         profilePhone,
+        profileBirthDate,
         profileAvatarUrl,
         pendingAvatarFile,
         profileAvatarFileInputRef,

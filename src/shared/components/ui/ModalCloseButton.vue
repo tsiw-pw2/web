@@ -9,13 +9,12 @@ const emit = defineEmits<{
 </script>
 
 <template>
-     <button
+    <button
         type="button"
-        class="flex size-10 shrink-0 items-center justify-center rounded-lg text-neutral-500 outline-none enabled:hover:bg-neutral-100 enabled:hover:text-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-300"
+        class="p-1 rounded-full text-neutral-500 outline-none duration-200 ease-out hover:bg-white hover:shadow-btn-secondary"
         aria-label="Fechar"
         @click="emit('click', $event)"
     >
-         <ModalCloseXIcon /> </button
-    >
+        <ModalCloseXIcon />
+    </button>
 </template>
-

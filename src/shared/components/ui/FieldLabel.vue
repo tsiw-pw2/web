@@ -21,8 +21,8 @@ const props = withDefaults(
 </script>
 
 <template>
-     <component :is="props.as === 'span' ? 'span' : 'label'" :for="props.as === 'label' ? props.for : undefined" :class="cn('text-sm font-medium leading-4 text-neutral-900', props.class)"
-        > <span><slot /></span> <span v-if="props.required" class="text-red-500"> *</span> <span v-if="props.optional" class="text-sm font-medium text-neutral-500"> &nbsp;(opcional) </span>
+     <component :is="props.as === 'span' ? 'span' : 'label'" :for="props.as === 'label' ? props.for : undefined" :class="cn('text-sm font-medium leading-5 text-neutral-900', props.class)"
+        > <span><slot /></span> <span v-if="props.required" class="text-red-500"> *</span> <span v-if="props.optional" class="text-sm font-medium text-neutral-500">(opcional)</span>
         </component
     >
 </template>

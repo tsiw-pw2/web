@@ -1,5 +1,11 @@
 import { getApiBaseUrl } from "./config"
-import { getAccessToken, setAccessToken } from "./access-token"
+import { getAccessToken } from "./access-token"
+import { tryRestoreSession } from "./authSession"
+import {
+    ApiServiceUnavailableError,
+    apiUnavailableMessageFromResponse,
+    shouldTreatResponseAsUnavailable,
+} from "./apiErrors"
 
 export const CLIENT_SAFE_REQUEST_FAILED = "Não foi possível concluir o pedido."
 
@@ -18,7 +24,7 @@ export function isApiRequestError(e: unknown): e is ApiRequestError {
     return e instanceof ApiRequestError
 }
 
-let refreshInFlight: Promise<boolean> | null = null
+export { ApiServiceUnavailableError, isApiServiceUnavailableError } from "./apiErrors"
 
 function debugLogRequestFailure(label: string, path: string, init: RequestInit | undefined, httpStatus: number, bodyMessage?: string) {
     if (!import.meta.env.DEV) return
@@ -27,103 +33,106 @@ function debugLogRequestFailure(label: string, path: string, init: RequestInit |
     console.debug(`[${label}]`, method, path, `HTTP ${httpStatus}`, suffix)
 }
 
-async function parseJsonBody(res: Response): Promise<unknown> {
-    const text = await res.text()
-    if (!text) return null
-    try {
-        return JSON.parse(text) as unknown
-    } catch {
-        return null
-    }
+function parseJsonText(rawText: string): unknown {
+    if (!rawText.trim()) return null
+    return JSON.parse(rawText) as unknown
 }
 
-export async function tryRefreshAccessToken(): Promise<boolean> {
-    if (refreshInFlight) {
-        return refreshInFlight
-    }
-    const run = async (): Promise<boolean> => {
-        try {
-            const url = `${getApiBaseUrl()}/auth/refresh`
-            const res = await fetch(url, {
-                method: "POST",
-                credentials: "include",
-                headers: { Accept: "application/json" },
-            })
-            const body = (await parseJsonBody(res)) as {
-                success?: boolean
-                data?: { accessToken?: string }
-            } | null
-            if (!res.ok || !body?.success || !body?.data?.accessToken) {
-                if (res.status === 401 || res.status === 403) {
-                    setAccessToken(null)
-                }
-                return false
-            }
-            setAccessToken(body.data.accessToken)
-            return true
-        } catch {
-            return false
-        }
-    }
-    const done = run().finally(() => {
-        refreshInFlight = null
-    })
-    refreshInFlight = done
-    return done
+function isSessionManagementPath(path: string): boolean {
+    return path === "/sessions" || path === "/sessions/current"
 }
 
-async function fetchWithAuth(url: string, init?: RequestInit, isRetry = false): Promise<Response> {
-    const headers = new Headers(init?.headers)
-    if (!headers.has("Accept")) {
-        headers.set("Accept", "application/json")
-    }
+function applyBearerHeader(headers: Headers) {
     const token = getAccessToken()
     if (token) {
         headers.set("Authorization", `Bearer ${token}`)
     }
-    const res = await fetch(url, {
-        ...init,
-        credentials: "include",
-        headers,
-    })
-    if (res.status === 401 && !isRetry) {
-        const refreshed = await tryRefreshAccessToken()
-        if (refreshed) {
-            return fetchWithAuth(url, init, true)
-        }
+}
+
+async function fetchWithAuth(url: string, init?: RequestInit, allowSessionRetry = true): Promise<Response> {
+    const headers = new Headers(init?.headers)
+    if (!headers.has("Accept")) {
+        headers.set("Accept", "application/json")
     }
-    return res
+    applyBearerHeader(headers)
+    let res: Response
+    try {
+        res = await fetch(url, {
+            ...init,
+            headers,
+            credentials: "include",
+        })
+    } catch (e) {
+        if (import.meta.env.DEV) {
+            console.debug("[fetchWithAuth] fetch threw", url, e)
+        }
+        throw new ApiServiceUnavailableError()
+    }
+    if (res.status !== 401 || !allowSessionRetry) {
+        return res
+    }
+    const path = new URL(url, "http://local.invalid").pathname
+    if (isSessionManagementPath(path)) {
+        return res
+    }
+    const restored = await tryRestoreSession()
+    if (!restored) {
+        return res
+    }
+    applyBearerHeader(headers)
+    try {
+        return await fetch(url, {
+            ...init,
+            headers,
+            credentials: "include",
+        })
+    } catch (e) {
+        if (import.meta.env.DEV) {
+            console.debug("[fetchWithAuth] retry fetch threw", url, e)
+        }
+        throw new ApiServiceUnavailableError()
+    }
+}
+
+async function readApiResponse<T>(res: Response, normalizedPath: string, init: RequestInit | undefined): Promise<T> {
+    const rawText = await res.text()
+    if (res.status === 204) {
+        return null as T
+    }
+
+    if (shouldTreatResponseAsUnavailable(res, rawText)) {
+        throw new ApiServiceUnavailableError(apiUnavailableMessageFromResponse(res, rawText))
+    }
+
+    let body: unknown = null
+    try {
+        if (rawText.trim().length === 0 && !res.ok) {
+            throw new SyntaxError("empty")
+        }
+        body = parseJsonText(rawText)
+    } catch {
+        throw new ApiServiceUnavailableError(apiUnavailableMessageFromResponse(res, rawText))
+    }
+
+    if (!res.ok) {
+        const msg =
+            body && typeof body === "object" && body !== null && "message" in body
+                ? String((body as { message?: unknown }).message ?? "")
+                : undefined
+        const safeMsg = msg && msg.length > 0 ? msg : undefined
+        debugLogRequestFailure("requestApi", normalizedPath, init, res.status, safeMsg)
+        throw new ApiRequestError(res.status, safeMsg)
+    }
+
+    return body as T
 }
 
 export async function requestApiData<T>(path: string, init?: RequestInit): Promise<T> {
     const base = getApiBaseUrl()
     const normalizedPath = path.startsWith("/") ? path : `/${path}`
     const url = `${base}${normalizedPath}`
-    const method = (init?.method ?? "GET").toUpperCase()
-    let res: Response
-    try {
-        res = await fetchWithAuth(url, init)
-    } catch (e) {
-        if (import.meta.env.DEV) {
-            console.debug("[requestApiData] fetch threw", normalizedPath, method, e)
-        }
-        throw e
-    }
-    const body = (await parseJsonBody(res)) as {
-        success?: boolean
-        data?: T
-        message?: string
-    } | null
-    if (!res.ok) {
-        debugLogRequestFailure("requestApiData", normalizedPath, init, res.status, typeof body?.message === "string" ? body.message : undefined)
-        throw new ApiRequestError(res.status)
-    }
-    if (!body || body.success !== true) {
-        const inferred = res.ok ? 400 : res.status
-        debugLogRequestFailure("requestApiData", normalizedPath, init, inferred, typeof body?.message === "string" ? body.message : undefined)
-        throw new ApiRequestError(inferred)
-    }
-    return body.data as T
+    const res = await fetchWithAuth(url, init)
+    return readApiResponse<T>(res, normalizedPath, init)
 }
 
 export async function requestApiFormData<T>(path: string, formData: FormData, options?: { method?: string }): Promise<T> {
@@ -135,21 +144,7 @@ export async function requestApiFormData<T>(path: string, formData: FormData, op
         method,
         body: formData,
     })
-    const body = (await parseJsonBody(res)) as {
-        success?: boolean
-        data?: T
-        message?: string
-    } | null
-    if (!res.ok) {
-        debugLogRequestFailure("requestApiFormData", normalizedPath, { method }, res.status, typeof body?.message === "string" ? body.message : undefined)
-        throw new ApiRequestError(res.status)
-    }
-    if (!body || body.success !== true) {
-        const inferred = res.ok ? 400 : res.status
-        debugLogRequestFailure("requestApiFormData", normalizedPath, { method }, inferred, typeof body?.message === "string" ? body.message : undefined)
-        throw new ApiRequestError(inferred)
-    }
-    return body.data as T
+    return readApiResponse<T>(res, normalizedPath, { method })
 }
 
 export async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
@@ -157,9 +152,5 @@ export async function requestJson<T>(path: string, init?: RequestInit): Promise<
     const normalizedPath = path.startsWith("/") ? path : `/${path}`
     const url = `${base}${normalizedPath}`
     const res = await fetchWithAuth(url, init)
-    const body = await parseJsonBody(res)
-    if (!res.ok) {
-        throw new ApiRequestError(res.status)
-    }
-    return body as T
+    return readApiResponse<T>(res, normalizedPath, init)
 }

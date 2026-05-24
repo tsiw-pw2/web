@@ -1,4 +1,4 @@
-import type { WasteListItem } from "@/modules/waste/types/list"
+import type { WasteListFilters, WasteListItem } from "@/modules/waste/types/list"
 import { ref } from "vue"
 import { toastListPossiblyStale } from "@/infrastructure/appToast"
 import { createWaste } from "@/modules/waste/services/waste/createWaste"
@@ -14,6 +14,11 @@ export const wastePageSize = ref(PAGINATED_LIST_DEFAULT_PAGE_SIZE)
 export const wasteTotal = ref(0)
 
 let loadGeneration = 0
+let listFilters: WasteListFilters = {}
+
+export function setWasteListFilters(filters: WasteListFilters) {
+    listFilters = filters
+}
 
 async function applyPageResult(data: Awaited<ReturnType<typeof fetchWastePage>>) {
     items.value = data.items
@@ -25,7 +30,7 @@ async function applyPageResult(data: Awaited<ReturnType<typeof fetchWastePage>>)
 async function fetchAndApply(opts?: { page?: number; pageSize?: number }): Promise<void> {
     if (opts?.page != null) wastePage.value = opts.page
     if (opts?.pageSize != null) wastePageSize.value = opts.pageSize
-    const data = await fetchWastePage(wastePage.value, wastePageSize.value)
+    const data = await fetchWastePage(wastePage.value, wastePageSize.value, listFilters)
     await applyPageResult(data)
     loadGeneration++
 }
@@ -42,7 +47,7 @@ export async function loadWasteItemsList(opts?: { page?: number; pageSize?: numb
     const gen = ++loadGeneration
     if (opts?.page != null) wastePage.value = opts.page
     if (opts?.pageSize != null) wastePageSize.value = opts.pageSize
-    const data = await fetchWastePage(wastePage.value, wastePageSize.value)
+    const data = await fetchWastePage(wastePage.value, wastePageSize.value, listFilters)
     if (gen !== loadGeneration) return
     await applyPageResult(data)
 }

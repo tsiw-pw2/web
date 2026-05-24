@@ -2,18 +2,24 @@ import { getApiBaseUrl } from "@/infrastructure/config"
 import { setAccessToken } from "@/infrastructure/access-token"
 
 type LoginSuccessBody = {
-    success?: boolean
-    data?: { accessToken?: string }
+    token?: string
+    user?: unknown
     message?: string
 }
 
-export class LoginServiceUnavailableError extends Error {
-    override readonly name = "LoginServiceUnavailableError"
+import {
+    API_UNAVAILABLE_NETWORK_MESSAGE,
+    ApiServiceUnavailableError,
+    apiUnavailableMessageFromResponse,
+    shouldTreatResponseAsUnavailable,
+} from "@/infrastructure/apiErrors"
 
-    constructor(message: string) {
-        super(message)
-        Object.setPrototypeOf(this, new.target.prototype)
-    }
+export class LoginServiceUnavailableError extends ApiServiceUnavailableError {
+    override readonly name = "LoginServiceUnavailableError"
+}
+
+export function isLoginServiceUnavailableError(e: unknown): e is LoginServiceUnavailableError {
+    return e instanceof LoginServiceUnavailableError
 }
 
 export class LoginAccountBlockedError extends Error {
@@ -23,10 +29,6 @@ export class LoginAccountBlockedError extends Error {
         super(message)
         Object.setPrototypeOf(this, new.target.prototype)
     }
-}
-
-export function isLoginServiceUnavailableError(e: unknown): e is LoginServiceUnavailableError {
-    return e instanceof LoginServiceUnavailableError
 }
 
 export function isLoginAccountBlockedError(e: unknown): e is LoginAccountBlockedError {
@@ -42,23 +44,14 @@ function blockedAccountMessage(apiMessage: string): string {
 }
 
 function throwUnexpectedLoginResponse(res: Response, rawText: string): never {
-    const contentType = (res.headers.get("content-type") ?? "").toLowerCase()
-    const isEmpty = rawText.trim().length === 0
-    const isUpstreamError = res.status === 502 || res.status === 503 || res.status === 504
-    if (contentType.includes("text/html") || isUpstreamError || (isEmpty && !res.ok)) {
-        throw new LoginServiceUnavailableError(
-            "O serviço está temporariamente indisponível ou não respondeu como esperado. Tenta outra vez dentro de momentos.",
-        )
+    if (shouldTreatResponseAsUnavailable(res, rawText)) {
+        throw new LoginServiceUnavailableError(apiUnavailableMessageFromResponse(res, rawText))
     }
-    const base = getApiBaseUrl()
-    if (base.startsWith("http")) {
-        throw new LoginServiceUnavailableError("Não foi possível completar o pedido. Verifica a ligação e tenta outra vez.")
-    }
-    throw new LoginServiceUnavailableError("Não foi possível completar o pedido. Tenta outra vez.")
+    throw new LoginServiceUnavailableError(API_UNAVAILABLE_NETWORK_MESSAGE)
 }
 
 export async function loginWithCredentials(email: string, password: string): Promise<void> {
-    const url = `${getApiBaseUrl()}/auth/login`
+    const url = `${getApiBaseUrl()}/sessions`
     let res: Response
     try {
         res = await fetch(url, {
@@ -71,9 +64,7 @@ export async function loginWithCredentials(email: string, password: string): Pro
             body: JSON.stringify({ email, password }),
         })
     } catch {
-        throw new LoginServiceUnavailableError(
-            "Não foi possível ligar ao serviço. Verifica a ligação à internet e tenta outra vez.",
-        )
+        throw new LoginServiceUnavailableError(API_UNAVAILABLE_NETWORK_MESSAGE)
     }
 
     const rawText = await res.text()
@@ -91,7 +82,7 @@ export async function loginWithCredentials(email: string, password: string): Pro
         throwUnexpectedLoginResponse(res, rawText)
     }
 
-    if (!res.ok || !parsed.success || !parsed.data?.accessToken) {
+    if (!res.ok || typeof parsed.token !== "string" || parsed.token.length === 0) {
         const apiMsg = parsed.message ?? ""
         if (res.status === 403) {
             throw new LoginAccountBlockedError(blockedAccountMessage(apiMsg))
@@ -99,5 +90,5 @@ export async function loginWithCredentials(email: string, password: string): Pro
         const friendly = apiMsg === "Invalid credentials" || apiMsg === "Unauthorized" ? "Credenciais inválidas." : apiMsg.length > 0 ? apiMsg : "Credenciais inválidas."
         throw new Error(friendly)
     }
-    setAccessToken(parsed.data.accessToken)
+    setAccessToken(parsed.token)
 }

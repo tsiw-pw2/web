@@ -24,10 +24,7 @@ export function campaignDetailStatusBadge(status: number): ApiStateBadge {
     }
 }
 
-import {
-    CAMPAIGN_STATUS_SELECT_OPTIONS,
-    type CampaignStatusKey,
-} from "@/modules/campaigns/lib/campaignStatus"
+import { CAMPAIGN_STATUS_SELECT_OPTIONS, type CampaignStatusKey } from "@/modules/campaigns/lib/campaignStatus"
 
 export const CAMPAIGN_EDIT_STATUS_ITEMS = CAMPAIGN_STATUS_SELECT_OPTIONS.map((o) => ({
     apiKey: o.value,
@@ -77,6 +74,6 @@ export const WASTE_CATEGORY_ITEMS = [
 ] as const
 
 export const WASTE_UNIT_ITEMS = [
-    { apiKey: "kg", label: "kg" },
     { apiKey: "unit", label: "Unidade" },
+    { apiKey: "peso", label: "Peso" },
 ] as const

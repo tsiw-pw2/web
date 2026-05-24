@@ -1,5 +1,7 @@
 import { getDashboardOverview } from "@/modules/dashboard/services/getOverview"
 import type { DashboardOverview } from "@/modules/dashboard/types"
+import { describeApiLoadFailure } from "@/infrastructure/apiErrors"
+import { isApiRequestError } from "@/infrastructure/request"
 import { onMounted, ref } from "vue"
 
 export function useDashboardOverview() {
@@ -13,8 +15,12 @@ export function useDashboardOverview() {
         try {
             const data = await getDashboardOverview()
             overview.value = data != null && typeof data === "object" && "metrics" in data && data.metrics != null && typeof data.metrics === "object" ? data : null
-        } catch {
-            error.value = "Não foi possível carregar os dados. Tenta outra vez."
+        } catch (e) {
+            if (isApiRequestError(e) && e.httpStatus === 403) {
+                error.value = "Sem acesso a esta área."
+            } else {
+                error.value = describeApiLoadFailure(e, "os dados")
+            }
             overview.value = null
         } finally {
             loading.value = false

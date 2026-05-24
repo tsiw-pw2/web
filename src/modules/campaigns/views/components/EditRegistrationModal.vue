@@ -7,10 +7,7 @@ import FieldLabel from "@/shared/components/ui/FieldLabel.vue"
 import ModalCloseButton from "@/shared/components/ui/ModalCloseButton.vue"
 import ModalRoot from "@/shared/components/ui/ModalRoot.vue"
 import Select from "@/shared/components/ui/select/Select.vue"
-import {
-    REGISTRATION_ROLE_ITEMS,
-    REGISTRATION_STATUS_ITEMS,
-} from "@/shared/lib/apiStatePresentation"
+import { REGISTRATION_ROLE_ITEMS, REGISTRATION_STATUS_ITEMS } from "@/shared/lib/apiStatePresentation"
 
 const open = defineModel<boolean>({ required: true })
 
@@ -27,7 +24,7 @@ const status = ref<string | undefined>(undefined)
 const role = ref<string | undefined>(undefined)
 const attendance = ref<string | undefined>(undefined)
 
-const statusOptions = REGISTRATION_STATUS_ITEMS.map((i) => ({
+const statusOptions = REGISTRATION_STATUS_ITEMS.filter((i) => i.value !== 0).map((i) => ({
     value: String(i.value),
     label: i.label,
 }))

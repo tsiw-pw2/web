@@ -1,12 +1,8 @@
 import { computed, type Ref } from "vue"
+import { canDeleteWasteCollection } from "@/modules/campaigns/lib/canDeleteWasteCollection"
 import { canRecordWasteCollection } from "@/modules/campaigns/lib/canRecordWasteCollection"
-import {
-    campaignDescriptionText,
-    campaignDistrictLabel,
-    campaignPeriodLabel,
-    campaignPhaseLabel,
-    campaignStatusUi,
-} from "@/modules/campaigns/lib/campaignDetailsDisplay"
+import type { CampaignDetailsWasteCollection } from "@/modules/campaigns/types/details"
+import { campaignDescriptionText, campaignDistrictLabel, campaignPeriodLabel, campaignPhaseLabel, campaignStatusUi } from "@/modules/campaigns/lib/campaignDetailsDisplay"
 import type { CampaignDetails } from "@/modules/campaigns/types/details"
 import type { SettingsProfile } from "@/modules/settings/types/profile"
 import { formatWeightKg } from "@/shared/lib/formatPt"
@@ -29,6 +25,10 @@ export function useCampaignDetailsDisplay(
 
     const canRecordWaste = computed(() => canRecordWasteCollection(campaign.value, profile.value))
 
+    function canDeleteWasteRow(row: CampaignDetailsWasteCollection) {
+        return canDeleteWasteCollection(campaign.value, profile.value, row)
+    }
+
     return {
         statusUi,
         descriptionText,
@@ -37,6 +37,7 @@ export function useCampaignDetailsDisplay(
         campaignPeriodLabel: campaignPeriodLabelValue,
         canPostComment,
         canRecordWaste,
+        canDeleteWasteRow,
         formatWeightKg,
     }
 }

@@ -1,15 +1,7 @@
 import { ref, watch, type Ref } from "vue"
-import {
-    fetchCampaignComments,
-    fetchCampaignRegistrations,
-    fetchCampaignWasteCollections,
-} from "@/modules/campaigns/services/campaignTabLists"
+import { fetchCampaignComments, fetchCampaignRegistrations, fetchCampaignWasteCollections } from "@/modules/campaigns/services/campaignTabLists"
 import type { CampaignDetailsTabId } from "@/modules/campaigns/lib/campaignDetailsTabs"
-import type {
-    CampaignDetailsComment,
-    CampaignDetailsRegistration,
-    CampaignDetailsWasteCollection,
-} from "@/modules/campaigns/types/details"
+import type { CampaignDetailsComment, CampaignDetailsRegistration, CampaignDetailsWasteCollection } from "@/modules/campaigns/types/details"
 
 export type { CampaignDetailsTabId }
 

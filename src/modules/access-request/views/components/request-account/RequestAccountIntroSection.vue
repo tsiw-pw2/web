@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { RouterLink } from "vue-router"
+import { routePaths } from "@/app/router"
 import Button from "@/shared/components/ui/Button.vue"
 import FieldLabel from "@/shared/components/ui/FieldLabel.vue"
 import { REQUEST_ACCOUNT_CHECKLIST_ITEMS } from "@/modules/access-request/lib/requestAccountConstants"
@@ -21,7 +23,11 @@ const checklistItems = REQUEST_ACCOUNT_CHECKLIST_ITEMS
 
         <p class="mt-4 max-w-prose text-sm leading-6 text-neutral-600">
             Para solicitar acesso à plataforma, envie um email com os dados da sua organização. O pedido será analisado
-            antes de ser aprovado.
+            antes de ser aprovado. Vê o
+            <RouterLink :to="{ path: routePaths.help, hash: '#organizadores' }" class="font-medium text-blue-700 hover:underline">
+                processo completo
+            </RouterLink>
+            em Ajuda e contacto.
         </p>
 
         <div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2">

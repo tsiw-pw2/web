@@ -15,12 +15,13 @@ const props = defineProps<{
 </script>
 
 <template>
-     <DashboardPanel :class="props.class"
-        > <DashboardPanelHeader :title="title" :more-href="moreHref" :more-to="moreTo" :more-label="moreLabel"
-            > <template #icon> <slot name="icon" /> </template> </DashboardPanelHeader
-        >
-        <h6 class="text-[32px] font-medium leading-10 text-neutral-950">{{ value }}</h6>
-         </DashboardPanel
-    >
+    <DashboardPanel :class="props.class">
+        <DashboardPanelHeader :title="title" :more-href="moreHref" :more-to="moreTo" :more-label="moreLabel">
+            <template #icon>
+                <slot name="icon" />
+            </template>
+        </DashboardPanelHeader>
+        <h6 class="text-[32px] font-medium leading-10 text-neutral-950 tabular-nums">{{ value }}</h6>
+    </DashboardPanel>
 </template>
 

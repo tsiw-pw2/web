@@ -1,8 +1,9 @@
 import type { CampaignCreateDraft, CampaignListItem } from "@/modules/campaigns/types/list"
+import { unwrapResource } from "@/infrastructure/hateoas"
 import { requestApiData } from "@/infrastructure/request"
 
 export async function createCampaign(draft: CampaignCreateDraft): Promise<CampaignListItem> {
-    return requestApiData<CampaignListItem>("/campaigns", {
+    const body = await requestApiData<unknown>("/campaigns", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -16,4 +17,5 @@ export async function createCampaign(draft: CampaignCreateDraft): Promise<Campai
             beachIds: draft.beachIds ?? [],
         }),
     })
+    return unwrapResource<CampaignListItem>(body)
 }

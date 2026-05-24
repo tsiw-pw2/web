@@ -1,10 +1,4 @@
-import {
-    beachesListRef,
-    beachesPage,
-    beachesPageSize,
-    beachesTotal,
-    loadBeachesList,
-} from "@/modules/beaches/composables/beaches-list/beachesListState"
+import { beachesListRef, beachesPage, beachesPageSize, beachesTotal, loadBeachesList } from "@/modules/beaches/composables/beaches-list/beachesListState"
 import { useBeachesListMutations } from "@/modules/beaches/composables/beaches-list/useBeachesListMutations"
 import { useBeachesPageModals } from "@/modules/beaches/composables/beaches-list/useBeachesPageModals"
 import { usePaginatedListRoute } from "@/shared/composables/usePaginatedListRoute"

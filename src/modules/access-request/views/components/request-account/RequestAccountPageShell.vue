@@ -2,6 +2,7 @@
 import { RouterLink } from "vue-router"
 import Button from "@/shared/components/ui/Button.vue"
 import { routePaths } from "@/app/router"
+import LegalFooterLinks from "@/modules/legal/components/LegalFooterLinks.vue"
 </script>
 
 <template>
@@ -36,10 +37,7 @@ import { routePaths } from "@/app/router"
                     <img src="/Logo_text.svg" alt="Mariva" class="h-8 w-auto" />
                     <span class="font-normal text-neutral-500">© Mariva — 2026</span>
                 </div>
-                <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-neutral-600">
-                    <a href="#" class="hover:text-neutral-950">Termos de serviço</a>
-                    <a href="#" class="hover:text-neutral-950">Política de privacidade</a>
-                </div>
+                <LegalFooterLinks />
             </div>
         </footer>
     </div>

@@ -1,9 +1,10 @@
 import { computed, ref, type Ref } from "vue"
 import {
+    deleteCampaignWasteCollection,
     postCampaignWasteCollection,
     type CreateCampaignWasteCollectionBody,
 } from "@/modules/campaigns/services/campaignWasteCollections"
-import type { CampaignDetails } from "@/modules/campaigns/types/details"
+import type { CampaignDetails, CampaignDetailsWasteCollection } from "@/modules/campaigns/types/details"
 import { toastError, toastSuccess } from "@/infrastructure/appToast"
 import { isApiRequestError } from "@/infrastructure/request"
 
@@ -22,6 +23,9 @@ export function useCampaignDetailsWaste(
 ) {
     const createWasteCollectionOpen = ref(false)
     const postingWasteCollection = ref(false)
+    const deleteWasteCollectionOpen = ref(false)
+    const deleteWasteCollectionTarget = ref<CampaignDetailsWasteCollection | null>(null)
+    const deletingWasteCollectionId = ref<string | null>(null)
 
     const wasteBeachSelectValue = computed({
         get: () => tabs.wasteBeachId.value ?? "__all__",
@@ -60,7 +64,7 @@ export function useCampaignDetailsWaste(
             toastSuccess("Recolha registada")
         } catch (e) {
             if (isApiRequestError(e) && e.httpStatus === 403) {
-                toastError("Não podes registar aqui", "Confirma a tua inscrição ou fala com o organizador.")
+                toastError("Não podes registar aqui", "Inscreve-te nesta campanha para registar recolhas.")
             } else {
                 toastError("Não foi possível registar", "Verifica os dados e tenta outra vez.")
             }
@@ -69,13 +73,54 @@ export function useCampaignDetailsWaste(
         }
     }
 
+    function openDeleteWasteCollection(row: CampaignDetailsWasteCollection) {
+        deleteWasteCollectionTarget.value = row
+        deleteWasteCollectionOpen.value = true
+    }
+
+    const deleteWasteCollectionSummary = computed(() => {
+        const row = deleteWasteCollectionTarget.value
+        if (!row) return undefined
+        const wasteName = row.waste?.name ?? "Resíduo"
+        const beachName = row.beach?.name
+        return beachName ? `${wasteName} · ${beachName}` : wasteName
+    })
+
+    async function confirmDeleteWasteCollection() {
+        const target = deleteWasteCollectionTarget.value
+        if (!target || deletingWasteCollectionId.value) return
+        deletingWasteCollectionId.value = target.id
+        try {
+            await deleteCampaignWasteCollection(campaignId.value, target.id)
+            await tabs.reloadWasteFirstPage()
+            await refreshCampaignMetrics()
+            toastSuccess("Recolha apagada")
+            deleteWasteCollectionOpen.value = false
+            deleteWasteCollectionTarget.value = null
+        } catch (e) {
+            if (isApiRequestError(e) && e.httpStatus === 403) {
+                toastError("Não podes apagar", "Não tens permissão para remover este registo.")
+            } else {
+                toastError("Não foi possível apagar", "Tenta outra vez dentro de momentos.")
+            }
+        } finally {
+            deletingWasteCollectionId.value = null
+        }
+    }
+
     return {
         createWasteCollectionOpen,
         postingWasteCollection,
+        deleteWasteCollectionOpen,
+        deleteWasteCollectionTarget,
+        deleteWasteCollectionSummary,
+        deletingWasteCollectionId,
         wasteBeachSelectValue,
         wasteBeachSelectOptions,
         wasteCountLabel,
         wasteCountValue,
         onCreateWasteCollection,
+        openDeleteWasteCollection,
+        confirmDeleteWasteCollection,
     }
 }

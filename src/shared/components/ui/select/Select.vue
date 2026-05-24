@@ -22,11 +22,14 @@ const props = withDefaults(
         options: SelectOption[]
         placeholder?: string
         disabled?: boolean
+        filterMode?: boolean
+        clearLabel?: string
         class?: HTMLAttributes["class"]
         panelPlacement?: "auto" | "below" | "above"
     }>(),
     {
         placeholder: "",
+        filterMode: false,
         panelPlacement: "auto",
     },
 )
@@ -246,6 +249,15 @@ const labelClass = computed(() =>
 
 const triggerText = computed(() => displayLabel.value ?? placeholderRef.value)
 
+const showClear = computed(() => props.filterMode === true && displayLabel.value !== null)
+
+function clearSelection() {
+    if (disabled.value) return
+    open.value = false
+    modelValue.value = ""
+    nextTick(() => triggerRef.value?.querySelector<HTMLButtonElement>('[role="combobox"]')?.focus())
+}
+
 function setTriggerRef(el: HTMLElement | null) {
     triggerRef.value = el
 }
@@ -258,15 +270,17 @@ function setPanelRef(el: HTMLElement | null) {
 <template>
 
     <div :class="cn('relative inline-flex min-w-0', props.class ?? 'w-min')">
-         <SelectTrigger
+        <SelectTrigger
             :listbox-id="listboxId"
             :open="open"
             :disabled="disabled"
             :label-class="labelClass"
             :label-text="triggerText"
+            :show-clear="showClear"
+            :clear-label="props.clearLabel"
             :set-trigger-ref="setTriggerRef"
-            :class="props.class"
             :toggle="toggle"
+            :on-clear="clearSelection"
             :on-trigger-keydown="onTriggerKeydown"
         /> <SelectList
             :open="open"

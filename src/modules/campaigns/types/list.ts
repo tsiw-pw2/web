@@ -1,3 +1,11 @@
+import type { CampaignStatusKey } from "@/modules/campaigns/lib/campaignStatus"
+
+export type CampaignListFilters = {
+    q?: string
+    status?: CampaignStatusKey[]
+    district?: string
+}
+
 export type CampaignListItem = {
     id: string
     title: string
@@ -5,6 +13,8 @@ export type CampaignListItem = {
     beach: string
     startDate: string
     endDate: string
+    statusKey?: CampaignStatusKey
+    districtCode?: string | null
 }
 
 export type CampaignCreateDraft = {

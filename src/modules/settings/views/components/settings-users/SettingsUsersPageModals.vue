@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import BlockUserModal from "@/modules/settings/views/components/BlockUserModal.vue"
 import UnblockUserModal from "@/modules/settings/views/components/UnblockUserModal.vue"
+import type { SettingsUserRow } from "@/modules/settings/types/settingsUser"
 
 defineProps<{
     isBlockModalOpen: boolean
     isUnblockModalOpen: boolean
+    actionUser: SettingsUserRow | null
     actionUserDisplayName: string | undefined
 }>()
 

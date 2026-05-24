@@ -1,21 +1,13 @@
 import { computed, ref, type Ref } from "vue"
 import { toastError, toastSuccess } from "@/infrastructure/appToast"
 import { isApiRequestError } from "@/infrastructure/request"
-import { isEnrollmentClosedStatus } from "@/modules/campaigns/lib/campaignStatus"
+import { isEnrollmentClosedStatus, ENROLLABLE_CAMPAIGN_STATUS_KEYS } from "@/modules/campaigns/lib/campaignStatus"
 import { canVolunteerEnroll, hasActiveRegistration } from "@/modules/campaigns/lib/canVolunteerEnroll"
-import {
-    createCampaignRegistration,
-    deleteRegistration,
-    patchRegistration,
-    type PatchRegistrationBody,
-} from "@/modules/campaigns/services/campaignRegistrations"
+import { createCampaignRegistration, deleteRegistration, patchRegistration, type PatchRegistrationBody } from "@/modules/campaigns/services/campaignRegistrations"
 import { getCampaignDetails } from "@/modules/campaigns/services/campaignDetails"
-import type {
-    CampaignDetails,
-    CampaignDetailsRegistration,
-    CampaignDetailsViewerRegistration,
-} from "@/modules/campaigns/types/details"
+import type { CampaignDetails, CampaignDetailsRegistration, CampaignDetailsViewerRegistration } from "@/modules/campaigns/types/details"
 import type { SettingsProfile } from "@/modules/settings/types/profile"
+import { campaignEnrollmentProfileBlockMessage } from "@/shared/lib/birthDate"
 
 function registrationToastError(e: unknown, fallbackTitle: string) {
     if (isApiRequestError(e)) {
@@ -82,6 +74,19 @@ export function useCampaignRegistrationActions(
 
     const showMyRegistrationStatus = computed(() => hasActiveRegistration(myRegistration.value))
 
+    const enrollmentProfileBlockReason = computed(() => {
+        const c = campaign.value
+        const p = profile.value
+        const reg = myRegistration.value
+        if (!c || !p || p.isBlocked) return null
+        if (c.organizer?.id === p.id) return null
+        if (!ENROLLABLE_CAMPAIGN_STATUS_KEYS.has(c.editStatus)) return null
+        if (hasActiveRegistration(reg)) return null
+        if (reg != null && reg.status !== 2) return null
+        if (canVolunteerEnroll(c, p, reg)) return null
+        return campaignEnrollmentProfileBlockMessage(p.birthDate)
+    })
+
     async function refreshCampaignAfterRegistrationChange() {
         if (!campaignId.value) return
         try {
@@ -123,7 +128,7 @@ export function useCampaignRegistrationActions(
         if (!reg || reg.status === 2 || canceling.value) return
         canceling.value = true
         try {
-            const updated = await patchRegistration(reg.id, { status: 2 })
+            const updated = await patchRegistration(campaignId.value, reg.id, { status: 2 })
             myRegistration.value = {
                 id: updated.id,
                 role: updated.role,
@@ -150,7 +155,7 @@ export function useCampaignRegistrationActions(
         if (!target || savingRegistrationId.value) return
         savingRegistrationId.value = target.id
         try {
-            await patchRegistration(target.id, body)
+            await patchRegistration(campaignId.value, target.id, body)
             toastSuccess("Inscrição atualizada")
             editRegistrationOpen.value = false
             editRegistrationTarget.value = null
@@ -172,7 +177,7 @@ export function useCampaignRegistrationActions(
         if (!target || deletingRegistrationId.value) return
         deletingRegistrationId.value = target.id
         try {
-            await deleteRegistration(target.id)
+            await deleteRegistration(campaignId.value, target.id)
             toastSuccess("Inscrição removida")
             deleteRegistrationOpen.value = false
             deleteRegistrationTarget.value = null
@@ -199,6 +204,7 @@ export function useCampaignRegistrationActions(
         canManageRegistrations,
         canEnroll,
         showEnrollmentClosed,
+        enrollmentProfileBlockReason,
         showMyRegistrationStatus,
         enroll,
         cancelMyRegistration,

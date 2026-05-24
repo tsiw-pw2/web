@@ -1,9 +1,9 @@
 <script setup lang="ts">
+import { useRouter } from "vue-router"
 import { useSettingsUsersPageState } from "@/modules/settings/composables/settings-users/useSettingsUsersPageState"
 import SettingsUsersPageContent from "@/modules/settings/views/components/settings-users/SettingsUsersPageContent.vue"
 import SettingsUsersPageHeader from "@/modules/settings/views/components/settings-users/SettingsUsersPageHeader.vue"
-import SettingsUsersPageModals from "@/modules/settings/views/components/settings-users/SettingsUsersPageModals.vue"
-
+const router = useRouter()
 const page = useSettingsUsersPageState()
 
 const {
@@ -16,14 +16,15 @@ const {
     error: usersError,
     goToPrevPage,
     goToNextPage,
-    isBlockModalOpen,
-    isUnblockModalOpen,
-    actionUserDisplayName,
-    openBlockModal,
-    openUnblockModal,
-    onBlockConfirm,
-    onUnblockConfirm,
+    reload,
 } = page
+
+function openUserDetails(userId: string) {
+    void router.push({
+        name: "settings-user-details",
+        params: { userId, tab: "informacao" },
+    })
+}
 </script>
 
 <template>
@@ -35,7 +36,11 @@ const {
         :class="profile?.isAdmin ? 'min-h-0 flex-1' : ''"
     >
         <template v-if="profile?.isAdmin">
-            <SettingsUsersPageHeader :users-error="usersError" :users-loading="usersLoading" />
+            <SettingsUsersPageHeader
+                :users-error="usersError"
+                :users-loading="usersLoading"
+                @retry="reload"
+            />
 
             <SettingsUsersPageContent
                 v-if="!usersLoading && !usersError"
@@ -43,8 +48,7 @@ const {
                 :users-page="usersPage"
                 :users-page-size="usersPageSize"
                 :users-total="usersTotal"
-                @block="openBlockModal"
-                @unblock="openUnblockModal"
+                @open="openUserDetails"
                 @prev="goToPrevPage"
                 @next="goToNextPage"
             />
@@ -53,12 +57,4 @@ const {
             A gestão da lista de utilizadores está disponível apenas para contas de administrador.
         </p>
     </div>
-
-    <SettingsUsersPageModals
-        v-model:is-block-modal-open="isBlockModalOpen"
-        v-model:is-unblock-modal-open="isUnblockModalOpen"
-        :action-user-display-name="actionUserDisplayName"
-        @block-confirm="onBlockConfirm"
-        @unblock-confirm="onUnblockConfirm"
-    />
 </template>

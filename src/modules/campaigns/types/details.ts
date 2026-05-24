@@ -51,19 +51,30 @@ export type CampaignDetailsWasteCollection = {
     id: string
     unitQuantity: number
     actualWeightKg: string | null
+    estimatedWeightKg: string | null
     createdAt: string
     beach: { id: string; name: string } | null
     waste: { id: string; name: string } | null
     recordedBy: { id: string; name: string } | null
 }
 
+export type CampaignWasteByTypeRow = {
+    typeName: string
+    units: number
+    weightKg: number
+}
+
 export type CampaignDetailsMetrics = {
     beachesCount: number
     registrationsCount: number
+    pendingRegistrationsCount: number
     commentsCount: number
     wasteCollectionsCount: number
     totalWasteUnits: number
     totalWasteWeightKg: number
+    totalActualWeightKg: number
+    totalImpactWeightKg: number
+    wasteByType: CampaignWasteByTypeRow[]
 }
 
 export type CampaignDetails = {

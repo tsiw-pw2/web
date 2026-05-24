@@ -1,27 +1,52 @@
 import type { Router } from "vue-router"
+import type { AccessCapability } from "@/modules/auth/lib/accessPolicy"
+import { loadCurrentProfile } from "@/composables/useCurrentProfile"
 import { getAccessToken } from "@/infrastructure/access-token"
-import { tryRefreshAccessToken } from "@/infrastructure/request"
+import { profileHasCapability } from "@/modules/auth/lib/accessPolicy"
+import { resolveDefaultAuthedRoute } from "@/modules/auth/lib/postAuthRedirect"
 
-const GUEST_ONLY_ROUTE_NAMES = new Set(["home", "login"])
+const LOGIN_ROUTE_NAME = "login"
+const REGISTER_ROUTE_NAME = "register"
 
-async function resolveAuthenticated(): Promise<boolean> {
-    if (getAccessToken()) return true
-    return tryRefreshAccessToken()
+function resolveAuthenticated(): boolean {
+    return Boolean(getAccessToken())
+}
+
+function capabilityFallbackRoute(capability: AccessCapability): { name: string; replace: true } {
+    if (capability === "settingsAdmin") {
+        return { name: "settings-profile", replace: true }
+    }
+    return { name: "campaigns", replace: true }
+}
+
+async function redirectIfCapabilityDenied(
+    capability: AccessCapability,
+): Promise<{ name: string; replace: true } | true> {
+    const profile = await loadCurrentProfile()
+    if (profileHasCapability(profile, capability)) {
+        return true
+    }
+    return capabilityFallbackRoute(capability)
 }
 
 export function registerRouterMiddleware(router: Router) {
     router.beforeEach(async (to) => {
         const routeName = typeof to.name === "string" ? to.name : ""
+        const authenticated = resolveAuthenticated()
 
-        if (GUEST_ONLY_ROUTE_NAMES.has(routeName)) {
-            if (await resolveAuthenticated()) {
-                return { name: "dashboard" }
-            }
-            return true
+        if (authenticated && (routeName === LOGIN_ROUTE_NAME || routeName === REGISTER_ROUTE_NAME)) {
+            return await resolveDefaultAuthedRoute()
         }
 
         if (to.meta.requiresAuth !== true) return true
-        if (await resolveAuthenticated()) return true
-        return { name: "login" }
+        if (!authenticated) return { name: LOGIN_ROUTE_NAME }
+
+        const capability = to.meta.requiresCapability
+        if (capability) {
+            const result = await redirectIfCapabilityDenied(capability)
+            if (result !== true) return result
+        }
+
+        return true
     })
 }

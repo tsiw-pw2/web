@@ -2,17 +2,9 @@ import { ref, watch, type Ref } from "vue"
 import { toastError } from "@/infrastructure/appToast"
 import { isApiRequestError } from "@/infrastructure/request"
 import { CAMPAIGN_DETAILS_TAB_PAGE_SIZE } from "@/modules/campaigns/lib/campaignDetailsConstants"
-import {
-    fetchCampaignComments,
-    fetchCampaignRegistrations,
-    fetchCampaignWasteCollections,
-} from "@/modules/campaigns/services/campaign-tab-lists/index"
+import { fetchCampaignComments, fetchCampaignRegistrations, fetchCampaignWasteCollections } from "@/modules/campaigns/services/campaign-tab-lists/index"
 import type { CampaignDetailsTabId } from "@/modules/campaigns/lib/campaignDetailsTabs"
-import type {
-    CampaignDetailsComment,
-    CampaignDetailsRegistration,
-    CampaignDetailsWasteCollection,
-} from "@/modules/campaigns/types/details"
+import type { CampaignDetailsComment, CampaignDetailsRegistration, CampaignDetailsWasteCollection } from "@/modules/campaigns/types/details"
 
 export type { CampaignDetailsTabId }
 
@@ -27,7 +19,6 @@ export function useCampaignDetailsTabs(campaignId: Ref<string>, activeTab: Ref<C
     const registrationsPage = ref(1)
     const registrationsTotal = ref(0)
     const registrationsLoading = ref(false)
-
     const wasteCollections = ref<CampaignDetailsWasteCollection[]>([])
     const wastePage = ref(1)
     const wasteTotal = ref(0)

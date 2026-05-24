@@ -1,14 +1,6 @@
 import type { CampaignCreateDraft } from "@/modules/campaigns/types/list"
-import {
-    campaignsCreateMutationMessages,
-    campaignsDeleteMutationMessages,
-    campaignsSaveMutationMessages,
-} from "@/modules/campaigns/lib/campaignsListMutationMessages"
-import {
-    addCampaignToList,
-    removeCampaignFromList,
-    updateCampaignInList,
-} from "@/modules/campaigns/composables/campaigns-list/campaignsListState"
+import { campaignsCreateMutationMessages, campaignsDeleteMutationMessages, campaignsSaveMutationMessages } from "@/modules/campaigns/lib/campaignsListMutationMessages"
+import { addCampaignToList, removeCampaignFromList, updateCampaignInList } from "@/modules/campaigns/composables/campaigns-list/campaignsListState"
 import { toastFromListMutationError } from "@/infrastructure/apiMutationToast"
 import { toastSuccess } from "@/infrastructure/appToast"
 import type { usePaginatedListRoute } from "@/shared/composables/usePaginatedListRoute"

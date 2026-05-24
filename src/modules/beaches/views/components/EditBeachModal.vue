@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue"
 import type { BeachListItem, BeachUpsertDraft } from "@/modules/beaches/types/list"
+import { areBeachCoordinatesValid, beachCoordinateToApiString } from "@/modules/beaches/lib/beachCoordinates"
 import Button from "@/shared/components/ui/Button.vue"
 import FieldLabel from "@/shared/components/ui/FieldLabel.vue"
 import Input from "@/shared/components/ui/Input.vue"
@@ -27,6 +28,8 @@ function close() {
 const name = ref("")
 const municipality = ref<string | undefined>(undefined)
 const district = ref<string | undefined>(undefined)
+const latitude = ref("")
+const longitude = ref("")
 
 const districtOptions = DISTRICT_SELECT_OPTIONS
 
@@ -40,12 +43,15 @@ function syncFromBeach() {
     name.value = b.name
     district.value = b.district
     municipality.value = b.municipality
+    latitude.value = b.latitude
+    longitude.value = b.longitude
 }
 
 const canProceed = computed(() => {
     if (name.value.trim().length === 0) return false
     if (!municipality.value) return false
     if (!district.value) return false
+    if (!areBeachCoordinatesValid(latitude.value, longitude.value)) return false
     return true
 })
 
@@ -53,8 +59,16 @@ function onProceed() {
     const n = name.value.trim()
     const m = municipality.value
     const d = district.value
-    if (!n || !m || !d) return
-    emit("save", { name: n, municipality: m, district: d })
+    const lat = latitude.value
+    const lng = longitude.value
+    if (!n || !m || !d || !areBeachCoordinatesValid(lat, lng)) return
+    emit("save", {
+        name: n,
+        municipality: m,
+        district: d,
+        latitude: beachCoordinateToApiString(lat),
+        longitude: beachCoordinateToApiString(lng),
+    })
     close()
 }
 
@@ -97,6 +111,31 @@ watch(
 
             <div class="flex flex-col gap-1">
                  <FieldLabel required>Concelho</FieldLabel> <Select v-model="municipality" class="w-full" :options="concelhoOptions" placeholder="Seleciona um concelho" :disabled="!district" />
+            </div>
+
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div class="flex flex-col gap-1">
+                    <FieldLabel required :for="`edit-beach-latitude-${props.beach?.id ?? ''}`">Latitude</FieldLabel>
+                    <Input
+                        :id="`edit-beach-latitude-${props.beach?.id ?? ''}`"
+                        v-model="latitude"
+                        type="text"
+                        inputmode="decimal"
+                        class="w-full"
+                        placeholder="ex.: 38.722300"
+                    />
+                </div>
+                <div class="flex flex-col gap-1">
+                    <FieldLabel required :for="`edit-beach-longitude-${props.beach?.id ?? ''}`">Longitude</FieldLabel>
+                    <Input
+                        :id="`edit-beach-longitude-${props.beach?.id ?? ''}`"
+                        v-model="longitude"
+                        type="text"
+                        inputmode="decimal"
+                        class="w-full"
+                        placeholder="ex.: -9.139300"
+                    />
+                </div>
             </div>
 
             <div class="mt-2 flex items-center justify-end gap-2">

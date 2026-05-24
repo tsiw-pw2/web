@@ -3,18 +3,19 @@ import { onMounted, ref } from "vue"
 import { RouterLink } from "vue-router"
 import { routePaths } from "@/app/router"
 import { setProfileSummaryCache } from "@/infrastructure/profileAvatarCache"
-import {
-    toastAccountBlocked,
-    toastError,
-    toastListPossiblyStale,
-    toastServiceUnavailable,
-    toastSuccess,
-    toastWarning,
-} from "@/infrastructure/appToast"
+import { toastAccountBlocked, toastError, toastListPossiblyStale, toastServiceUnavailable, toastSuccess, toastWarning } from "@/infrastructure/appToast"
 import type { CampaignListItem } from "@/modules/campaigns/types/list"
-import { registrationRoleLabel, registrationStatusLabel } from "@/modules/campaigns/lib/registrationLabels"
+import {
+    registrationRoleTableBadge,
+    registrationStatusTableBadge,
+    wasteCategoryTableBadge,
+    wasteUnitTableBadge,
+} from "@/shared/lib/tableValueBadge"
 import CampaignsListState from "@/modules/campaigns/views/states/CampaignsListState.vue"
 import ShowcaseSection from "@/modules/dev/components/ShowcaseSection.vue"
+import ShowcaseErrorMessagesPanel from "@/modules/dev/components/ShowcaseErrorMessagesPanel.vue"
+import AnimatedTabBar from "@/shared/components/ui/tabs/AnimatedTabBar.vue"
+import AnimatedTabTrigger from "@/shared/components/ui/tabs/AnimatedTabTrigger.vue"
 import DataTableScrollWrap from "@/shared/components/data-table/DataTableScrollWrap.vue"
 import DataTableTd from "@/shared/components/data-table/DataTableTd.vue"
 import DataTableTh from "@/shared/components/data-table/DataTableTh.vue"
@@ -46,18 +47,10 @@ import Input from "@/shared/components/ui/Input.vue"
 import ModalCloseButton from "@/shared/components/ui/ModalCloseButton.vue"
 import ModalRoot from "@/shared/components/ui/ModalRoot.vue"
 import Select from "@/shared/components/ui/select/Select.vue"
+import SearchableSelect from "@/shared/components/ui/searchable-select/SearchableSelect.vue"
 import Tooltip from "@/shared/components/ui/Tooltip.vue"
 import { CAMPAIGN_STATUS_SELECT_OPTIONS } from "@/modules/campaigns/lib/campaignStatus"
-import {
-    CAMPAIGN_EDIT_STATUS_ITEMS,
-    COMMENT_HIDDEN_BADGE,
-    REGISTRATION_ROLE_ITEMS,
-    REGISTRATION_STATUS_ITEMS,
-    WASTE_CATEGORY_ITEMS,
-    WASTE_UNIT_ITEMS,
-    campaignDetailStatusBadge,
-    userAccountStateBadge,
-} from "@/shared/lib/apiStatePresentation"
+import { CAMPAIGN_EDIT_STATUS_ITEMS, COMMENT_HIDDEN_BADGE, REGISTRATION_ROLE_ITEMS, REGISTRATION_STATUS_ITEMS, WASTE_CATEGORY_ITEMS, WASTE_UNIT_ITEMS, campaignDetailStatusBadge, userAccountStateBadge } from "@/shared/lib/apiStatePresentation"
 import Textarea from "@/shared/components/ui/Textarea.vue"
 
 const navSections = [
@@ -65,6 +58,7 @@ const navSections = [
     { id: "labels", label: "Etiquetas" },
     { id: "inputs", label: "Inputs" },
     { id: "select", label: "Select" },
+    { id: "searchable-select", label: "SearchableSelect" },
     { id: "modal", label: "Modal" },
     { id: "tooltip", label: "Tooltip" },
     { id: "states", label: "Estados" },
@@ -75,6 +69,15 @@ const navSections = [
     { id: "icons", label: "Ícones" },
     { id: "toasts", label: "Toasts" },
 ] as const
+
+type ShowcaseView = "components" | "errors"
+
+const showcaseView = ref<ShowcaseView>("components")
+
+const showcaseTabs: { id: ShowcaseView; label: string }[] = [
+    { id: "components", label: "Componentes" },
+    { id: "errors", label: "Mensagens de erro" },
+]
 
 const buttonVariants = ["primary", "secondary", "danger"] as const
 
@@ -91,6 +94,13 @@ const paginationFirstPage = ref(1)
 const paginationLastPage = ref(10)
 
 const selectOptions = [...CAMPAIGN_STATUS_SELECT_OPTIONS]
+
+const searchableSelectValue = ref<string | undefined>(undefined)
+const searchableSelectCreatable = ref(true)
+const wasteCategorySelectOptions = WASTE_CATEGORY_ITEMS.map((item, index) => ({
+    value: `demo-${index}`,
+    label: item.label,
+}))
 
 const campaignDemoItems: CampaignListItem[] = [
     {
@@ -167,14 +177,39 @@ onMounted(() => {
                     <p class="text-xs font-medium uppercase tracking-wide text-neutral-500">Desenvolvimento</p>
                     <h1 class="text-xl font-semibold leading-7 text-neutral-950">Galeria de componentes</h1>
                     <p class="mt-1 max-w-xl text-sm text-neutral-600">
-                        Componentes partilhados e estados visuais do contrato API — alinhado à app.
+                        {{
+                            showcaseView === "errors"
+                                ? "Referência de copy de erro na web."
+                                : "Componentes partilhados e estados visuais do contrato API."
+                        }}
                     </p>
                 </div>
                 <RouterLink :to="routePaths.home" class="text-sm font-medium text-blue-600 hover:text-blue-700"> Voltar ao início </RouterLink>
             </div>
+            <AnimatedTabBar
+                ariaLabel="Vistas da galeria"
+                class="mx-auto max-w-6xl border-b border-t border-neutral-100 px-4 pt-3"
+            >
+                <AnimatedTabTrigger
+                    v-for="tab in showcaseTabs"
+                    :key="tab.id"
+                    role="tab"
+                    type="button"
+                    :active="showcaseView === tab.id"
+                    class="rounded-t-lg py-2.5"
+                    :class="showcaseView === tab.id ? 'bg-neutral-50' : 'hover:bg-neutral-50'"
+                    @click="showcaseView = tab.id"
+                >
+                    {{ tab.label }}
+                </AnimatedTabTrigger>
+            </AnimatedTabBar>
         </header>
 
-        <div class="mx-auto flex max-w-6xl gap-10 px-4 py-8">
+        <div v-if="showcaseView === 'errors'" class="mx-auto max-w-6xl px-4 py-8">
+            <ShowcaseErrorMessagesPanel />
+        </div>
+
+        <div v-else class="mx-auto flex max-w-6xl gap-10 px-4 py-8">
             <nav class="hidden w-44 shrink-0 lg:block" aria-label="Secções da galeria">
                 <ul class="sticky top-24 space-y-1">
                     <li v-for="section in navSections" :key="section.id">
@@ -269,6 +304,26 @@ onMounted(() => {
                             <FieldLabel class="mb-2 block">panelPlacement=&quot;above&quot;</FieldLabel>
                             <Select v-model="selectAboveValue" class="w-full min-w-0" :options="selectOptions" panel-placement="above" placeholder="Abre para cima" />
                         </div>
+                    </div>
+                </ShowcaseSection>
+
+                <ShowcaseSection id="searchable-select" title="SearchableSelect" description="Pesquisa com destaque de texto; creatable mostra «Criar …» quando não há correspondência exacta.">
+                    <div class="flex max-w-md flex-col gap-6">
+                        <div>
+                            <FieldLabel class="mb-2 block" required>Categoria</FieldLabel>
+                            <SearchableSelect
+                                v-model="searchableSelectValue"
+                                class="w-full min-w-0"
+                                :options="wasteCategorySelectOptions"
+                                placeholder="Tipo de material"
+                                :creatable="searchableSelectCreatable"
+                                @create-option="(name) => { searchableSelectValue = `demo-new-${name}` }"
+                            />
+                        </div>
+                        <label class="flex items-center gap-2 text-sm text-neutral-700">
+                            <input v-model="searchableSelectCreatable" type="checkbox" class="size-4 rounded border-neutral-300" />
+                            Creatable activo
+                        </label>
                     </div>
                 </ShowcaseSection>
 
@@ -391,7 +446,7 @@ onMounted(() => {
                             <ApiStateBadge v-bind="COMMENT_HIDDEN_BADGE" />
                         </div>
                         <div>
-                            <p class="mb-3 text-sm font-medium text-neutral-800">Inscrição — role e status (texto na tabela)</p>
+                            <p class="mb-3 text-sm font-medium text-neutral-800">Inscrição — função e estado (badges na tabela)</p>
                             <DataTableScrollWrap>
                                 <table class="w-full min-w-[320px] table-fixed border-collapse text-left">
                                     <thead class="sticky top-0 z-10 bg-white">
@@ -407,7 +462,9 @@ onMounted(() => {
                                             class="border-b border-neutral-200 last:border-b-0"
                                         >
                                             <DataTableTd emphasis>role = {{ row.value }}</DataTableTd>
-                                            <DataTableTd>{{ registrationRoleLabel(row.value) }}</DataTableTd>
+                                            <DataTableTd :truncate="false">
+                                                <ApiStateBadge v-bind="registrationRoleTableBadge(row.value)" />
+                                            </DataTableTd>
                                         </tr>
                                         <tr
                                             v-for="row in REGISTRATION_STATUS_ITEMS"
@@ -415,27 +472,27 @@ onMounted(() => {
                                             class="border-b border-neutral-200 last:border-b-0"
                                         >
                                             <DataTableTd emphasis>status = {{ row.value }}</DataTableTd>
-                                            <DataTableTd>{{ registrationStatusLabel(row.value) }}</DataTableTd>
+                                            <DataTableTd :truncate="false">
+                                                <ApiStateBadge v-bind="registrationStatusTableBadge(row.value)" />
+                                            </DataTableTd>
                                         </tr>
                                     </tbody>
                                 </table>
                             </DataTableScrollWrap>
                         </div>
                         <div>
-                            <p class="mb-3 text-sm font-medium text-neutral-800">Resíduo — categoria e unidade</p>
-                            <div class="grid gap-4 sm:grid-cols-2">
-                                <ul class="space-y-1 rounded-lg bg-white p-3 text-sm shadow-card">
-                                    <li v-for="c in WASTE_CATEGORY_ITEMS" :key="c.apiKey" class="flex justify-between gap-2">
-                                        <span class="text-neutral-900">{{ c.label }}</span>
-                                        <span class="font-mono text-xs text-neutral-500">{{ c.apiKey }}</span>
-                                    </li>
-                                </ul>
-                                <ul class="space-y-1 rounded-lg bg-white p-3 text-sm shadow-card">
-                                    <li v-for="u in WASTE_UNIT_ITEMS" :key="u.apiKey" class="flex justify-between gap-2">
-                                        <span class="text-neutral-900">{{ u.label }}</span>
-                                        <span class="font-mono text-xs text-neutral-500">{{ u.apiKey }}</span>
-                                    </li>
-                                </ul>
+                            <p class="mb-3 text-sm font-medium text-neutral-800">Resíduo — categoria e unidade (badges na tabela)</p>
+                            <div class="flex flex-wrap gap-2">
+                                <ApiStateBadge
+                                    v-for="c in WASTE_CATEGORY_ITEMS"
+                                    :key="c.apiKey"
+                                    v-bind="wasteCategoryTableBadge(c.label)"
+                                />
+                                <ApiStateBadge
+                                    v-for="u in WASTE_UNIT_ITEMS"
+                                    :key="u.apiKey"
+                                    v-bind="wasteUnitTableBadge(u.apiKey)"
+                                />
                             </div>
                         </div>
                     </div>

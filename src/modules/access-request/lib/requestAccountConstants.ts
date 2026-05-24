@@ -1,4 +1,6 @@
-export const REQUEST_ACCOUNT_CONTACT_EMAIL = "support@mariva.com"
+import { legalConfig } from "@/app/config/legal"
+
+export const REQUEST_ACCOUNT_CONTACT_EMAIL = legalConfig.supportEmail
 
 export const REQUEST_ACCOUNT_DEFAULT_FROM = "geral@cm-pvarzim.pt"
 

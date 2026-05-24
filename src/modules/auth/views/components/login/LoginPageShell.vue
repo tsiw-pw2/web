@@ -1,3 +1,7 @@
+<script setup lang="ts">
+import LegalFooterLinks from "@/modules/legal/components/LegalFooterLinks.vue"
+</script>
+
 <template>
     <div class="min-h-screen bg-white text-neutral-950">
         <div class="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4">
@@ -9,10 +13,7 @@
             </main>
             <footer class="flex items-center justify-between py-6 text-xs text-neutral-500">
                 <div>© Mariva</div>
-                <div class="flex items-center gap-4">
-                    <a href="#" class="hover:text-neutral-950">Termos de serviço</a>
-                    <a href="#" class="hover:text-neutral-950">Política de privacidade</a>
-                </div>
+                <LegalFooterLinks class="!text-xs" />
             </footer>
         </div>
     </div>

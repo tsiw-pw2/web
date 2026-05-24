@@ -1,0 +1,12 @@
+import { appConfig } from "@/app/config/app"
+
+export function formatPageTitle(segment: string | null | undefined): string {
+    const app = appConfig.name
+    const part = typeof segment === "string" ? segment.trim() : ""
+    if (part.length === 0) return app
+    return `${part} · ${app}`
+}
+
+export function setDocumentTitle(segment: string | null | undefined): void {
+    document.title = formatPageTitle(segment)
+}

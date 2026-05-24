@@ -1,23 +1,16 @@
-import { getAccessToken, setAccessToken } from "./access-token"
-import { getApiBaseUrl } from "./config"
+import { getApiBaseUrl } from "@/infrastructure/config"
+import { setAccessToken } from "./access-token"
 import { setProfileSummaryCache } from "./profileAvatarCache"
 
 export async function logoutSession(): Promise<void> {
-	const url = `${getApiBaseUrl()}/auth/logout`
-	const token = getAccessToken()
-	const headers: HeadersInit = { Accept: "application/json" }
-	if (token) {
-		headers.Authorization = `Bearer ${token}`
-	}
-	try {
-		await fetch(url, {
-			method: "POST",
-			credentials: "include",
-			cache: "no-store",
-			headers,
-		})
-	} finally {
-		setAccessToken(null)
-		setProfileSummaryCache(null)
-	}
+    const base = getApiBaseUrl()
+    try {
+        await fetch(`${base}/sessions/current`, {
+            method: "DELETE",
+            credentials: "include",
+            headers: { Accept: "application/json" },
+        })
+    } catch {}
+    setAccessToken(null)
+    setProfileSummaryCache(null)
 }

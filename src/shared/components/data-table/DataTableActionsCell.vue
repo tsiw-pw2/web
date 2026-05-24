@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import EditPencilIcon from "@/shared/components/icons/EditPencilIcon.vue"
 import TrashBucketIcon from "@/shared/components/icons/TrashBucketIcon.vue"
+import DataTableActionButton from "./DataTableActionButton.vue"
 
 const props = withDefaults(
     defineProps<{
@@ -37,26 +38,24 @@ function onDelete(e: MouseEvent) {
 </script>
 
 <template>
-    <td class="relative h-10 max-h-10 py-0 align-middle">
-        <div class="flex h-10 max-h-10 items-center justify-end gap-0.5 pe-2">
-            <button
+    <td class="relative h-10 max-h-10 px-3 py-0 align-middle">
+        <div class="flex h-10 max-h-10 items-center justify-end gap-1.5">
+            <DataTableActionButton
                 v-if="props.showEdit"
-                type="button"
-                class="inline-flex size-10 max-h-10 max-w-10 shrink-0 items-center justify-center rounded-md text-neutral-500 outline-none enabled:hover:text-blue-600 focus-visible:outline-2 focus-visible:outline-neutral-200"
-                :aria-label="props.editLabel"
+                variant="edit"
+                :ariaLabel="props.editLabel"
                 @click="onEdit"
             >
                 <EditPencilIcon />
-            </button>
-            <button
+            </DataTableActionButton>
+            <DataTableActionButton
                 v-if="props.showDelete"
-                type="button"
-                class="inline-flex size-10 max-h-10 max-w-10 shrink-0 items-center justify-center rounded-md text-neutral-500 outline-none enabled:hover:text-red-600 focus-visible:outline-2 focus-visible:outline-neutral-200"
-                :aria-label="props.deleteLabel"
+                variant="delete"
+                :ariaLabel="props.deleteLabel"
                 @click="onDelete"
             >
                 <TrashBucketIcon />
-            </button>
+            </DataTableActionButton>
         </div>
     </td>
 </template>

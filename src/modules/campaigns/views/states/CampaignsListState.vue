@@ -5,10 +5,15 @@ import DataTableActionsCell from "@/shared/components/data-table/DataTableAction
 import DataTableScrollWrap from "@/shared/components/data-table/DataTableScrollWrap.vue"
 import DataTableTd from "@/shared/components/data-table/DataTableTd.vue"
 import DataTableTh from "@/shared/components/data-table/DataTableTh.vue"
+import { useCanManageCatalog } from "@/modules/auth/composables/useCanManageCatalog"
+import { campaignStatusTableBadge } from "@/shared/lib/tableValueBadge"
+import ApiStateBadge from "@/shared/components/ui/ApiStateBadge.vue"
 
 const props = defineProps<{
     items: CampaignListItem[]
 }>()
+
+const { canManage } = useCanManageCatalog()
 
 const emit = defineEmits<{
     (e: "select", campaignId: string): void
@@ -74,6 +79,10 @@ function onRowClick(id: string) {
     emit("select", id)
 }
 
+function formatPeriod(startDate: string, endDate: string): string {
+    return `${startDate} – ${endDate}`
+}
+
 onBeforeUnmount(() => {
     clearTitleFocusTimer()
 })
@@ -81,24 +90,22 @@ onBeforeUnmount(() => {
 
 <template>
     <DataTableScrollWrap>
-        <table class="campaign-list-table w-full min-w-[920px] table-fixed border-collapse text-left">
+        <table class="campaign-list-table w-full min-w-[760px] table-fixed border-collapse text-left">
             <colgroup>
-                <col class="w-[26%]" />
-                <col class="w-[18%]" />
-                <col class="w-[24%]" />
-                <col class="w-[11%]" />
-                <col class="w-[11%]" />
-                <col class="min-w-[7.5rem] w-[10%]" />
+                <col class="w-[38%]" />
+                <col class="w-[22%]" />
+                <col class="w-[22%]" />
+                <col class="w-[12%]" />
+                <col v-if="canManage" class="min-w-[7.5rem] w-[6%]" />
             </colgroup>
 
             <thead class="sticky top-0 z-10 bg-white">
                 <tr class="border-b border-neutral-200">
                     <DataTableTh>Título</DataTableTh>
+                    <DataTableTh>Estado</DataTableTh>
                     <DataTableTh>Município</DataTableTh>
-                    <DataTableTh>Praia</DataTableTh>
-                    <DataTableTh align="end">Data início</DataTableTh>
-                    <DataTableTh align="end">Data fim</DataTableTh>
-                    <DataTableTh :padding-end="false" />
+                    <DataTableTh align="end">Período</DataTableTh>
+                    <DataTableTh v-if="canManage" :padding-end="false" />
                 </tr>
             </thead>
 
@@ -120,11 +127,17 @@ onBeforeUnmount(() => {
                     >
                         <span class="campaign-list-title-cell__inner">{{ row.title }}</span>
                     </DataTableTd>
+                    <DataTableTd :truncate="false" class="whitespace-nowrap">
+                        <span class="inline-block max-w-full whitespace-nowrap">
+                            <ApiStateBadge v-bind="campaignStatusTableBadge(row.statusKey)" />
+                        </span>
+                    </DataTableTd>
                     <DataTableTd>{{ row.municipality }}</DataTableTd>
-                    <DataTableTd>{{ row.beach }}</DataTableTd>
-                    <DataTableTd align="end" class="tabular-nums">{{ row.startDate }}</DataTableTd>
-                    <DataTableTd align="end" class="tabular-nums">{{ row.endDate }}</DataTableTd>
+                    <DataTableTd align="end" class="whitespace-nowrap tabular-nums">
+                        {{ formatPeriod(row.startDate, row.endDate) }}
+                    </DataTableTd>
                     <DataTableActionsCell
+                        v-if="canManage"
                         :row-id="row.id"
                         @edit="(id: string) => emit('edit', id)"
                         @delete="(id: string) => emit('delete', id)"

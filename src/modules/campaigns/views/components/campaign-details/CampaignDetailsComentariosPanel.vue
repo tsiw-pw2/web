@@ -4,6 +4,7 @@ import { useCampaignDetailsPageInject } from "@/modules/campaigns/composables/ca
 import { CAMPAIGN_COMMENT_MAX } from "@/modules/campaigns/lib/campaignDetailsConstants"
 import { formatCommentTimeAgo } from "@/shared/lib/formatPt"
 import ListPaginationBar from "@/shared/components/ListPaginationBar.vue"
+import CampaignDetailsComentariosEmptyState from "@/modules/campaigns/views/components/campaign-details/CampaignDetailsComentariosEmptyState.vue"
 import ScrollableTableSection from "@/shared/components/ScrollableTableSection.vue"
 
 const { core, tabs, display, comments } = useCampaignDetailsPageInject()
@@ -74,12 +75,10 @@ const profile = computed(() => core.profile.value)
 
                         <div v-if="commentsLoading" class="py-6 text-center text-sm text-neutral-500">A carregar comentários…</div>
 
-                        <p
+                        <CampaignDetailsComentariosEmptyState
                             v-else-if="campaign.metrics.commentsCount === 0"
-                            class="py-8 text-center text-sm text-neutral-500"
-                        >
-                            Sem comentários.
-                        </p>
+                            :can-post-comment="canPostComment"
+                        />
 
                         <ScrollableTableSection v-else fill-container>
                             <ul role="list" class="m-0 flex list-none flex-col divide-y divide-neutral-100 p-0">

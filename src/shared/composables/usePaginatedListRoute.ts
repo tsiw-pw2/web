@@ -1,15 +1,10 @@
-import { onMounted, ref, watch, type Ref } from "vue"
-import { useRoute, useRouter } from "vue-router"
-import {
-    mergeRouteQueryWithPagination,
-    parsePageFromRouteQuery,
-    parsePageSizeFromRouteQuery,
-    type PaginationQueryKeys,
-} from "@/shared/lib/listRouteQuery"
-import {
-    PAGINATED_LIST_DEFAULT_PAGE_SIZE,
-    PAGINATED_LIST_MAX_PAGE_SIZE,
-} from "@/shared/lib/paginatedListDefaults"
+import { describeApiFailure } from "@/infrastructure/apiErrors"
+import { getAccessToken } from "@/infrastructure/access-token"
+import { tryRestoreSession } from "@/infrastructure/authSession"
+import { nextTick, onMounted, ref, watch, type Ref } from "vue"
+import { isNavigationFailure, useRoute, useRouter } from "vue-router"
+import { mergeRouteQueryWithPagination, parsePageFromRouteQuery, parsePageSizeFromRouteQuery, type PaginationQueryKeys } from "@/shared/lib/listRouteQuery"
+import { PAGINATED_LIST_DEFAULT_PAGE_SIZE, PAGINATED_LIST_MAX_PAGE_SIZE } from "@/shared/lib/paginatedListDefaults"
 import { totalPagesFromTotal } from "@/shared/lib/pagination"
 
 const DEFAULT_QUERY_KEYS: PaginationQueryKeys = { page: "page", pageSize: "pageSize" }
@@ -30,29 +25,52 @@ export function usePaginatedListRoute(options: UsePaginatedListRouteOptions) {
 
     const loading = ref(false)
     const error = ref(false)
+    const errorHint = ref("")
 
     const queryKeys = options.queryKeys ?? DEFAULT_QUERY_KEYS
     const defaultPageSize = options.defaultPageSize ?? PAGINATED_LIST_DEFAULT_PAGE_SIZE
     const maxPageSize = options.maxPageSize ?? PAGINATED_LIST_MAX_PAGE_SIZE
 
+    let activeLoadId = 0
+    let skipRouteWatch = false
+
+    async function syncPaginationQuery() {
+        const failure = await router.replace({
+            query: mergeRouteQueryWithPagination(
+                route.query,
+                options.page.value,
+                options.pageSize.value,
+                defaultPageSize,
+                queryKeys,
+            ),
+        })
+        if (failure && !isNavigationFailure(failure)) {
+            if (import.meta.env.DEV) {
+                console.debug("[usePaginatedListRoute] navigation failure", failure)
+            }
+        }
+    }
+
     async function load(opts?: { page?: number; pageSize?: number }) {
+        const loadId = ++activeLoadId
         loading.value = true
         error.value = false
+        errorHint.value = ""
+        skipRouteWatch = true
         try {
             await options.fetchPage(opts)
-            await router.replace({
-                query: mergeRouteQueryWithPagination(
-                    route.query,
-                    options.page.value,
-                    options.pageSize.value,
-                    defaultPageSize,
-                    queryKeys,
-                ),
-            })
-        } catch {
+            if (loadId !== activeLoadId) return
+            await syncPaginationQuery()
+        } catch (e) {
+            if (loadId !== activeLoadId) return
             error.value = true
+            errorHint.value = describeApiFailure(e, "Verifica a ligação e tenta outra vez.")
         } finally {
-            loading.value = false
+            if (loadId === activeLoadId) {
+                loading.value = false
+            }
+            await nextTick()
+            skipRouteWatch = false
         }
     }
 
@@ -76,24 +94,23 @@ export function usePaginatedListRoute(options: UsePaginatedListRouteOptions) {
     }
 
     async function syncRouteFromRefs() {
-        await router.replace({
-            query: mergeRouteQueryWithPagination(
-                route.query,
-                options.page.value,
-                options.pageSize.value,
-                defaultPageSize,
-                queryKeys,
-            ),
-        })
-        await options.fetchPage({
-            page: options.page.value,
-            pageSize: options.pageSize.value,
-        })
+        skipRouteWatch = true
+        try {
+            await syncPaginationQuery()
+            await options.fetchPage({
+                page: options.page.value,
+                pageSize: options.pageSize.value,
+            })
+        } finally {
+            await nextTick()
+            skipRouteWatch = false
+        }
     }
 
     watch(
         () => [route.query[queryKeys.page], route.query[queryKeys.pageSize]],
         async () => {
+            if (skipRouteWatch) return
             const p = parsePageFromRouteQuery(route.query, queryKeys.page) ?? 1
             const ps =
                 parsePageSizeFromRouteQuery(route.query, queryKeys.pageSize, maxPageSize) ??
@@ -106,6 +123,9 @@ export function usePaginatedListRoute(options: UsePaginatedListRouteOptions) {
     )
 
     onMounted(async () => {
+        if (!getAccessToken()) {
+            await tryRestoreSession()
+        }
         const p = parsePageFromRouteQuery(route.query, queryKeys.page) ?? 1
         const ps =
             parsePageSizeFromRouteQuery(route.query, queryKeys.pageSize, maxPageSize) ??
@@ -116,6 +136,7 @@ export function usePaginatedListRoute(options: UsePaginatedListRouteOptions) {
     return {
         loading,
         error,
+        errorHint,
         reload,
         goToPrevPage,
         goToNextPage,

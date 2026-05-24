@@ -1,3 +1,4 @@
+import { unwrapList } from "@/infrastructure/hateoas"
 import { requestApiData } from "@/infrastructure/request"
 import type { CampaignDetailsWasteCollection } from "@/modules/campaigns/types/details"
 import type { PaginatedResult } from "@/types/pagination"
@@ -19,8 +20,9 @@ export async function listCampaignWasteCollections(
     if (query.beachId) {
         q.set("beachId", query.beachId)
     }
-    return requestApiData<PaginatedResult<CampaignDetailsWasteCollection>>(
+    const body = await requestApiData<unknown>(
         `/campaigns/${campaignId}/waste-collections?${q}`,
         { method: "GET" },
     )
+    return unwrapList<CampaignDetailsWasteCollection>(body)
 }

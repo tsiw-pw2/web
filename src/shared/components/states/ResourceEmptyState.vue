@@ -4,7 +4,7 @@ import Button from "@/shared/components/ui/Button.vue"
 defineProps<{
     title: string
     hint: string
-    actionLabel: string
+    actionLabel?: string
 }>()
 
 const emit = defineEmits<{
@@ -19,7 +19,7 @@ const emit = defineEmits<{
         <p class="text-base font-medium leading-6 text-neutral-950">{{ title }}</p>
 
         <p class="mb-4 mt-2 max-w-sm text-balance text-sm leading-5 text-neutral-600">{{ hint }}</p>
-         <Button @click="emit('action')">{{ actionLabel }}</Button
+         <Button v-if="actionLabel" @click="emit('action')">{{ actionLabel }}</Button
         >
     </div>
 

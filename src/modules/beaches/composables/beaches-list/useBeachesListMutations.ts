@@ -1,14 +1,6 @@
 import type { BeachUpsertDraft } from "@/modules/beaches/types/list"
-import {
-    beachCreateMutationMessages,
-    beachDeleteMutationMessages,
-    beachSaveMutationMessages,
-} from "@/modules/beaches/lib/beachListMutationMessages"
-import {
-    addBeachToList,
-    removeBeachFromList,
-    updateBeachInList,
-} from "@/modules/beaches/composables/beaches-list/beachesListState"
+import { beachCreateMutationMessages, beachDeleteMutationMessages, beachSaveMutationMessages } from "@/modules/beaches/lib/beachListMutationMessages"
+import { addBeachToList, removeBeachFromList, updateBeachInList } from "@/modules/beaches/composables/beaches-list/beachesListState"
 import { toastFromListMutationError } from "@/infrastructure/apiMutationToast"
 import { toastSuccess } from "@/infrastructure/appToast"
 import type { usePaginatedListRoute } from "@/shared/composables/usePaginatedListRoute"

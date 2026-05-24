@@ -1,41 +1,93 @@
 <script setup lang="ts">
+import { computed, inject } from "vue"
 import { useSettingsProfilePageInject } from "@/modules/settings/composables/settings-profile/useSettingsProfilePageInject"
+import { settingsProfileKey } from "@/modules/settings/settingsInjection"
+import { userRoleLabel } from "@/modules/settings/lib/userRoleLabel"
+import { formatSettingsDateTime } from "@/modules/settings/lib/formatSettingsDate"
 import SettingsProfileAvatarSection from "@/modules/settings/views/components/settings-profile/SettingsProfileAvatarSection.vue"
 import Button from "@/shared/components/ui/Button.vue"
 import FieldLabel from "@/shared/components/ui/FieldLabel.vue"
 import Input from "@/shared/components/ui/Input.vue"
 
+const profile = inject(settingsProfileKey)
+
 const {
     profileName,
     profileEmail,
     profilePhone,
+    profileBirthDate,
     savingProfile,
     isProfileFormDirty,
     saveProfile,
 } = useSettingsProfilePageInject()
+
+const profileRoleLabel = computed(() => {
+    const p = profile?.value
+    if (!p) return ""
+    return userRoleLabel(p)
+})
 </script>
 
 <template>
     <form class="flex w-full max-w-lg flex-col gap-4" @submit.prevent="saveProfile">
+        <div
+            v-if="profile?.isBlocked"
+            class="rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-sm leading-5 text-orange-900"
+            role="status"
+        >
+            <p class="font-medium">Conta bloqueada</p>
+            <p v-if="profile.blockedReason" class="mt-1">{{ profile.blockedReason }}</p>
+            <p v-if="profile.blockedAt" class="mt-1 text-orange-800">
+                Desde {{ formatSettingsDateTime(profile.blockedAt) }}
+            </p>
+        </div>
+
+        <div class="flex flex-col gap-1">
+            <span class="text-xs font-medium uppercase tracking-wide text-neutral-500">Cargo</span>
+            <p class="text-sm font-medium leading-5 text-neutral-950">{{ profileRoleLabel }}</p>
+        </div>
+
         <SettingsProfileAvatarSection />
 
         <div class="flex flex-col gap-1">
             <FieldLabel for="profile-name">Nome</FieldLabel>
-            <Input id="profile-name" v-model="profileName" class="w-full" autocomplete="name" />
+            <Input id="profile-name" v-model="profileName" class="w-full" autocomplete="name" :disabled="profile?.isBlocked" />
         </div>
 
         <div class="flex flex-col gap-1">
             <FieldLabel for="profile-email">E-mail</FieldLabel>
-            <Input id="profile-email" v-model="profileEmail" class="w-full" type="email" autocomplete="email" />
+            <Input
+                id="profile-email"
+                v-model="profileEmail"
+                class="w-full"
+                type="email"
+                autocomplete="email"
+                :disabled="profile?.isBlocked"
+            />
         </div>
 
         <div class="flex flex-col gap-1">
             <FieldLabel for="profile-phone" optional>Telefone</FieldLabel>
-            <Input id="profile-phone" v-model="profilePhone" class="w-full" type="tel" autocomplete="tel" />
+            <Input id="profile-phone" v-model="profilePhone" class="w-full" type="tel" autocomplete="tel" :disabled="profile?.isBlocked" />
+        </div>
+
+        <div class="flex flex-col gap-1">
+            <FieldLabel for="profile-birth-date" required>Data de nascimento</FieldLabel>
+            <Input
+                id="profile-birth-date"
+                v-model="profileBirthDate"
+                class="w-full"
+                type="date"
+                :disabled="profile?.isBlocked"
+            />
         </div>
 
         <div class="flex flex-col pt-2 sm:flex-row sm:justify-end">
-            <Button type="submit" class="w-full touch-manipulation" :disabled="savingProfile || !isProfileFormDirty">
+            <Button
+                type="submit"
+                class="w-full touch-manipulation"
+                :disabled="savingProfile || !isProfileFormDirty || profile?.isBlocked"
+            >
                 {{ savingProfile ? "A guardar…" : "Guardar perfil" }}
             </Button>
         </div>

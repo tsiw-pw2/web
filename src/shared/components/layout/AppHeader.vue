@@ -1,9 +1,20 @@
 <script setup lang="ts">
+import { computed, onMounted } from "vue"
 import { RouterLink } from "vue-router"
 import { routePaths } from "@/app/router"
+import { useCurrentProfile } from "@/composables/useCurrentProfile"
+import { canAccessDashboard } from "@/modules/auth/lib/accessPolicy"
 import LogoMark from "@/shared/components/icons/LogoMark.vue"
 import UserMenuDropdown from "@/shared/components/layout/UserMenuDropdown.vue"
 import NavigationButton from "./NavigationButton.vue"
+
+const { profile, loadProfile } = useCurrentProfile()
+
+const showDashboard = computed(() => canAccessDashboard(profile.value))
+
+onMounted(() => {
+    void loadProfile()
+})
 </script>
 
 <template>
@@ -13,13 +24,13 @@ import NavigationButton from "./NavigationButton.vue"
         <div class="flex h-16 items-center">
 
             <div class="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4">
-                 <RouterLink :to="routePaths.dashboard" class="inline-flex shrink-0" aria-label="Início"> <LogoMark class="size-7" /> </RouterLink>
+                 <RouterLink :to="routePaths.campaigns" class="inline-flex shrink-0" aria-label="Início"> <LogoMark class="size-7" /> </RouterLink>
                 <nav class="hidden items-center gap-2 md:flex" aria-label="Principal">
-                     <NavigationButton :to="routePaths.dashboard">Dashboard</NavigationButton> <NavigationButton :to="routePaths.campaigns" :active-route-names="['campaigns', 'campaign-details']"
+                     <NavigationButton v-if="showDashboard" :to="routePaths.dashboard">Dashboard</NavigationButton> <NavigationButton :to="routePaths.campaigns" :active-route-names="['campaigns', 'campaign-details']"
                         > Campanhas </NavigationButton
                     > <NavigationButton :to="routePaths.beaches">Praias</NavigationButton> <NavigationButton :to="routePaths.waste">Resíduos</NavigationButton> <NavigationButton
                         :to="routePaths.settingsProfile"
-                        :active-route-names="['settings-profile', 'settings-users']"
+                        :active-route-names="['settings-profile', 'settings-security', 'settings-users', 'settings-user-details', 'settings-waste-categories']"
                         >Definições</NavigationButton
                     >
                 </nav>
@@ -31,4 +42,3 @@ import NavigationButton from "./NavigationButton.vue"
     </header>
 
 </template>
-

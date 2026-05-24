@@ -1,8 +1,5 @@
 import { inject } from "vue"
-import {
-    settingsProfilePageKey,
-    type SettingsProfilePageContext,
-} from "@/modules/settings/composables/settings-profile/settingsProfilePageContext"
+import { settingsProfilePageKey, type SettingsProfilePageContext } from "@/modules/settings/composables/settings-profile/settingsProfilePageContext"
 
 export function useSettingsProfilePageInject(): SettingsProfilePageContext {
     const ctx = inject(settingsProfilePageKey)

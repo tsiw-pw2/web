@@ -23,9 +23,8 @@ const props = withDefaults(
     <td
         :class="
             cn(
-                'h-10 max-h-10 py-0 align-middle text-sm leading-5 text-neutral-950',
+                'h-10 max-h-10 px-3 py-0 align-middle text-sm leading-5 text-neutral-950',
                 props.emphasis && 'font-medium',
-                props.paddingEnd && 'pe-4',
                 props.align === 'end' && 'text-end',
                 props.truncate && 'min-w-0 max-w-0 overflow-hidden',
                 props.class,

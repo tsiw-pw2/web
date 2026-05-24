@@ -6,10 +6,12 @@ export function useSettingsUsersModals(users: Ref<SettingsUserRow[]>) {
     const isUnblockModalOpen = ref(false)
     const actionUserId = ref<string | null>(null)
 
-    const actionUserDisplayName = computed(() => {
-        if (!actionUserId.value) return undefined
-        return users.value.find((u) => u.id === actionUserId.value)?.name
+    const actionUser = computed(() => {
+        if (!actionUserId.value) return null
+        return users.value.find((u) => u.id === actionUserId.value) ?? null
     })
+
+    const actionUserDisplayName = computed(() => actionUser.value?.name)
 
     function openBlockModal(userId: string) {
         actionUserId.value = userId
@@ -29,6 +31,7 @@ export function useSettingsUsersModals(users: Ref<SettingsUserRow[]>) {
         isBlockModalOpen,
         isUnblockModalOpen,
         actionUserId,
+        actionUser,
         actionUserDisplayName,
         openBlockModal,
         openUnblockModal,

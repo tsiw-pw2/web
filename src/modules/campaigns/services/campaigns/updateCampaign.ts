@@ -1,10 +1,11 @@
 import type { CampaignCreateDraft, CampaignListItem } from "@/modules/campaigns/types/list"
+import { unwrapResource } from "@/infrastructure/hateoas"
 import { stringifyRecordStrings } from "@/infrastructure/jsonBody"
 import { requestApiData } from "@/infrastructure/request"
 
 export async function updateCampaign(id: string, draft: CampaignCreateDraft): Promise<CampaignListItem> {
-    return requestApiData<CampaignListItem>(`/campaigns/${id}`, {
-        method: "PATCH",
+    const body = await requestApiData<unknown>(`/campaigns/${id}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: stringifyRecordStrings({
             title: draft.title,
@@ -16,4 +17,5 @@ export async function updateCampaign(id: string, draft: CampaignCreateDraft): Pr
             district: draft.district,
         }),
     })
+    return unwrapResource<CampaignListItem>(body)
 }

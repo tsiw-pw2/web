@@ -1,15 +1,6 @@
 import { computed, ref } from "vue"
-import {
-    buildRequestAccountEmailBody,
-    buildRequestAccountEmailPreview,
-} from "@/modules/access-request/lib/buildRequestAccountEmail"
-import {
-    REQUEST_ACCOUNT_CONTACT_EMAIL,
-    REQUEST_ACCOUNT_DEFAULT_FROM,
-    REQUEST_ACCOUNT_DEFAULT_RESPONSIBLE_NAME,
-    REQUEST_ACCOUNT_DEFAULT_SUBJECT,
-    REQUEST_ACCOUNT_DEFAULT_TO,
-} from "@/modules/access-request/lib/requestAccountConstants"
+import { buildRequestAccountEmailBody, buildRequestAccountEmailPreview } from "@/modules/access-request/lib/buildRequestAccountEmail"
+import { REQUEST_ACCOUNT_CONTACT_EMAIL, REQUEST_ACCOUNT_DEFAULT_FROM, REQUEST_ACCOUNT_DEFAULT_RESPONSIBLE_NAME, REQUEST_ACCOUNT_DEFAULT_SUBJECT, REQUEST_ACCOUNT_DEFAULT_TO } from "@/modules/access-request/lib/requestAccountConstants"
 
 export function useRequestAccountForm() {
     const contactEmail = REQUEST_ACCOUNT_CONTACT_EMAIL

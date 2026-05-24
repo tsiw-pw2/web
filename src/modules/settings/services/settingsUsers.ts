@@ -1,5 +1,7 @@
+import type { SettingsUserRoleKey } from "@/modules/settings/lib/settingsUserRole"
+import { settingsUserRoleFromFlags } from "@/modules/settings/lib/settingsUserRole"
 import type { SettingsUserRow } from "@/modules/settings/types/settingsUser"
-import type { PaginatedResult } from "@/types/pagination"
+import { unwrapList, unwrapResource } from "@/infrastructure/hateoas"
 import { requestApiData } from "@/infrastructure/request"
 import { ref } from "vue"
 
@@ -31,11 +33,15 @@ export async function loadSettingsUsers(opts?: { page?: number; pageSize?: numbe
     if (lastListRoleForReload === "volunteer") {
         q.set("role", "volunteer")
     }
-    const data = await requestApiData<PaginatedResult<SettingsUserRow>>(`/admin/users?${q}`, {
+    const body = await requestApiData<unknown>(`/users?${q}`, {
         method: "GET",
     })
     if (gen !== loadGeneration) return
-    users.value = data.items
+    const data = unwrapList<SettingsUserRow>(body)
+    users.value = data.items.map((row) => ({
+        ...row,
+        role: row.role ?? settingsUserRoleFromFlags(row),
+    }))
     settingsUsersTotal.value = data.total
     settingsUsersPage.value = data.page
     settingsUsersPageSize.value = data.pageSize
@@ -49,19 +55,31 @@ async function reloadListAfterMutation(): Promise<void> {
 }
 
 export async function blockUser(userId: string, reason: string): Promise<void> {
-    await requestApiData(`/admin/users/${userId}/block`, {
+    await requestApiData(`/users/${userId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reason }),
+        body: JSON.stringify({ isBlocked: true, blockedReason: reason }),
     })
     await reloadListAfterMutation()
 }
 
 export async function unblockUser(userId: string): Promise<void> {
-    await requestApiData(`/admin/users/${userId}/unblock`, {
+    await requestApiData(`/users/${userId}`, {
         method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isBlocked: false }),
     })
     await reloadListAfterMutation()
+}
+
+export async function updateUserRole(userId: string, role: SettingsUserRoleKey): Promise<SettingsUserRow> {
+    const body = await requestApiData<unknown>(`/users/${userId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role }),
+    })
+    await reloadListAfterMutation()
+    return unwrapResource<SettingsUserRow>(body)
 }
 
 export { users as settingsUsersRef }

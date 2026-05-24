@@ -1,8 +1,5 @@
 import { inject } from "vue"
-import {
-    campaignDetailsPageKey,
-    type CampaignDetailsPageContext,
-} from "@/modules/campaigns/composables/campaign-details/campaignDetailsPageContext"
+import { campaignDetailsPageKey, type CampaignDetailsPageContext } from "@/modules/campaigns/composables/campaign-details/campaignDetailsPageContext"
 
 export function useCampaignDetailsPageInject(): CampaignDetailsPageContext {
     const ctx = inject(campaignDetailsPageKey)

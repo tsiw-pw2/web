@@ -4,17 +4,18 @@ import { computed, onMounted, ref, watch } from "vue"
 import { RouterLink, useRouter } from "vue-router"
 import { routePaths } from "@/app/router"
 import { logoutSession } from "@/infrastructure/authLogout"
-import {
-    profileAvatarCacheBust,
-    profileAvatarUrlCache,
-    profileDisplayNameCache,
-    setProfileSummaryCache,
-} from "@/infrastructure/profileAvatarCache"
+import { profileAvatarCacheBust, profileAvatarUrlCache, profileDisplayNameCache } from "@/infrastructure/profileAvatarCache"
 import { resolveAvatarDisplaySrc } from "@/shared/lib/avatarUrl"
-import { fetchProfile } from "@/modules/settings/services/profile"
+import { useCurrentProfile } from "@/composables/useCurrentProfile"
 import { initialsFromDisplayName } from "@/shared/lib/userInitials"
+import LogOutMenuIcon from "@/shared/components/icons/LogOutMenuIcon.vue"
+import UserProfileMenuIcon from "@/shared/components/icons/UserProfileMenuIcon.vue"
+import { cn } from "@/shared/lib/utils"
 
 defineOptions({ name: "UserMenuDropdown" })
+
+const menuItemBaseClass =
+    "flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-left text-sm font-medium leading-5 outline-none disabled:cursor-not-allowed disabled:opacity-60"
 
 const router = useRouter()
 const open = ref(false)
@@ -41,13 +42,10 @@ const menuInitials = computed(() => {
 
 const showAvatarImage = computed(() => Boolean(profileAvatarUrlCache.value) && !avatarImgFailed.value)
 
+const { loadProfile } = useCurrentProfile()
+
 onMounted(() => {
-    void (async () => {
-        try {
-            const p = await fetchProfile()
-            setProfileSummaryCache({ avatarUrl: p.avatarUrl ?? null, name: p.name })
-        } catch {}
-    })()
+    void loadProfile()
 })
 
 function toggle() {
@@ -96,23 +94,35 @@ async function onLogout() {
             <div
                 v-if="open"
                 role="menu"
-                class="select-shadow-content absolute right-0 top-full z-60 mt-2 min-w-52 origin-top-right rounded-lg bg-white py-1 outline-none"
+                class="select-shadow-content absolute right-0 top-full z-60 mt-2 min-w-52 origin-top-right rounded-lg bg-white p-1 outline-none"
             >
                 <RouterLink
                     role="menuitem"
                     :to="routePaths.settingsProfile"
-                    class="block w-full cursor-pointer px-3 py-2 text-left text-sm font-medium leading-5 text-neutral-900 outline-none hover:bg-neutral-50 focus-visible:bg-neutral-50"
+                    :class="
+                        cn(
+                            menuItemBaseClass,
+                            'text-neutral-900 hover:bg-neutral-50 focus-visible:bg-neutral-50',
+                        )
+                    "
                     @click="open = false"
                 >
-                    Definições
+                    <UserProfileMenuIcon class="size-4" />
+                    Perfil
                 </RouterLink>
                 <button
                     type="button"
                     role="menuitem"
-                    class="w-full cursor-pointer px-3 py-2 text-left text-sm font-medium leading-5 text-neutral-900 outline-none hover:bg-neutral-50 focus-visible:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    :class="
+                        cn(
+                            menuItemBaseClass,
+                            'text-neutral-900 hover:bg-red-50 hover:text-red-600 focus-visible:bg-red-50 focus-visible:text-red-600',
+                        )
+                    "
                     :disabled="loggingOut"
                     @click="onLogout"
                 >
+                    <LogOutMenuIcon class="size-4" />
                     {{ loggingOut ? "A terminar…" : "Terminar sessão" }}
                 </button>
             </div>

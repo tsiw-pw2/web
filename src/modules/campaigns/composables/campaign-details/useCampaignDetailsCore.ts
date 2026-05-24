@@ -1,15 +1,10 @@
+import { useCurrentProfile } from "@/composables/useCurrentProfile"
 import { computed, onMounted, ref, watch, type Ref } from "vue"
 import { useRoute, useRouter } from "vue-router"
-import {
-    type CampaignDetailsTabId,
-    DEFAULT_CAMPAIGN_DETAILS_TAB,
-    isCampaignDetailsTabId,
-} from "@/modules/campaigns/lib/campaignDetailsTabs"
+import { type CampaignDetailsTabId, DEFAULT_CAMPAIGN_DETAILS_TAB, isCampaignDetailsTabId } from "@/modules/campaigns/lib/campaignDetailsTabs"
 import { visibleCampaignDetailsTabs } from "@/modules/campaigns/lib/campaignDetailsTabConfig"
 import { getCampaignDetails } from "@/modules/campaigns/services/campaignDetails"
 import type { CampaignDetails } from "@/modules/campaigns/types/details"
-import { fetchProfile } from "@/modules/settings/services/profile"
-import type { SettingsProfile } from "@/modules/settings/types/profile"
 
 export function useCampaignDetailsCore(
     activeTab: Ref<CampaignDetailsTabId>,
@@ -23,7 +18,7 @@ export function useCampaignDetailsCore(
     const loading = ref(true)
     const error = ref(false)
     const campaign = ref<CampaignDetails | null>(null)
-    const profile = ref<SettingsProfile | null>(null)
+    const { profile, loadProfile } = useCurrentProfile()
 
     const campaignId = computed(() => String(route.params.campaignId ?? ""))
 
@@ -67,11 +62,7 @@ export function useCampaignDetailsCore(
     }
 
     onMounted(async () => {
-        try {
-            profile.value = await fetchProfile()
-        } catch {
-            profile.value = null
-        }
+        await loadProfile()
         await load()
     })
 

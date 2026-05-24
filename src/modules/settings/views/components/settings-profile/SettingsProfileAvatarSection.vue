@@ -86,7 +86,7 @@ function onAvatarAreaActivate() {
             </div>
         </div>
 
-        <div class="flex min-w-0 flex-1 flex-col gap-2">
+        <div class="flex flex-1 flex-col gap-2">
             <div class="flex flex-wrap items-center gap-2">
                 <input
                     id="profile-avatar-file"

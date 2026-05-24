@@ -10,6 +10,7 @@ import FieldLabel from "@/shared/components/ui/FieldLabel.vue"
 import Input from "@/shared/components/ui/Input.vue"
 import ModalCloseButton from "@/shared/components/ui/ModalCloseButton.vue"
 import ModalRoot from "@/shared/components/ui/ModalRoot.vue"
+import SearchableSelect from "@/shared/components/ui/searchable-select/SearchableSelect.vue"
 import Select from "@/shared/components/ui/select/Select.vue"
 import Textarea from "@/shared/components/ui/Textarea.vue"
 import { toDateInputValueFromUnknown } from "@/shared/lib/dateInputValue"
@@ -119,7 +120,12 @@ watch(
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div class="flex flex-col gap-1">
                     <FieldLabel required>Distrito</FieldLabel>
-                    <Select v-model="district" class="w-full" :options="districtOptions" placeholder="Seleciona um distrito" />
+                    <SearchableSelect
+                        v-model="district"
+                        class="w-full"
+                        :options="districtOptions"
+                        placeholder="Seleciona um distrito"
+                    />
                 </div>
 
                 <div class="flex flex-col gap-1">

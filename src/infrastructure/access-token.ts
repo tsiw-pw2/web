@@ -1,9 +1,11 @@
-let accessToken: string | null = null
+import { shallowRef } from "vue"
+
+export const accessToken = shallowRef<string | null>(null)
 
 export function getAccessToken(): string | null {
-    return accessToken
+    return accessToken.value
 }
 
 export function setAccessToken(token: string | null) {
-    accessToken = token
+    accessToken.value = token
 }

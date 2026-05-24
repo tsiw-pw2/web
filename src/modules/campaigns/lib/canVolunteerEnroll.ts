@@ -1,6 +1,13 @@
 import { ENROLLABLE_CAMPAIGN_STATUS_KEYS } from "@/modules/campaigns/lib/campaignStatus"
 import type { CampaignDetails, CampaignDetailsRegistration } from "@/modules/campaigns/types/details"
 import type { SettingsProfile } from "@/modules/settings/types/profile"
+import { userMeetsMinimumAge } from "@/shared/lib/birthDate"
+
+function hasEligibleBirthDate(profile: SettingsProfile): boolean {
+    const birthDate = profile.birthDate?.trim() ?? ""
+    if (!birthDate) return false
+    return userMeetsMinimumAge(birthDate)
+}
 
 export function canVolunteerEnroll(
     campaign: CampaignDetails,
@@ -10,6 +17,7 @@ export function canVolunteerEnroll(
     if (!profile) return false
     if (campaign.organizer?.id === profile.id) return false
     if (profile.isBlocked) return false
+    if (!hasEligibleBirthDate(profile)) return false
     if (!ENROLLABLE_CAMPAIGN_STATUS_KEYS.has(campaign.editStatus)) return false
     if (!myRegistration) return true
     return myRegistration.status === 2

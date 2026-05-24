@@ -2,9 +2,25 @@
 @import "tailwindcss";
 
 @layer base {
+    html.app-shell,
     body.app-shell {
-        overflow-x: clip;
+        height: 100%;
+        overflow: hidden;
     }
+
+    body.app-shell #app {
+        height: 100%;
+    }
+
+    ::selection {
+        background-color: var(--color-blue-500/30);
+    }
+
+    input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]),
+    textarea {
+        caret-color: var(--color-blue-500);
+    }
+
     button:not(:disabled),
     input[type="button"]:not(:disabled),
     input[type="submit"]:not(:disabled),
@@ -26,6 +42,14 @@
     }
 }
 
+.shadow-badge {
+    box-shadow:
+        0 1px 1px 0 var(--color-white) inset,
+        0 1px 1px 0 rgba(0, 0, 0, 0.06),
+        0 1px 2px 0 rgba(0, 0, 0, 0.24),
+        0 0 0 1px var(--color-neutral-200);
+}
+
 /* Buttons ------------------------------------------------------------------------------------------------ */
 .shadow-btn-primary {
     box-shadow:
@@ -35,12 +59,24 @@
     text-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.25);
 }
 
-.shadow-btn-secondary {
+@utility shadow-btn-secondary {
     box-shadow:
         0 1px 1px 0 var(--color-white) inset,
         0 1px 1px 0 rgba(0, 0, 0, 0.06),
         0 1px 2px 0 rgba(0, 0, 0, 0.24),
         0 0 0 1px var(--color-neutral-200);
+}
+
+@utility badge-neutral-950\/8 {
+    display: inline-block;
+    border-radius: var(--radius-sm);
+    background-color: color-mix(in oklab, var(--color-neutral-950) 8%, transparent);
+    padding-inline: 0.25rem;
+    padding-block: 0.125rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 500;
+    color: var(--color-neutral-950);
 }
 
 .shadow-btn-secondary span {
@@ -148,6 +184,18 @@ input[type="datetime-local"]::-webkit-datetime-edit-fields-wrapper {
     padding-inline-end: 0;
 }
 
+.input-shadow input[type="date"]::-webkit-datetime-edit,
+.input-shadow input[type="time"]::-webkit-datetime-edit,
+.input-shadow input[type="datetime-local"]::-webkit-datetime-edit {
+    color: inherit;
+}
+
+.input-shadow input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+.input-shadow input[type="time"]::-webkit-datetime-edit-fields-wrapper,
+.input-shadow input[type="datetime-local"]::-webkit-datetime-edit-fields-wrapper {
+    color: inherit;
+}
+
 input[type="time"]::-webkit-clear-button,
 input[type="time"]::-webkit-inner-spin-button {
     display: none;
@@ -192,6 +240,15 @@ input[type="number"] {
 .scrollbar-transparent::-webkit-scrollbar-thumb {
     background: transparent;
     border-radius: 9999px;
+}
+
+.scrollbar-hidden {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+    display: none;
 }
 
 /* Modals (Teleport): painel entra de baixo para cima, sai de cima para baixo ------------------------------ */

@@ -1,8 +1,12 @@
 import type { Component } from "vue"
+import CalendarIcon from "./CalendarIcon.vue"
 import Clock from "./Clock.vue"
+import SearchMagnifierIcon from "./SearchMagnifierIcon.vue"
 
 export const INPUT_ICONS = {
     clock: Clock,
+    calendar: CalendarIcon,
+    search: SearchMagnifierIcon,
 } as const
 
 export type InputIconName = keyof typeof INPUT_ICONS

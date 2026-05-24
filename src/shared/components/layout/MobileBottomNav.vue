@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import type { Component } from "vue"
+import { computed, onMounted } from "vue"
 import { RouterLink, useRoute } from "vue-router"
 import { routePaths } from "@/app/router"
+import { useCurrentProfile } from "@/composables/useCurrentProfile"
+import { canAccessDashboard } from "@/modules/auth/lib/accessPolicy"
 import MobileNavBeachesIcon from "@/shared/components/icons/mobile-nav/MobileNavBeachesIcon.vue"
 import MobileNavCampaignsIcon from "@/shared/components/icons/mobile-nav/MobileNavCampaignsIcon.vue"
 import MobileNavDashboardIcon from "@/shared/components/icons/mobile-nav/MobileNavDashboardIcon.vue"
@@ -11,18 +14,21 @@ import MobileNavWasteIcon from "@/shared/components/icons/mobile-nav/MobileNavWa
 defineOptions({ name: "MobileBottomNav" })
 
 const route = useRoute()
+const { profile, loadProfile } = useCurrentProfile()
 
-const tabs: {
+const allTabs: {
     to: string
     names: readonly string[]
     label: string
     icon: Component
+    requiresDashboard?: boolean
 }[] = [
     {
         to: routePaths.dashboard,
         names: ["dashboard"],
         label: "Dashboard",
         icon: MobileNavDashboardIcon,
+        requiresDashboard: true,
     },
     {
         to: routePaths.campaigns,
@@ -44,11 +50,20 @@ const tabs: {
     },
     {
         to: routePaths.settingsProfile,
-        names: ["settings-profile", "settings-users"],
+        names: ["settings-profile", "settings-security", "settings-users", "settings-user-details", "settings-waste-categories"],
         label: "Definições",
         icon: MobileNavSettingsIcon,
     },
 ]
+
+const tabs = computed(() => {
+    const canDashboard = canAccessDashboard(profile.value)
+    return allTabs.filter((tab) => !tab.requiresDashboard || canDashboard)
+})
+
+onMounted(() => {
+    void loadProfile()
+})
 
 function isActive(names: readonly string[]) {
     return names.includes(route.name as string)
@@ -74,4 +89,3 @@ function isActive(names: readonly string[]) {
     </nav>
 
 </template>
-

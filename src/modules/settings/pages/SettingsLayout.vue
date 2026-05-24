@@ -1,75 +1,101 @@
 <script setup lang="ts">
-import { provide, ref } from "vue"
-import { RouterLink, RouterView } from "vue-router"
+import { useCurrentProfile } from "@/composables/useCurrentProfile"
+import { provide } from "vue"
+import { RouterLink, RouterView, useRoute } from "vue-router"
 import { routePaths } from "@/app/router"
-import { fetchProfile } from "@/modules/settings/services/profile"
-import type { SettingsProfile } from "@/modules/settings/types/profile"
-import { setProfileSummaryCache } from "@/infrastructure/profileAvatarCache"
 import { settingsProfileKey } from "@/modules/settings/settingsInjection"
+import ResourceErrorState from "@/shared/components/states/ResourceErrorState.vue"
+import AnimatedTabBar from "@/shared/components/ui/tabs/AnimatedTabBar.vue"
+import AnimatedTabTrigger from "@/shared/components/ui/tabs/AnimatedTabTrigger.vue"
 
-const profile = ref<SettingsProfile | null>(null)
-const profileLoading = ref(true)
-const profileError = ref<string | null>(null)
+const route = useRoute()
+const { profile, loading: profileLoading, error: profileError, loadProfile } = useCurrentProfile()
 
 provide(settingsProfileKey, profile)
 
-async function loadInitialData() {
-    profileLoading.value = true
-    profileError.value = null
-    try {
-        const p = await fetchProfile()
-        profile.value = p
-        setProfileSummaryCache({ avatarUrl: p.avatarUrl ?? null, name: p.name })
-    } catch {
-        profile.value = null
-        profileError.value = "Não foi possível carregar o perfil. Confirma que tens sessão iniciada."
-    } finally {
-        profileLoading.value = false
-    }
-}
+void loadProfile()
 
-void loadInitialData()
+function isSettingsTabActive(name: string): boolean {
+    if (name === "settings-users") {
+        return route.name === "settings-users" || route.name === "settings-user-details"
+    }
+    return route.name === name
+}
 </script>
 
 <template>
-    <div class="flex min-h-0 flex-1 flex-col gap-6">
+    <div class="flex w-full flex-col gap-6 min-h-0 flex-1">
         <h2 class="text-xl font-semibold leading-8 text-neutral-950 sm:text-2xl">Definições</h2>
 
         <div v-if="profileLoading" class="text-sm leading-5 text-neutral-600">A carregar…</div>
 
-        <p v-else-if="profileError" class="text-sm leading-5 text-red-600">{{ profileError }}</p>
+        <ResourceErrorState
+            v-else-if="profileError"
+            class="py-8"
+            title="Não foi possível carregar as definições"
+            :hint="profileError"
+            action-label="Tentar novamente"
+            @retry="loadProfile({ force: true })"
+        />
 
-        <div v-else class="flex min-h-0 min-w-0 flex-1 flex-col gap-6">
-            <div role="tablist" aria-label="Secções de definições" class="-mx-1 flex min-w-0 gap-1 overflow-x-auto overflow-y-hidden border-b border-neutral-200 px-1 pb-px">
-                <RouterLink
-                    id="settings-tab-profile"
-                    role="tab"
-                    :to="routePaths.settingsProfile"
-                    class="relative shrink-0 -mb-px whitespace-nowrap px-4 pb-3 pt-1 text-sm font-medium outline-none transition-colors focus-visible:rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-400"
-                    :class="
-                        $route.name === 'settings-profile'
-                            ? 'text-neutral-950 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:rounded-full after:bg-blue-500'
-                            : 'text-neutral-500 hover:text-neutral-800'
-                    "
-                >
-                    Perfil
+        <div v-else class="flex w-full flex-col gap-6 min-h-0 flex-1">
+            <AnimatedTabBar ariaLabel="Secções de definições">
+                <RouterLink v-slot="{ isActive, href, navigate }" :to="routePaths.settingsProfile" custom>
+                    <AnimatedTabTrigger
+                        id="settings-tab-profile"
+                        as="a"
+                        role="tab"
+                        :href="href"
+                        :active="isActive"
+                        @click="navigate"
+                    >
+                        Perfil
+                    </AnimatedTabTrigger>
+                </RouterLink>
+                <RouterLink v-slot="{ isActive, href, navigate }" :to="routePaths.settingsSecurity" custom>
+                    <AnimatedTabTrigger
+                        id="settings-tab-security"
+                        as="a"
+                        role="tab"
+                        :href="href"
+                        :active="isActive"
+                        @click="navigate"
+                    >
+                        Segurança
+                    </AnimatedTabTrigger>
                 </RouterLink>
                 <RouterLink
-                    id="settings-tab-users"
-                    role="tab"
-                    :to="routePaths.settingsUsers"
-                    class="relative shrink-0 -mb-px whitespace-nowrap px-4 pb-3 pt-1 text-sm font-medium outline-none transition-colors focus-visible:rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-400"
-                    :class="
-                        $route.name === 'settings-users'
-                            ? 'text-neutral-950 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:rounded-full after:bg-blue-500'
-                            : 'text-neutral-500 hover:text-neutral-800'
-                    "
+                    v-if="profile?.isAdmin"
+                    v-slot="{ isActive, href, navigate }"
+                    :to="routePaths.settingsWasteCategories"
+                    custom
                 >
-                    Utilizadores
+                    <AnimatedTabTrigger
+                        id="settings-tab-waste-categories"
+                        as="a"
+                        role="tab"
+                        :href="href"
+                        :active="isActive"
+                        @click="navigate"
+                    >
+                        Categorias de resíduos
+                    </AnimatedTabTrigger>
                 </RouterLink>
-            </div>
+                <RouterLink v-if="profile?.isAdmin" v-slot="{ href, navigate }" :to="routePaths.settingsUsers" custom>
+                    <AnimatedTabTrigger
+                        id="settings-tab-users"
+                        as="a"
+                        role="tab"
+                        :href="href"
+                        :active="isSettingsTabActive('settings-users')"
+                        @click="navigate"
+                    >
+                        Utilizadores
+                    </AnimatedTabTrigger>
+                </RouterLink>
+            </AnimatedTabBar>
 
-            <RouterView class="flex min-h-0 min-w-0 flex-1 flex-col" />
+            <RouterView class="w-full min-h-0 flex-1" />
         </div>
     </div>
 </template>

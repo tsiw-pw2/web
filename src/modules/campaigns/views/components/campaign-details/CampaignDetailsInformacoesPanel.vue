@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue"
+import { RouterLink } from "vue-router"
+import { routePaths } from "@/app/router"
 import { useCampaignDetailsPageInject } from "@/modules/campaigns/composables/campaign-details/useCampaignDetailsPageInject"
 import { beachLocationLine } from "@/modules/campaigns/lib/beachLocationLine"
 import Button from "@/shared/components/ui/Button.vue"
@@ -10,7 +12,7 @@ const { core, display, registration, registrationRows } = useCampaignDetailsPage
 const {
     canEnroll,
     showMyRegistrationStatus,
-    showEnrollmentClosed,
+    enrollmentProfileBlockReason,
     canceling,
     cancelRegistrationOpen,
     enrolling,
@@ -26,7 +28,7 @@ const profile = computed(() => core.profile.value)
         id="campaign-panel-informacoes"
         role="tabpanel"
         aria-labelledby="campaign-tab-informacoes"
-        class="flex flex-col gap-6"
+        class="flex min-h-0 flex-col gap-6 pb-0"
     >
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <div class="lg:col-span-2 flex flex-col gap-4">
@@ -86,16 +88,24 @@ const profile = computed(() => core.profile.value)
                     <div class="text-neutral-950"> {{ campaign.metrics.totalWasteUnits }} </div>
                 </div>
                 <div class="flex items-center justify-between border-b border-neutral-200 pb-2">
-                    <p class="font-medium text-neutral-500"> Peso recolhido </p>
-                    <div class="text-neutral-950">{{ display.formatWeightKg(campaign.metrics.totalWasteWeightKg) }}</div>
+                    <p class="font-medium text-neutral-500"> Peso pesado </p>
+                    <div class="text-neutral-950">
+                        {{ display.formatWeightKg(campaign.metrics.totalActualWeightKg ?? campaign.metrics.totalWasteWeightKg) }}
+                    </div>
+                </div>
+                <div class="flex items-center justify-between border-b border-neutral-200 pb-2">
+                    <p class="font-medium text-neutral-500"> Peso estimado </p>
+                    <div class="text-neutral-950">
+                        {{ display.formatWeightKg(campaign.metrics.totalImpactWeightKg ?? campaign.metrics.totalWasteWeightKg) }}
+                    </div>
                 </div>
                 <div class="flex items-center justify-between">
                     <p class="font-medium text-neutral-500"> Comentários </p>
                     <div class="text-neutral-950"> {{ campaign.metrics.commentsCount }} </div>
                 </div>
                 <div
-                    v-if="profile && (canEnroll || showMyRegistrationStatus || showEnrollmentClosed)"
-                    class="mt-2 flex flex-col gap-3"
+                    v-if="profile && (canEnroll || showMyRegistrationStatus || enrollmentProfileBlockReason)"
+                    class="flex flex-col gap-3"
                 >
                     <div v-if="showMyRegistrationStatus" class="flex flex-col gap-3">
                         <p class="text-sm leading-5 text-neutral-700">
@@ -124,7 +134,12 @@ const profile = computed(() => core.profile.value)
                     >
                         Inscrever-me
                     </Button>
-                    <p v-else-if="showEnrollmentClosed" class="text-sm leading-5 text-neutral-600">Inscrições fechadas.</p>
+                    <p v-else-if="enrollmentProfileBlockReason" class="text-sm leading-5 text-neutral-600">
+                        {{ enrollmentProfileBlockReason }}
+                        <RouterLink :to="routePaths.settingsProfile" class="font-medium text-neutral-950 underline">
+                            Ir ao perfil
+                        </RouterLink>
+                    </p>
                 </div>
             </div>
         </div>

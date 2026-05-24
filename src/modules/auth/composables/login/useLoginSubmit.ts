@@ -1,14 +1,14 @@
 import { ref } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { toastAccountBlocked, toastServiceUnavailable } from "@/infrastructure/appToast"
+import { resolvePostAuthRedirect } from "@/modules/auth/lib/postAuthRedirect"
 import { LOGIN_GENERIC_ERROR_MESSAGE } from "@/modules/auth/lib/loginFormConstants"
+import type { useLoginForm } from "@/modules/auth/composables/login/useLoginForm"
 import {
     isLoginAccountBlockedError,
     isLoginServiceUnavailableError,
     loginWithCredentials,
 } from "@/modules/auth/services/login"
-import type { useLoginForm } from "@/modules/auth/composables/login/useLoginForm"
-import { safeInternalRedirectPath } from "@/shared/lib/safeRedirect"
 
 export function useLoginSubmit(form: ReturnType<typeof useLoginForm>) {
     const router = useRouter()
@@ -20,8 +20,9 @@ export function useLoginSubmit(form: ReturnType<typeof useLoginForm>) {
         isSubmitting.value = true
         try {
             await loginWithCredentials(form.email.value.trim(), form.password.value)
-            const redirect = safeInternalRedirectPath(route.query.redirect)
-            await router.push(redirect ?? { name: "dashboard" })
+            isSubmitting.value = false
+            const destination = await resolvePostAuthRedirect(route.query.redirect)
+            await router.push(destination)
         } catch (err) {
             if (isLoginServiceUnavailableError(err)) {
                 toastServiceUnavailable(err.message)

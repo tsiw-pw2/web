@@ -1,107 +1,95 @@
 <script setup lang="ts">
-import { computed, ref } from "vue"
 import { useRouter } from "vue-router"
-import CreateCampaignModal from "@/modules/campaigns/views/components/CreateCampaignModal.vue"
-import DeleteCampaignModal from "@/modules/campaigns/views/components/DeleteCampaignModal.vue"
-import EditCampaignModal from "@/modules/campaigns/views/components/EditCampaignModal.vue"
-import CampaignsEmptyState from "@/modules/campaigns/views/states/CampaignsEmptyState.vue"
-import CampaignsErrorState from "@/modules/campaigns/views/states/CampaignsErrorState.vue"
-import CampaignsListState from "@/modules/campaigns/views/states/CampaignsListState.vue"
-import type { CampaignCreateDraft, CampaignListItem } from "@/modules/campaigns/types/list"
-import { useCampaignsPageData } from "@/modules/campaigns/composables/useCampaignsPageData"
-import { toastFromListMutationError } from "@/infrastructure/apiMutationToast"
-import { toastSuccess } from "@/infrastructure/appToast"
-import ListPaginationBar from "@/shared/components/ListPaginationBar.vue"
-import ScrollableTableSection from "@/shared/components/ScrollableTableSection.vue"
-import Button from "@/shared/components/ui/Button.vue"
+import { useCanManageCatalog } from "@/modules/auth/composables/useCanManageCatalog"
+import { useCampaignsPageState } from "@/modules/campaigns/composables/campaigns-list/useCampaignsPageState"
+import type { CampaignCreateDraft } from "@/modules/campaigns/types/list"
+import CampaignsPageContent from "@/modules/campaigns/views/components/campaigns-list/CampaignsPageContent.vue"
+import CampaignsListFiltersBar from "@/modules/campaigns/views/components/campaigns-list/CampaignsListFiltersBar.vue"
+import CampaignsPageHeader from "@/modules/campaigns/views/components/campaigns-list/CampaignsPageHeader.vue"
+import CampaignsPageModals from "@/modules/campaigns/views/components/campaigns-list/CampaignsPageModals.vue"
 
-const { loading, error, campaigns, page, pageSize, total, goToPrevPage, goToNextPage, reload, removeCampaign, addCampaign, updateCampaign } = useCampaignsPageData()
 const router = useRouter()
+const page = useCampaignsPageState()
+const { canManage } = useCanManageCatalog()
 
-const isCreateModalOpen = ref(false)
-const isEditModalOpen = ref(false)
-const isDeleteModalOpen = ref(false)
-const editCampaignId = ref<string | null>(null)
-const deleteCampaignId = ref<string | null>(null)
+const {
+    loading,
+    error,
+    errorHint,
+    campaigns,
+    page: currentPage,
+    pageSize,
+    total,
+    reload,
+    goToPrevPage,
+    goToNextPage,
+    isCreateModalOpen,
+    isEditModalOpen,
+    isDeleteModalOpen,
+    campaignForEdit,
+    deleteCampaignTitle,
+    openCreateModal,
+    openEditModal,
+    openDeleteModal,
+    createCampaignWithToast,
+    saveCampaignWithToast,
+    confirmDeleteCampaign,
+    removeCampaign,
+    listFilters,
+} = page
 
-const editCampaign = computed<CampaignListItem | null>(() => {
-    if (!editCampaignId.value) return null
-    return campaigns.value.find((c) => c.id === editCampaignId.value) ?? null
-})
-
-const deleteCampaignTitle = computed(() => {
-    if (!deleteCampaignId.value) return undefined
-    return campaigns.value.find((c) => c.id === deleteCampaignId.value)?.title
-})
-
-function openCreateModal() {
-    isCreateModalOpen.value = true
-}
+const {
+    search: campaignsSearch,
+    statuses: campaignsStatuses,
+    district: campaignsDistrict,
+    hasActiveFilters,
+    clearAllFilters,
+} = listFilters
 
 function openCampaign(id: string) {
-    router.push({ name: "campaign-details", params: { campaignId: id, tab: "informacoes" } })
-}
-
-function openEditModal(id: string) {
-    editCampaignId.value = id
-    isEditModalOpen.value = true
-}
-
-function openDeleteModal(id: string) {
-    deleteCampaignId.value = id
-    isDeleteModalOpen.value = true
-}
-
-async function confirmDeleteCampaign() {
-    if (deleteCampaignId.value) await removeCampaign(deleteCampaignId.value)
-}
-
-async function onCreateCampaign(payload: CampaignCreateDraft) {
-    try {
-        await addCampaign(payload)
-    } catch (e) {
-        toastFromListMutationError(e, {
-            mode: "create",
-            forbiddenDetail: "Só organizadores e administradores podem criar campanhas.",
-        })
-    }
-}
-
-async function onEditCampaign(payload: CampaignCreateDraft) {
-    if (!editCampaignId.value) return
-    try {
-        await updateCampaign(editCampaignId.value, payload)
-        toastSuccess("Campanha atualizada", "As alterações foram guardadas.")
-    } catch (e) {
-        toastFromListMutationError(e, {
-            mode: "save",
-            forbiddenDetail: "Só organizadores e administradores podem alterar campanhas.",
-        })
-    }
+    void router.push({ name: "campaign-details", params: { campaignId: id, tab: "informacoes" } })
 }
 </script>
 
 <template>
-
     <div class="flex min-h-0 flex-1 flex-col gap-6">
-
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-
-            <h2 class="text-xl font-semibold leading-8 text-neutral-950 sm:text-2xl">Campanhas</h2>
-             <Button class="w-full shrink-0 touch-manipulation sm:w-auto" @click="openCreateModal"> Criar Campanha </Button>
+        <CampaignsPageHeader class="shrink-0" @create="openCreateModal" />
+        <CampaignsListFiltersBar
+            v-model:search="campaignsSearch"
+            v-model:statuses="campaignsStatuses"
+            v-model:district="campaignsDistrict"
+            class="shrink-0"
+        />
+        <div class="flex min-h-0 flex-1 flex-col">
+            <CampaignsPageContent
+                :loading="loading"
+                :error="error"
+                :error-hint="errorHint"
+                :campaigns="campaigns"
+                :page="currentPage"
+                :page-size="pageSize"
+                :total="total"
+                :has-active-filters="hasActiveFilters"
+                @retry="reload"
+                @create="openCreateModal"
+                @clear-filters="clearAllFilters"
+                @select="openCampaign"
+                @edit="openEditModal"
+                @delete="openDeleteModal"
+                @prev="goToPrevPage"
+                @next="goToNextPage"
+            />
         </div>
-
-        <div v-if="loading" class="text-sm leading-5 text-neutral-600">A carregar…</div>
-         <CampaignsErrorState v-else-if="error" @retry="reload" /> <CampaignsEmptyState v-else-if="total === 0" @create="openCreateModal" /> <ScrollableTableSection v-else fill-container
-            > <CampaignsListState :items="campaigns" @select="openCampaign" @edit="openEditModal" @delete="openDeleteModal" /> <template #footer
-                > <ListPaginationBar :page="page" :page-size="pageSize" :total="total" @prev="goToPrevPage" @next="goToNextPage" /> </template
-            > </ScrollableTableSection
-        >
     </div>
-     <CreateCampaignModal v-model="isCreateModalOpen" @create="onCreateCampaign" /> <EditCampaignModal v-model="isEditModalOpen" :campaign="editCampaign" @save="onEditCampaign" /> <DeleteCampaignModal
-        v-model="isDeleteModalOpen"
-        :campaign-title="deleteCampaignTitle"
-        @confirm="confirmDeleteCampaign"
+    <CampaignsPageModals
+        v-if="canManage"
+        v-model:is-create-modal-open="isCreateModalOpen"
+        v-model:is-edit-modal-open="isEditModalOpen"
+        v-model:is-delete-modal-open="isDeleteModalOpen"
+        :campaign-for-edit="campaignForEdit"
+        :delete-campaign-title="deleteCampaignTitle"
+        @create="createCampaignWithToast"
+        @save="(payload: CampaignCreateDraft) => campaignForEdit && saveCampaignWithToast(campaignForEdit.id, payload)"
+        @confirm-delete="() => confirmDeleteCampaign(removeCampaign)"
     />
 </template>
-

@@ -43,9 +43,9 @@ const {
         role="tabpanel"
         aria-labelledby="settings-tab-waste-categories"
         class="flex flex-col gap-4"
-        :class="profile?.isAdmin ? 'min-h-0 flex-1' : ''"
+        :class="canAccessSettingsAdmin(profile) ? 'min-h-0 flex-1' : ''"
     >
-        <template v-if="profile?.isAdmin">
+        <template v-if="canAccessSettingsAdmin(profile)">
             <ResourceErrorState
                 v-if="error"
                 class="py-6"

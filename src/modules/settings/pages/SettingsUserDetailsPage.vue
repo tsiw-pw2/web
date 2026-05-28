@@ -187,7 +187,7 @@ watch(
 </script>
 
 <template>
-    <div class="flex min-h-0 flex-1 flex-col gap-6">
+    <div class="flex min-h-0 flex-1 flex-col gap-6 pb-10">
         <div class="flex flex-col gap-4">
             <Button type="button" variant="secondary" class="w-fit" @click="goBack">← Voltar à lista</Button>
             <div v-if="user" class="flex min-w-0 flex-wrap items-center justify-between gap-4">

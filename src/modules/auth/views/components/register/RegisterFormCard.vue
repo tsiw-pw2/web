@@ -26,7 +26,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <form class="w-full max-w-sm" @submit.prevent="emit('submit')">
+    <form class="w-full" @submit.prevent="emit('submit')">
         <div class="space-y-4">
             <div>
                 <h1 class="text-center text-xl font-semibold leading-8 text-neutral-950">Criar conta</h1>

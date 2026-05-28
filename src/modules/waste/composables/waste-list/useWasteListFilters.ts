@@ -7,6 +7,19 @@ import { useRoute, useRouter } from "vue-router"
 const SEARCH_DEBOUNCE_MS = 300
 const MAX_SEARCH_LENGTH = 100
 
+function sameStringArray(a: readonly string[], b: readonly string[]): boolean {
+    return a.length === b.length && a.every((value, index) => value === b[index])
+}
+
+function wasteFilterQuerySignature(query: Record<string, unknown>): string {
+    const parsed = readWasteListFiltersFromQuery(query)
+    return JSON.stringify({
+        q: parsed.q ?? "",
+        unit: parsed.unit ?? [],
+        categories: parsed.categories ?? [],
+    })
+}
+
 function parseUnits(raw: unknown): WasteUnitKey[] {
     if (raw == null) return []
     const parts = Array.isArray(raw) ? raw : typeof raw === "string" && raw !== "" ? [raw] : []
@@ -20,9 +33,15 @@ function parseUnits(raw: unknown): WasteUnitKey[] {
     return [...seen]
 }
 
-function parseCategory(raw: unknown): string | undefined {
-    if (typeof raw !== "string" || raw === "") return undefined
-    return raw
+function parseCategories(raw: unknown): string[] {
+    if (raw == null) return []
+    const parts = Array.isArray(raw) ? raw : typeof raw === "string" && raw !== "" ? [raw] : []
+    const seen = new Set<string>()
+    for (const item of parts) {
+        if (typeof item !== "string" || item === "") continue
+        seen.add(item)
+    }
+    return [...seen]
 }
 
 function parseSearch(raw: unknown): string {
@@ -32,9 +51,10 @@ function parseSearch(raw: unknown): string {
 
 export function readWasteListFiltersFromQuery(query: Record<string, unknown>): WasteListFilters {
     const units = parseUnits(query.unit)
+    const categories = parseCategories(query.category)
     return {
         q: parseSearch(query.q) || undefined,
-        category: parseCategory(query.category),
+        categories: categories.length > 0 ? categories : undefined,
         unit: units.length > 0 ? units : undefined,
     }
 }
@@ -45,7 +65,7 @@ export function useWasteListFilters(onFiltersChange: () => void) {
 
     const search = ref("")
     const units = ref<WasteUnitKey[]>([])
-    const category = ref("")
+    const categories = ref<string[]>([])
 
     let skipRouteWatch = false
     let skipFilterWatch = false
@@ -53,16 +73,21 @@ export function useWasteListFilters(onFiltersChange: () => void) {
     function syncFromRoute() {
         skipFilterWatch = true
         const parsed = readWasteListFiltersFromQuery(route.query as Record<string, unknown>)
-        search.value = parsed.q ?? ""
-        units.value = parsed.unit ?? []
-        category.value = parsed.category ?? ""
+        const nextSearch = parsed.q ?? ""
+        const nextUnits = parsed.unit ?? []
+        const nextCategories = parsed.categories ?? []
+
+        if (search.value !== nextSearch) search.value = nextSearch
+        if (!sameStringArray(units.value, nextUnits)) units.value = [...nextUnits]
+        if (!sameStringArray(categories.value, nextCategories)) categories.value = [...nextCategories]
+
         skipFilterWatch = false
     }
 
     syncFromRoute()
 
     watch(
-        () => route.query,
+        () => wasteFilterQuerySignature(route.query as Record<string, unknown>),
         () => {
             if (skipRouteWatch) return
             syncFromRoute()
@@ -74,19 +99,19 @@ export function useWasteListFilters(onFiltersChange: () => void) {
         const q = search.value.trim()
         if (q) result.q = q
         if (units.value.length > 0) result.unit = [...units.value]
-        if (category.value) result.category = category.value
+        if (categories.value.length > 0) result.categories = [...categories.value]
         return result
     })
 
     const hasActiveFilters = computed(
-        () => search.value.trim() !== "" || units.value.length > 0 || category.value !== "",
+        () => search.value.trim() !== "" || units.value.length > 0 || categories.value.length > 0,
     )
 
     async function clearAllFilters() {
         skipFilterWatch = true
         search.value = ""
         units.value = []
-        category.value = ""
+        categories.value = []
         skipFilterWatch = false
         await pushFiltersToRoute()
     }
@@ -105,7 +130,11 @@ export function useWasteListFilters(onFiltersChange: () => void) {
         } else {
             delete nextQuery.unit
         }
-        setOrDelete("category", category.value)
+        if (categories.value.length > 0) {
+            nextQuery.category = categories.value
+        } else {
+            delete nextQuery.category
+        }
         delete nextQuery.page
         skipRouteWatch = true
         await router.replace({ query: nextQuery })
@@ -113,7 +142,7 @@ export function useWasteListFilters(onFiltersChange: () => void) {
         onFiltersChange()
     }
 
-    watch([units, category], () => {
+    watch([units, categories], () => {
         if (skipFilterWatch) return
         void pushFiltersToRoute()
     }, { deep: true })
@@ -130,7 +159,7 @@ export function useWasteListFilters(onFiltersChange: () => void) {
     return {
         search,
         units,
-        category,
+        categories,
         filters,
         hasActiveFilters,
         clearAllFilters,

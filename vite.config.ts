@@ -21,11 +21,7 @@ export default defineConfig(({ mode }) => {
         },
         server: {
             proxy: {
-                "^/(sessions|users|campaigns|beaches|waste-items|waste-categories)": {
-                    target: apiTarget,
-                    changeOrigin: true,
-                },
-                "/uploads": {
+                "^/(sessions|users|campaigns|beaches|waste-items|waste-categories|dashboard)": {
                     target: apiTarget,
                     changeOrigin: true,
                 },

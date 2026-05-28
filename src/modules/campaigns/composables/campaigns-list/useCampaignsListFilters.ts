@@ -8,6 +8,19 @@ import { useRoute, useRouter } from "vue-router"
 const SEARCH_DEBOUNCE_MS = 300
 const MAX_SEARCH_LENGTH = 100
 
+function sameStringArray(a: readonly string[], b: readonly string[]): boolean {
+    return a.length === b.length && a.every((value, index) => value === b[index])
+}
+
+function campaignFilterQuerySignature(query: Record<string, unknown>): string {
+    const parsed = readCampaignListFiltersFromQuery(query)
+    return JSON.stringify({
+        q: parsed.q ?? "",
+        status: parsed.status ?? [],
+        district: parsed.district ?? "",
+    })
+}
+
 function parseStatuses(raw: unknown): CampaignStatusKey[] {
     if (raw == null) return []
     const parts = Array.isArray(raw) ? raw : typeof raw === "string" && raw !== "" ? [raw] : []
@@ -53,16 +66,21 @@ export function useCampaignsListFilters(onFiltersChange: () => void) {
     function syncFromRoute() {
         skipFilterWatch = true
         const parsed = readCampaignListFiltersFromQuery(route.query as Record<string, unknown>)
-        search.value = parsed.q ?? ""
-        statuses.value = parsed.status ?? []
-        district.value = parsed.district ?? ""
+        const nextSearch = parsed.q ?? ""
+        const nextStatuses = parsed.status ?? []
+        const nextDistrict = parsed.district ?? ""
+
+        if (search.value !== nextSearch) search.value = nextSearch
+        if (!sameStringArray(statuses.value, nextStatuses)) statuses.value = [...nextStatuses]
+        if (district.value !== nextDistrict) district.value = nextDistrict
+
         skipFilterWatch = false
     }
 
     syncFromRoute()
 
     watch(
-        () => route.query,
+        () => campaignFilterQuerySignature(route.query as Record<string, unknown>),
         () => {
             if (skipRouteWatch) return
             syncFromRoute()

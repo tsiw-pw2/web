@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from "vue"
 import { useCanManageCatalog } from "@/modules/auth/composables/useCanManageCatalog"
 import { useWastePageState } from "@/modules/waste/composables/waste-list/useWastePageState"
 import WasteListFiltersBar from "@/modules/waste/views/components/waste-list/WasteListFiltersBar.vue"
@@ -45,10 +46,13 @@ const {
 const {
     search: wasteSearch,
     units: wasteUnits,
-    category: wasteCategory,
+    categories: wasteCategories,
     hasActiveFilters,
     clearAllFilters,
 } = listFilters
+
+const isCreateSubmitting = ref(false)
+const isEditSubmitting = ref(false)
 
 async function handleCreateCategory(name: string) {
     try {
@@ -60,14 +64,25 @@ async function handleCreateCategory(name: string) {
 }
 
 async function handleCreate(payload: WasteUpsertDraft) {
-    const ok = await createWasteWithToast(payload)
-    if (ok) isCreateModalOpen.value = false
+    if (isCreateSubmitting.value) return
+    isCreateSubmitting.value = true
+    try {
+        const ok = await createWasteWithToast(payload)
+        if (ok) isCreateModalOpen.value = false
+    } finally {
+        isCreateSubmitting.value = false
+    }
 }
 
 async function handleSave(payload: WasteUpsertDraft) {
-    if (!editWasteId.value) return
-    const ok = await saveWasteWithToast(editWasteId.value, payload)
-    if (ok) isEditModalOpen.value = false
+    if (!editWasteId.value || isEditSubmitting.value) return
+    isEditSubmitting.value = true
+    try {
+        const ok = await saveWasteWithToast(editWasteId.value, payload)
+        if (ok) isEditModalOpen.value = false
+    } finally {
+        isEditSubmitting.value = false
+    }
 }
 </script>
 
@@ -77,7 +92,7 @@ async function handleSave(payload: WasteUpsertDraft) {
         <WasteListFiltersBar
             v-model:search="wasteSearch"
             v-model:units="wasteUnits"
-            v-model:category="wasteCategory"
+            v-model:categories="wasteCategories"
             :category-options="categoryOptions"
             class="shrink-0"
         />
@@ -106,12 +121,15 @@ async function handleSave(payload: WasteUpsertDraft) {
         v-model:is-create-modal-open="isCreateModalOpen"
         v-model:is-edit-modal-open="isEditModalOpen"
         v-model:is-delete-modal-open="isDeleteModalOpen"
+        :edit-waste-id="editWasteId"
         :waste-for-edit="wasteForEdit"
         :category-options="categoryOptions"
         :categories-loading="categoriesLoading"
         :category-creating="categoryCreating"
         :is-admin="isAdmin"
-        :on-create-category="handleCreateCategory"
+        :create-category-handler="handleCreateCategory"
+        :is-create-submitting="isCreateSubmitting"
+        :is-edit-submitting="isEditSubmitting"
         :delete-waste-name="deleteWasteName"
         @create="handleCreate"
         @save="handleSave"

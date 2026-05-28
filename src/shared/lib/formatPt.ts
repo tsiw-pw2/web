@@ -1,3 +1,38 @@
+export function formatDatePtDayMonth(iso: string): string {
+    const date = new Date(iso)
+    if (Number.isNaN(date.getTime())) return iso
+    return new Intl.DateTimeFormat("pt-PT", { day: "numeric", month: "long" }).format(date)
+}
+
+export function formatDatePtDayMonthYear(iso: string): string {
+    const trimmed = iso.trim()
+    if (!trimmed) return iso
+    const date = new Date(`${trimmed.slice(0, 10)}T12:00:00Z`)
+    if (Number.isNaN(date.getTime())) return iso
+    const formatted = new Intl.DateTimeFormat("pt-PT", { day: "numeric", month: "long", year: "numeric" }).format(date)
+    return formatted.replace(/\s+de\s+/g, " ").trim()
+}
+
+export function formatDatePtDayMonthSlash(iso: string): string {
+    const trimmed = iso.trim()
+    if (!trimmed) return "—"
+
+    const slashFullMatch = trimmed.match(/^(\d{2})\/(\d{2})\/\d{4}$/)
+    if (slashFullMatch) {
+        return `${slashFullMatch[1]}/${slashFullMatch[2]}`
+    }
+
+    const date = new Date(`${trimmed.slice(0, 10)}T12:00:00Z`)
+    if (Number.isNaN(date.getTime())) return "—"
+    const day = String(date.getUTCDate()).padStart(2, "0")
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0")
+    return `${day}/${month}`
+}
+
+export function stripYearFromPtLongDate(value: string): string {
+    return value.replace(/\s+de\s+\d{4}$/, "")
+}
+
 export function formatDatePt(iso: string): string {
     const date = new Date(iso)
     if (Number.isNaN(date.getTime())) return iso

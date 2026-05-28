@@ -1,5 +1,6 @@
 import type { SettingsProfile } from "@/modules/settings/types/profile"
 import type { SettingsUserRoleKey } from "@/modules/settings/lib/settingsUserRole"
+import { effectiveProfileRole, profileIsAdmin } from "@/modules/auth/lib/profileCapabilities"
 
 export type AccessCapability = "dashboard" | "settingsAdmin"
 
@@ -9,8 +10,7 @@ const CAPABILITY_ROLES: Record<AccessCapability, ReadonlySet<SettingsUserRoleKey
 }
 
 export function profileRole(profile: SettingsProfile | null | undefined): SettingsUserRoleKey | null {
-    if (!profile) return null
-    return profile.role
+    return effectiveProfileRole(profile)
 }
 
 export function profileHasCapability(
@@ -27,7 +27,7 @@ export function canAccessDashboard(profile: SettingsProfile | null | undefined):
 }
 
 export function canAccessSettingsAdmin(profile: SettingsProfile | null | undefined): boolean {
-    return profileHasCapability(profile, "settingsAdmin")
+    return profileIsAdmin(profile)
 }
 
 export function canManageCatalog(profile: SettingsProfile | null | undefined): boolean {

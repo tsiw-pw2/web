@@ -13,8 +13,7 @@ export function useDashboardOverview() {
         loading.value = true
         error.value = null
         try {
-            const data = await getDashboardOverview()
-            overview.value = data != null && typeof data === "object" && "metrics" in data && data.metrics != null && typeof data.metrics === "object" ? data : null
+            overview.value = await getDashboardOverview()
         } catch (e) {
             if (isApiRequestError(e) && e.httpStatus === 403) {
                 error.value = "Sem acesso a esta área."

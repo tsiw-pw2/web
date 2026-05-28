@@ -8,8 +8,10 @@ function appendFilters(q: URLSearchParams, filters?: WasteListFilters) {
     if (filters.q) {
         q.set("q", filters.q)
     }
-    if (filters.category) {
-        q.set("category", filters.category)
+    if (filters.categories?.length) {
+        for (const categoryId of filters.categories) {
+            q.append("category", categoryId)
+        }
     }
     if (filters.unit?.length) {
         for (const unit of filters.unit) {

@@ -1,5 +1,6 @@
 import { computed, ref } from "vue"
 import { wasteItemsListRef } from "@/modules/waste/composables/waste-list/wasteListState"
+import type { WasteListItem } from "@/modules/waste/types/list"
 
 export function useWastePageModals() {
     const isCreateModalOpen = ref(false)
@@ -8,7 +9,7 @@ export function useWastePageModals() {
     const editWasteId = ref<string | null>(null)
     const deleteWasteId = ref<string | null>(null)
 
-    const wasteForEdit = computed(() => {
+    const wasteForEdit = computed((): WasteListItem | null => {
         if (!editWasteId.value) return null
         return wasteItemsListRef.value.find((w) => w.id === editWasteId.value) ?? null
     })

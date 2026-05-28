@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from "vue"
+import type { RouteLocationRaw } from "vue-router"
 import { cn } from "@/shared/lib/utils"
 import DashboardKeyValueRows from "@/modules/dashboard/components/DashboardKeyValueRows.vue"
 import DashboardPanel from "./DashboardPanel.vue"
@@ -11,6 +12,7 @@ const props = defineProps<{
     rows: DashboardKeyValueRow[]
     class?: HTMLAttributes["class"]
     moreHref?: string
+    moreTo?: string | RouteLocationRaw
     moreLabel?: string
     valueTruncateMinLength?: number
     truncateValueForLabels?: string[]
@@ -19,7 +21,7 @@ const props = defineProps<{
 
 <template>
     <DashboardPanel :class="cn('h-full', props.class)">
-        <DashboardPanelHeader :title="title" :more-href="moreHref" :more-label="moreLabel">
+        <DashboardPanelHeader :title="title" :more-href="moreHref" :more-to="moreTo" :more-label="moreLabel">
             <template #icon>
                 <slot name="icon" />
             </template>

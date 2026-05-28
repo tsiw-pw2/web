@@ -9,6 +9,9 @@ import VolunteerIcon from "@/shared/components/icons/dashboard/DashboardVoluntee
 import { useDashboardOverview } from "@/modules/dashboard/composables/useDashboardOverview"
 import { routePaths } from "@/app/router"
 import ResourceErrorState from "@/shared/components/states/ResourceErrorState.vue"
+import PageContentInset from "@/shared/components/layout/PageContentInset.vue"
+import { stripYearFromPtLongDate } from "@/shared/lib/formatPt"
+import type { DashboardKeyValueRow } from "@/modules/dashboard/types"
 
 const { overview, loading, error, reload } = useDashboardOverview()
 const { profile, loadProfile } = useCurrentProfile()
@@ -30,6 +33,14 @@ const nextCampaignMoreTo = computed(() => {
     }
     return routePaths.campaigns
 })
+
+const nextCampaignDisplayRows = computed((): DashboardKeyValueRow[] => {
+    const rows = overview.value?.nextCampaignRows ?? []
+    return rows.map((row) => {
+        if (row.label !== "Data") return row
+        return { ...row, value: stripYearFromPtLongDate(row.value) }
+    })
+})
 </script>
 
 <template>
@@ -45,7 +56,7 @@ const nextCampaignMoreTo = computed(() => {
             @retry="reload"
         />
 
-        <div v-else-if="overview" class="grid min-w-0 grid-cols-1 gap-6 p-px sm:grid-cols-2 lg:grid-cols-6">
+        <PageContentInset v-else-if="overview" class="grid min-w-0 grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-6">
             <template v-if="showAdminStyleMetrics">
                 <DashboardMetricPanel
                     class="sm:col-span-1 lg:col-span-2"
@@ -92,17 +103,16 @@ const nextCampaignMoreTo = computed(() => {
                 class="sm:col-span-2 lg:col-span-3"
                 title="Estatísticas de limpeza"
                 :rows="overview.cleaningStatsRows"
-                :more-to="routePaths.campaigns"
             />
             <DashboardKeyValuePanel
                 class="sm:col-span-2 lg:col-span-3"
                 title="Próxima Campanha"
-                :rows="overview.nextCampaignRows"
+                :rows="nextCampaignDisplayRows"
                 :more-to="nextCampaignMoreTo"
                 :value-truncate-min-length="28"
                 :truncate-value-for-labels="['Título']"
             />
-        </div>
+        </PageContentInset>
 
         <div v-else class="text-sm leading-5 text-neutral-600">Não há dados de painel disponíveis.</div>
     </div>

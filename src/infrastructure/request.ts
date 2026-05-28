@@ -1,6 +1,7 @@
 import { getApiBaseUrl } from "./config"
 import { getAccessToken } from "./access-token"
 import { tryRestoreSession } from "./authSession"
+import { handleSessionExpired } from "./sessionExpired"
 import {
     ApiServiceUnavailableError,
     apiUnavailableMessageFromResponse,
@@ -77,6 +78,7 @@ async function fetchWithAuth(url: string, init?: RequestInit, allowSessionRetry 
     }
     const restored = await tryRestoreSession()
     if (!restored) {
+        handleSessionExpired()
         return res
     }
     applyBearerHeader(headers)

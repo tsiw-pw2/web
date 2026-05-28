@@ -1,4 +1,5 @@
 import type { PaginatedResult } from "@/types/pagination"
+import { ApiRequestError, CLIENT_SAFE_REQUEST_FAILED } from "@/infrastructure/request"
 
 type HateoasLink = { href: string; method?: string }
 
@@ -21,12 +22,13 @@ export function unwrapResource<T>(body: unknown): T {
 
 export function unwrapList<T>(body: unknown): PaginatedResult<T> {
     if (!body || typeof body !== "object") {
-        return { items: [], page: 1, pageSize: 10, total: 0 }
+        throw new ApiRequestError(500, CLIENT_SAFE_REQUEST_FAILED)
     }
     const record = body as HateoasListBody<T>
-    const items = Array.isArray(record.data)
-        ? record.data.map((row) => unwrapResource<T>(row))
-        : []
+    if (!Array.isArray(record.data)) {
+        throw new ApiRequestError(500, CLIENT_SAFE_REQUEST_FAILED)
+    }
+    const items = record.data.map((row) => unwrapResource<T>(row))
     return {
         items,
         page: typeof record.page === "number" ? record.page : 1,

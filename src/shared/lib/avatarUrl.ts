@@ -10,7 +10,7 @@ export function resolveAvatarDisplaySrc(url: string | null | undefined, cacheBus
 export function isValidAvatarUrlField(input: string): boolean {
     const t = input.trim()
     if (t === "") return true
-    if (/^\/uploads\/avatars\/[^/]+\.(jpg|png|webp)$/.test(t)) return true
+    if (/^https:\/\/res\.cloudinary\.com\/.+\/image\/upload\/.+/.test(t)) return true
     try {
         const u = new URL(t)
         return u.protocol === "http:" || u.protocol === "https:"

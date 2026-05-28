@@ -1,3 +1,4 @@
+import { invalidateCurrentProfile } from "@/composables/useCurrentProfile"
 import { getApiBaseUrl } from "@/infrastructure/config"
 import { setAccessToken } from "./access-token"
 import { setProfileSummaryCache } from "./profileAvatarCache"
@@ -13,4 +14,5 @@ export async function logoutSession(): Promise<void> {
     } catch {}
     setAccessToken(null)
     setProfileSummaryCache(null)
+    invalidateCurrentProfile()
 }

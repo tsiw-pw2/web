@@ -1,7 +1,11 @@
 import { normalizeWasteUnit } from "@/modules/waste/lib/wasteDisplayLabels"
 
-export function parseWeightGramsInput(raw: string): number | null {
-    const normalized = raw.trim().replace(/\s/g, "").replace(",", ".")
+function normalizeWeightInput(raw: string | number | null | undefined): string {
+    return String(raw ?? "").trim()
+}
+
+export function parseWeightGramsInput(raw: string | number | null | undefined): number | null {
+    const normalized = normalizeWeightInput(raw).replace(/\s/g, "").replace(",", ".")
     const digitsOnly = normalized.replace(/[^\d.]/g, "")
     if (digitsOnly.length === 0) return null
     const n = Number(digitsOnly)
@@ -9,7 +13,7 @@ export function parseWeightGramsInput(raw: string): number | null {
     return Math.round(n)
 }
 
-export function isWeightGramsInputValid(raw: string): boolean {
+export function isWeightGramsInputValid(raw: string | number | null | undefined): boolean {
     return parseWeightGramsInput(raw) != null
 }
 

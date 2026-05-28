@@ -34,6 +34,7 @@ export function useCampaignsListMutations(routeApi: RouteApi) {
     async function createCampaignWithToast(draft: CampaignCreateDraft) {
         try {
             await addCampaign(draft)
+            toastSuccess(campaignsCreateMutationMessages.successTitle, campaignsCreateMutationMessages.successBody)
         } catch (e) {
             toastFromListMutationError(e, {
                 mode: "create",

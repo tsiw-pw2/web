@@ -503,7 +503,7 @@ onMounted(() => {
                     title="Tabela (como na app)"
                     description="Listagem Campanhas: contentor branco da shell, cabeçalho + ScrollableTableSection + paginação no rodapé."
                 >
-                    <div class="flex min-h-[28rem] flex-col gap-6 rounded-2xl bg-white p-6 md:rounded-t-lg">
+                    <div class="flex flex-col gap-6 rounded-2xl bg-white p-6 md:rounded-t-lg">
                         <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                             <h2 class="text-xl font-semibold leading-8 text-neutral-950 sm:text-2xl">Campanhas</h2>
                             <Button class="w-full shrink-0 touch-manipulation sm:w-auto">Criar Campanha</Button>

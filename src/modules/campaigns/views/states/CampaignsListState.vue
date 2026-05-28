@@ -7,6 +7,7 @@ import DataTableTd from "@/shared/components/data-table/DataTableTd.vue"
 import DataTableTh from "@/shared/components/data-table/DataTableTh.vue"
 import { useCanManageCatalog } from "@/modules/auth/composables/useCanManageCatalog"
 import { campaignStatusTableBadge } from "@/shared/lib/tableValueBadge"
+import { formatDatePtDayMonthSlash } from "@/shared/lib/formatPt"
 import ApiStateBadge from "@/shared/components/ui/ApiStateBadge.vue"
 
 const props = defineProps<{
@@ -79,10 +80,6 @@ function onRowClick(id: string) {
     emit("select", id)
 }
 
-function formatPeriod(startDate: string, endDate: string): string {
-    return `${startDate} – ${endDate}`
-}
-
 onBeforeUnmount(() => {
     clearTitleFocusTimer()
 })
@@ -103,8 +100,8 @@ onBeforeUnmount(() => {
                 <tr class="border-b border-neutral-200">
                     <DataTableTh>Título</DataTableTh>
                     <DataTableTh>Estado</DataTableTh>
-                    <DataTableTh>Município</DataTableTh>
-                    <DataTableTh align="end">Período</DataTableTh>
+                    <DataTableTh>Concelho</DataTableTh>
+                    <DataTableTh align="end">Data de início</DataTableTh>
                     <DataTableTh v-if="canManage" :padding-end="false" />
                 </tr>
             </thead>
@@ -133,8 +130,8 @@ onBeforeUnmount(() => {
                         </span>
                     </DataTableTd>
                     <DataTableTd>{{ row.municipality }}</DataTableTd>
-                    <DataTableTd align="end" class="whitespace-nowrap tabular-nums">
-                        {{ formatPeriod(row.startDate, row.endDate) }}
+                    <DataTableTd align="end" :truncate="false" class="overflow-visible whitespace-nowrap tabular-nums">
+                        {{ formatDatePtDayMonthSlash(row.startDate) }}
                     </DataTableTd>
                     <DataTableActionsCell
                         v-if="canManage"
@@ -183,6 +180,7 @@ onBeforeUnmount(() => {
         text-overflow: ellipsis;
         white-space: nowrap;
         background-color: var(--color-neutral-50);
+        padding-left: 0.75rem;
         padding-right: 1rem;
         font-weight: 500;
     }

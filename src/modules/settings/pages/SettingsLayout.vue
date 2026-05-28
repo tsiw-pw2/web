@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useCurrentProfile } from "@/composables/useCurrentProfile"
+import { canAccessSettingsAdmin } from "@/modules/auth/lib/accessPolicy"
 import { provide } from "vue"
 import { RouterLink, RouterView, useRoute } from "vue-router"
 import { routePaths } from "@/app/router"
@@ -65,7 +66,7 @@ function isSettingsTabActive(name: string): boolean {
                     </AnimatedTabTrigger>
                 </RouterLink>
                 <RouterLink
-                    v-if="profile?.isAdmin"
+                    v-if="canAccessSettingsAdmin(profile)"
                     v-slot="{ isActive, href, navigate }"
                     :to="routePaths.settingsWasteCategories"
                     custom
@@ -81,7 +82,12 @@ function isSettingsTabActive(name: string): boolean {
                         Categorias de resíduos
                     </AnimatedTabTrigger>
                 </RouterLink>
-                <RouterLink v-if="profile?.isAdmin" v-slot="{ href, navigate }" :to="routePaths.settingsUsers" custom>
+                <RouterLink
+                    v-if="canAccessSettingsAdmin(profile)"
+                    v-slot="{ href, navigate }"
+                    :to="routePaths.settingsUsers"
+                    custom
+                >
                     <AnimatedTabTrigger
                         id="settings-tab-users"
                         as="a"

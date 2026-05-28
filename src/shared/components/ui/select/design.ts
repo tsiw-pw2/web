@@ -23,7 +23,7 @@ export function selectLabelClasses(hasSelectedLabel: boolean, hasPlaceholder: bo
 
 export function selectOptionClasses(isHighlighted: boolean) {
     return cn(
-        "relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-left text-sm font-medium leading-5 outline-none transition-colors",
+        "relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-left text-sm font-medium leading-5 outline-none",
         "data-disabled:pointer-events-none data-disabled:opacity-50",
         "hover:bg-neutral-100 hover:text-neutral-900",
         isHighlighted && "bg-neutral-100 text-neutral-900",

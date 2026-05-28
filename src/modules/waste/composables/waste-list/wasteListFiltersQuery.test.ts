@@ -8,16 +8,16 @@ describe("readWasteListFiltersFromQuery", () => {
         expect(readWasteListFiltersFromQuery({})).toEqual({})
     })
 
-    it("parses q, category and unit", () => {
+    it("parses q, categories and unit", () => {
         expect(
             readWasteListFiltersFromQuery({
                 q: "vidro",
-                category: CATEGORY_ID,
+                category: [CATEGORY_ID, "660e8400-e29b-41d4-a716-446655440001"],
                 unit: ["peso", "unit"],
             }),
         ).toEqual({
             q: "vidro",
-            category: CATEGORY_ID,
+            categories: [CATEGORY_ID, "660e8400-e29b-41d4-a716-446655440001"],
             unit: ["peso", "unit"],
         })
     })

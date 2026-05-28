@@ -3,6 +3,7 @@ import { useRouter } from "vue-router"
 import { useSettingsUsersPageState } from "@/modules/settings/composables/settings-users/useSettingsUsersPageState"
 import SettingsUsersPageContent from "@/modules/settings/views/components/settings-users/SettingsUsersPageContent.vue"
 import SettingsUsersPageHeader from "@/modules/settings/views/components/settings-users/SettingsUsersPageHeader.vue"
+
 const router = useRouter()
 const page = useSettingsUsersPageState()
 
@@ -32,10 +33,17 @@ function openUserDetails(userId: string) {
         id="settings-panel-users"
         role="tabpanel"
         aria-labelledby="settings-tab-users"
-        class="flex flex-col gap-4"
+        class="flex flex-col gap-6"
         :class="profile?.isAdmin ? 'min-h-0 flex-1' : ''"
     >
         <template v-if="profile?.isAdmin">
+            <div class="flex flex-col gap-1">
+                <h3 class="text-base font-semibold leading-6 text-neutral-950">Lista de utilizadores</h3>
+                <p class="text-sm leading-5 text-neutral-600">
+                    Consulta contas registadas e abre o detalhe para rever informação e permissões.
+                </p>
+            </div>
+
             <SettingsUsersPageHeader
                 :users-error="usersError"
                 :users-loading="usersLoading"
@@ -44,6 +52,7 @@ function openUserDetails(userId: string) {
 
             <SettingsUsersPageContent
                 v-if="!usersLoading && !usersError"
+                class="flex min-h-0 flex-1 flex-col"
                 :users="users"
                 :users-page="usersPage"
                 :users-page-size="usersPageSize"

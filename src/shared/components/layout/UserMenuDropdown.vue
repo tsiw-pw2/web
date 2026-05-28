@@ -62,7 +62,7 @@ async function onLogout() {
     open.value = false
     try {
         await logoutSession()
-        await router.push({ name: "login" })
+        await router.push(routePaths.home)
     } finally {
         loggingOut.value = false
     }

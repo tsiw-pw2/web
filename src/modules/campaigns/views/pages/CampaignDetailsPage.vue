@@ -47,7 +47,7 @@ useDocumentTitle(browserTitle)
 
 <template>
     <div
-        class="flex min-h-0 flex-1 flex-col gap-6 px-px"
+        class="flex min-h-0 flex-1 flex-col gap-6"
         :class="isInformacoesTab ? 'overflow-hidden' : 'overflow-y-auto overscroll-none'"
     >
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

@@ -20,18 +20,15 @@ export async function tryRestoreSession(): Promise<boolean> {
                 headers: { Accept: "application/json" },
             })
             if (!res.ok) {
-                setAccessToken(null)
                 return false
             }
             const body = (await res.json()) as RefreshBody
             if (typeof body.token !== "string" || body.token.length === 0) {
-                setAccessToken(null)
                 return false
             }
             setAccessToken(body.token)
             return true
         } catch {
-            setAccessToken(null)
             return false
         } finally {
             restoreInFlight = null

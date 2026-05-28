@@ -19,7 +19,7 @@ const {
     <section class="flex w-full max-w-lg flex-col gap-4">
         <div class="flex flex-col gap-1">
             <h3 class="text-base font-semibold leading-6 text-neutral-950">Palavra-passe</h3>
-            <p class="text-sm leading-5 text-neutral-600">Altera a palavra-passe da tua conta. Após guardar, a sessão é renovada.</p>
+            <p class="text-sm leading-5 text-neutral-600">Altera a palavra-passe da tua conta.</p>
         </div>
 
         <p v-if="passwordSaveError" class="text-sm leading-5 text-red-600">{{ passwordSaveError }}</p>

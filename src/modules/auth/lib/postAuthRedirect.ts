@@ -16,8 +16,12 @@ export async function resolvePostAuthRedirect(redirectQuery: unknown): Promise<R
     return { name: defaultAuthedRouteName(profile) }
 }
 
-export async function resolveDefaultAuthedRoute(): Promise<RouteLocationRaw> {
-    const profile = await loadCurrentProfile()
+export async function resolveDefaultAuthedRoute(redirectQuery?: unknown): Promise<RouteLocationRaw> {
+    const profile = await loadCurrentProfile({ force: true })
+    const redirect = safeInternalRedirectPath(redirectQuery)
+    if (redirect && isPathAllowedForProfile(redirect, profile)) {
+        return redirect
+    }
     return { name: defaultAuthedRouteName(profile) }
 }
 

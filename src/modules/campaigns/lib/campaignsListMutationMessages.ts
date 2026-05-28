@@ -1,4 +1,6 @@
 export const campaignsCreateMutationMessages = {
+    successTitle: "Campanha criada",
+    successBody: "A campanha foi adicionada à lista.",
     forbiddenDetail: "Só organizadores e administradores podem criar campanhas.",
 } as const
 

@@ -2,7 +2,6 @@
 import { computed, inject } from "vue"
 import { useSettingsProfilePageInject } from "@/modules/settings/composables/settings-profile/useSettingsProfilePageInject"
 import { settingsProfileKey } from "@/modules/settings/settingsInjection"
-import { userRoleLabel } from "@/modules/settings/lib/userRoleLabel"
 import { formatSettingsDateTime } from "@/modules/settings/lib/formatSettingsDate"
 import SettingsProfileAvatarSection from "@/modules/settings/views/components/settings-profile/SettingsProfileAvatarSection.vue"
 import Button from "@/shared/components/ui/Button.vue"
@@ -21,37 +20,28 @@ const {
     saveProfile,
 } = useSettingsProfilePageInject()
 
-const profileRoleLabel = computed(() => {
-    const p = profile?.value
-    if (!p) return ""
-    return userRoleLabel(p)
-})
+const isBlocked = computed(() => profile?.value?.isBlocked === true)
 </script>
 
 <template>
-    <form class="flex w-full max-w-lg flex-col gap-4" @submit.prevent="saveProfile">
+    <form class="flex w-full flex-col gap-4" @submit.prevent="saveProfile">
         <div
-            v-if="profile?.isBlocked"
+            v-if="isBlocked"
             class="rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-sm leading-5 text-orange-900"
             role="status"
         >
             <p class="font-medium">Conta bloqueada</p>
-            <p v-if="profile.blockedReason" class="mt-1">{{ profile.blockedReason }}</p>
-            <p v-if="profile.blockedAt" class="mt-1 text-orange-800">
+            <p v-if="profile?.blockedReason" class="mt-1">{{ profile.blockedReason }}</p>
+            <p v-if="profile?.blockedAt" class="mt-1 text-orange-800">
                 Desde {{ formatSettingsDateTime(profile.blockedAt) }}
             </p>
-        </div>
-
-        <div class="flex flex-col gap-1">
-            <span class="text-xs font-medium uppercase tracking-wide text-neutral-500">Cargo</span>
-            <p class="text-sm font-medium leading-5 text-neutral-950">{{ profileRoleLabel }}</p>
         </div>
 
         <SettingsProfileAvatarSection />
 
         <div class="flex flex-col gap-1">
             <FieldLabel for="profile-name">Nome</FieldLabel>
-            <Input id="profile-name" v-model="profileName" class="w-full" autocomplete="name" :disabled="profile?.isBlocked" />
+            <Input id="profile-name" v-model="profileName" class="w-full" autocomplete="name" :disabled="isBlocked" />
         </div>
 
         <div class="flex flex-col gap-1">
@@ -62,13 +52,13 @@ const profileRoleLabel = computed(() => {
                 class="w-full"
                 type="email"
                 autocomplete="email"
-                :disabled="profile?.isBlocked"
+                :disabled="isBlocked"
             />
         </div>
 
         <div class="flex flex-col gap-1">
             <FieldLabel for="profile-phone" optional>Telefone</FieldLabel>
-            <Input id="profile-phone" v-model="profilePhone" class="w-full" type="tel" autocomplete="tel" :disabled="profile?.isBlocked" />
+            <Input id="profile-phone" v-model="profilePhone" class="w-full" type="tel" autocomplete="tel" :disabled="isBlocked" />
         </div>
 
         <div class="flex flex-col gap-1">
@@ -78,7 +68,7 @@ const profileRoleLabel = computed(() => {
                 v-model="profileBirthDate"
                 class="w-full"
                 type="date"
-                :disabled="profile?.isBlocked"
+                :disabled="isBlocked"
             />
         </div>
 
@@ -86,7 +76,7 @@ const profileRoleLabel = computed(() => {
             <Button
                 type="submit"
                 class="w-full touch-manipulation"
-                :disabled="savingProfile || !isProfileFormDirty || profile?.isBlocked"
+                :disabled="savingProfile || !isProfileFormDirty || isBlocked"
             >
                 {{ savingProfile ? "A guardar…" : "Guardar perfil" }}
             </Button>

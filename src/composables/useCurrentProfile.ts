@@ -52,29 +52,33 @@ export async function loadCurrentProfile(options?: { force?: boolean }): Promise
     return loadPromise
 }
 
+export function invalidateCurrentProfile() {
+  profile.value = null
+  error.value = null
+  loadPromise = null
+}
+
 export function useCurrentProfile() {
-    async function loadProfile(options?: { force?: boolean }): Promise<SettingsProfile | null> {
-        return loadCurrentProfile(options)
-    }
+  async function loadProfile(options?: { force?: boolean }): Promise<SettingsProfile | null> {
+    return loadCurrentProfile(options)
+  }
 
-    function setProfile(p: SettingsProfile, options?: { avatarCacheBust?: number }) {
-        profile.value = p
-        error.value = null
-        syncAvatarCache(p, options?.avatarCacheBust)
-    }
+  function setProfile(p: SettingsProfile, options?: { avatarCacheBust?: number }) {
+    profile.value = p
+    error.value = null
+    syncAvatarCache(p, options?.avatarCacheBust)
+  }
 
-    function invalidateProfile() {
-        profile.value = null
-        error.value = null
-        loadPromise = null
-    }
+  function invalidateProfile() {
+    invalidateCurrentProfile()
+  }
 
-    return {
-        profile,
-        loading,
-        error,
-        loadProfile,
-        setProfile,
-        invalidateProfile,
-    }
+  return {
+    profile,
+    loading,
+    error,
+    loadProfile,
+    setProfile,
+    invalidateProfile,
+  }
 }

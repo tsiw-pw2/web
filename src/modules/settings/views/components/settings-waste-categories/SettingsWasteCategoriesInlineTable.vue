@@ -120,7 +120,7 @@ const inlineInputClass =
                     <DataTableActionsCell
                         v-if="editingCategoryId !== row.id"
                         :row-id="row.id"
-                        @edit="emit('startEdit', row)"
+                        :show-edit="false"
                         @delete="emit('delete', row.id)"
                     />
                     <DataTableTd v-else :padding-end="false" :truncate="false" aria-hidden="true" />

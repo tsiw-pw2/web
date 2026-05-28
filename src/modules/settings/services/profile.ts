@@ -1,3 +1,4 @@
+import { tryRestoreSession } from "@/infrastructure/authSession"
 import { unwrapResource } from "@/infrastructure/hateoas"
 import { requestApiData, requestApiFormData } from "@/infrastructure/request"
 import { settingsUserRoleFromFlags } from "@/modules/settings/lib/settingsUserRole"
@@ -15,7 +16,11 @@ function normalizeProfile(raw: SettingsProfile): SettingsProfile {
 
 export async function fetchProfile(): Promise<SettingsProfile> {
     const body = await requestApiData<unknown>("/users/me", { method: "GET" })
-    return normalizeProfile(unwrapResource<SettingsProfile>(body))
+    const profile = normalizeProfile(unwrapResource<SettingsProfile>(body))
+    if (profile.role === "admin" || profile.role === "organizer") {
+        await tryRestoreSession()
+    }
+    return profile
 }
 
 export async function updateProfileApi(payload: {

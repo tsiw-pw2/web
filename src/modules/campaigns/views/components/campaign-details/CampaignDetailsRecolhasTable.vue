@@ -78,7 +78,7 @@ function onDeleteRow(row: CampaignDetailsWasteCollection) {
                             <DataTableActionButton
                                 v-if="canDeleteRow(row)"
                                 variant="delete"
-                                aria-label="Apagar recolha"
+                                ariaLabel="Apagar recolha"
                                 @click="onDeleteRow(row)"
                             >
                                 <TrashBucketIcon />

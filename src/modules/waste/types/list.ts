@@ -2,7 +2,7 @@ export type WasteUnitKey = "peso" | "unit"
 
 export type WasteListFilters = {
     q?: string
-    category?: string
+    categories?: string[]
     unit?: WasteUnitKey[]
 }
 

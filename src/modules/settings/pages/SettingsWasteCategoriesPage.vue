@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { canAccessSettingsAdmin } from "@/modules/auth/lib/accessPolicy"
 import { useSettingsWasteCategoriesPageState } from "@/modules/settings/composables/settings-waste-categories/useSettingsWasteCategoriesPageState"
 import SettingsWasteCategoriesInlineTable from "@/modules/settings/views/components/settings-waste-categories/SettingsWasteCategoriesInlineTable.vue"
 import SettingsWasteCategoryDeleteModal from "@/modules/settings/views/components/settings-waste-categories/SettingsWasteCategoryDeleteModal.vue"

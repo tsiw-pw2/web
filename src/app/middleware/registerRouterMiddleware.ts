@@ -31,7 +31,24 @@ async function redirectIfCapabilityDenied(
     return capabilityFallbackRoute(capability)
 }
 
+function isRouteDebugEnabled(): boolean {
+    if (import.meta.env.VITE_DEBUG_ROUTES === "0") return false
+    if (import.meta.env.VITE_DEBUG_ROUTES === "1") return true
+    return import.meta.env.DEV
+}
+
 export function registerRouterMiddleware(router: Router) {
+    if (isRouteDebugEnabled()) {
+        router.beforeEach((to, from) => {
+            const fromPath = from.fullPath || "/"
+            const toPath = to.fullPath
+            const name = typeof to.name === "string" ? to.name : String(to.name ?? "")
+            console.log("-----")
+            console.log(`[route] ${fromPath} -> ${toPath}${name ? ` (${name})` : ""}`)
+            return true
+        })
+    }
+
     registerSessionExpiredHandler(() => {
         const current = router.currentRoute.value
         if (current.meta.requiresAuth !== true) return

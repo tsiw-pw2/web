@@ -1,17 +1,20 @@
-# Frontend (Vue 3 + Vite)
+# Frontend — Limpeza de Praias
 
-Interface web da aplicação **Limpeza de Praias**. Consome a API REST na raiz do servidor (`/users`, `/campaigns`, …) via proxy do Vite em desenvolvimento.
+Interface web (Vue 3 + Vite). Consome a API REST via proxy em desenvolvimento.
 
-Funcionalidades recentes na UI (filtros de campanhas, mapa de praias, dashboard alargado, inscrições pendentes): [FEATURES-COSTA.md](../FEATURES-COSTA.md).
+Guia completo para correr API + Web: [README na raiz](../README.md).
 
-## Requisitos
+---
 
-- [Node.js](https://nodejs.org/) 20+ (LTS recomendado)
-- [pnpm](https://pnpm.io/)
-- API a correr em `http://127.0.0.1:3000` (ver [api/README.md](../api/README.md))
-- Base de dados MySQL preparada (ver [database/README.md](../database/README.md))
+## Como correr
 
-## Configuração
+### 1. Pré-requisitos
+
+- Node.js 20+
+- pnpm
+- **API a correr** em `http://127.0.0.1:3000` (ver [api/README.md](../api/README.md))
+
+### 2. Instalar e configurar
 
 ```bash
 cd web
@@ -19,56 +22,64 @@ pnpm install
 cp .env.example .env
 ```
 
-Ficheiro `.env`:
+| Variável | Desenvolvimento |
+| -------- | --------------- |
+| `VITE_API_URL` | Deixa **vazio** (usa proxy Vite) |
+| `VITE_DEV_API_PORT` | `3000` — igual a `PORT` em `api/.env` |
+| `VITE_APP_NAME` | Nome no título do browser (ex.: `Mariva`) |
 
-| Variável        | Desenvolvimento |
-|-----------------|-----------------|
-| `VITE_API_URL`  | Deixa **vazio** para usar o proxy do Vite (recomendado em dev). |
-| `VITE_DEV_API_PORT` | Porta da API local (por defeito `3000`; deve ser igual a `PORT` em `api/.env`). |
+Na API, `CLIENT_URL` deve ser `http://localhost:5173` (CORS).
 
-Na API, `CLIENT_URL` no `.env` deve apontar para o frontend (ex.: `http://localhost:5173`) para CORS.
-
-## Arranque em desenvolvimento
+### 3. Arrancar
 
 ```bash
 pnpm run dev
 ```
 
-Abre o URL que o Vite mostrar (normalmente `http://localhost:5173`).
+Abre **[http://localhost:5173](http://localhost:5173)**.
+
+### 4. Entrar na app
+
+Com seed da API (`pnpm run db:seed` em `api/`):
+
+- Admin: `admin@demo.local` / `Demo2026!`
+- Organizador: `organizador1@demo.local` / `Demo2026!`
+- Voluntário: `vol01.maria.silva@email.pt` / `Demo2026!`
+
+---
+
+## Ordem de arranque
+
+```
+1. MySQL
+2. cd api && pnpm run dev      ← terminal 1
+3. cd web && pnpm run dev      ← terminal 2
+4. http://localhost:5173
+```
+
+---
 
 ## Outros comandos
 
-| Comando           | Descrição |
-|-------------------|-----------|
-| `pnpm run build`  | Type-check + build de produção |
-| `pnpm run preview`| Pré-visualizar o build |
-| `pnpm run format` | Formatar código com Prettier |
-| `pnpm test`       | Testes unitários (Vitest)    |
+| Comando | Descrição |
+| ------- | --------- |
+| `pnpm run build` | Type-check + build de produção |
+| `pnpm run preview` | Pré-visualizar o build |
+| `pnpm test` | Testes unitários (Vitest) |
 
-Testes e smoke: [`../TESTING.md`](../TESTING.md).
+---
 
 ## Autenticação (resumo)
 
-- O **JWT** fica só em memória no browser (nunca em `localStorage` / `sessionStorage`).
-- O **refresh token** vai num cookie `httpOnly` definido pela API (`POST /sessions`, `POST /users`).
-- No arranque e após **401**, a app chama `PATCH /sessions/current` (com `credentials: "include"`) para repor o JWT.
-- Pedidos autenticados usam `Authorization: Bearer <token>`.
+- JWT em **memória** no browser (nunca em `localStorage`)
+- Refresh token em cookie `httpOnly` (API)
+- Após 401, a app renova o token com `PATCH /sessions/current`
 
-Para testar login local, regista um utilizador com `POST /users` ou pela página de registo.
-
-## Ordem de arranque no monorepo
-
-Guia completo: [README na raiz do monorepo](../README.md).
-
-1. [database/README.md](../database/README.md) — criar BD MySQL vazia
-2. [api/README.md](../api/README.md) — `pnpm run dev`
-3. **Frontend** — `pnpm run dev` nesta pasta
+---
 
 ## Estrutura (resumo)
 
-- `src/app/` — router, arranque da app
-- `src/modules/` — funcionalidades (campanhas, praias, auth, …)
+- `src/app/` — router, arranque
+- `src/modules/` — campanhas, praias, auth, settings, …
 - `src/shared/` — componentes UI e layout
 - `src/infrastructure/` — cliente HTTP
-
-Documentação extra na raiz: [README.md](../README.md), [MVP-PRODUCAO.md](../MVP-PRODUCAO.md).

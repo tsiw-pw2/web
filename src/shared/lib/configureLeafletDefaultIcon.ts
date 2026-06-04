@@ -5,6 +5,7 @@ import markerShadowUrl from "leaflet/dist/images/marker-shadow.png"
 
 let configured = false
 
+// Configura Leaflet predefinição ícone.
 export function configureLeafletDefaultIcon() {
     if (configured) return
     configured = true

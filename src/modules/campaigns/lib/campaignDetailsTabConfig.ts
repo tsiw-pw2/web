@@ -13,6 +13,7 @@ export const CAMPAIGN_DETAILS_TAB_CONFIG: CampaignDetailsTabConfig[] = [
     { id: "comentarios", label: "Comentários" },
 ]
 
+// Lista separadores visíveis consoante permissões de gestão.
 export function visibleCampaignDetailsTabs(canManageRegistrations: boolean): CampaignDetailsTabConfig[] {
     if (canManageRegistrations) {
         return CAMPAIGN_DETAILS_TAB_CONFIG

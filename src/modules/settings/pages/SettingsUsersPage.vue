@@ -20,6 +20,7 @@ const {
     reload,
 } = page
 
+// Navega para os detalhes do utilizador.
 function openUserDetails(userId: string) {
     void router.push({
         name: "settings-user-details",

@@ -4,6 +4,7 @@ import { useCurrentProfile } from "@/composables/useCurrentProfile"
 import { useIsAuthenticated } from "@/composables/useIsAuthenticated"
 import { canAccessDashboard } from "@/modules/auth/lib/accessPolicy"
 
+// Composable que gere a lógica de público site navegação.
 export function usePublicSiteNav() {
     const isAuthenticated = useIsAuthenticated()
     const { profile, loadProfile } = useCurrentProfile()

@@ -1,3 +1,4 @@
+// Extrai iniciais (até duas letras) a partir do nome apresentado.
 export function initialsFromDisplayName(name: string): string {
     const n = name.trim()
     if (n.length === 0) return ""

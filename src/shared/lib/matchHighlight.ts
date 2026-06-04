@@ -3,6 +3,7 @@ export type HighlightSegment = {
     highlighted: boolean
 }
 
+// Normaliza para pesquisa.
 export function normalizeForSearch(text: string): string {
     return text
         .normalize("NFD")
@@ -10,18 +11,21 @@ export function normalizeForSearch(text: string): string {
         .toLowerCase()
 }
 
+// Verifica se o rótulo contém o texto de pesquisa (sem acentos).
 export function optionMatchesQuery(label: string, query: string): boolean {
     const q = normalizeForSearch(query.trim())
     if (!q) return true
     return normalizeForSearch(label).includes(q)
 }
 
+// Indica se existe exact rótulo match.
 export function hasExactLabelMatch(labels: string[], query: string): boolean {
     const q = normalizeForSearch(query.trim())
     if (!q) return false
     return labels.some((label) => normalizeForSearch(label) === q)
 }
 
+// Divide o rótulo em segmentos com destaque na correspondência da pesquisa.
 export function splitLabelByQuery(label: string, query: string): HighlightSegment[] {
     const q = normalizeForSearch(query.trim())
     if (!q) return [{ text: label, highlighted: false }]

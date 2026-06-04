@@ -5,12 +5,7 @@ import { routePaths } from "@/app/router"
 import { setProfileSummaryCache } from "@/infrastructure/profileAvatarCache"
 import { toastAccountBlocked, toastError, toastListPossiblyStale, toastServiceUnavailable, toastSuccess, toastWarning } from "@/infrastructure/appToast"
 import type { CampaignListItem } from "@/modules/campaigns/types/list"
-import {
-    registrationRoleTableBadge,
-    registrationStatusTableBadge,
-    wasteCategoryTableBadge,
-    wasteUnitTableBadge,
-} from "@/shared/lib/tableValueBadge"
+import { registrationRoleTableBadge, registrationStatusTableBadge, wasteCategoryTableBadge, wasteUnitTableBadge, } from "@/shared/lib/tableValueBadge"
 import CampaignsListState from "@/modules/campaigns/views/states/CampaignsListState.vue"
 import ShowcaseSection from "@/modules/dev/components/ShowcaseSection.vue"
 import ShowcaseErrorMessagesPanel from "@/modules/dev/components/ShowcaseErrorMessagesPanel.vue"

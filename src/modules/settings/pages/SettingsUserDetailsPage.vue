@@ -3,11 +3,7 @@ import { computed, inject, onMounted, ref, watch } from "vue"
 import { RouterLink, useRoute, useRouter } from "vue-router"
 import { useSettingsUserDetails } from "@/modules/settings/composables/settings-user-details/useSettingsUserDetails"
 import { formatSettingsDateOnly, formatSettingsDateTime } from "@/modules/settings/lib/formatSettingsDate"
-import {
-    SETTINGS_USER_DETAILS_TABS,
-    settingsUserDetailsTabFromRoute,
-    type SettingsUserDetailsTabId,
-} from "@/modules/settings/lib/settingsUserDetailsTabs"
+import { SETTINGS_USER_DETAILS_TABS, settingsUserDetailsTabFromRoute, type SettingsUserDetailsTabId, } from "@/modules/settings/lib/settingsUserDetailsTabs"
 import { SETTINGS_USER_ROLE_OPTIONS } from "@/modules/settings/lib/settingsUserRole"
 import { userRoleLabel } from "@/modules/settings/lib/userRoleLabel"
 import { blockUser, unblockUser } from "@/modules/settings/services/settingsUsers"
@@ -28,11 +24,7 @@ import Button from "@/shared/components/ui/Button.vue"
 import FieldLabel from "@/shared/components/ui/FieldLabel.vue"
 import Select from "@/shared/components/ui/select/Select.vue"
 import { userAccountStateBadge } from "@/shared/lib/apiStatePresentation"
-import {
-    campaignDetailUiStatusTableBadge,
-    registrationRoleTableBadge,
-    registrationStatusTableBadge,
-} from "@/shared/lib/tableValueBadge"
+import { campaignDetailUiStatusTableBadge, registrationRoleTableBadge, registrationStatusTableBadge, } from "@/shared/lib/tableValueBadge"
 import { resolveAvatarDisplaySrc } from "@/shared/lib/avatarUrl"
 import { initialsFromDisplayName } from "@/shared/lib/userInitials"
 import { useDocumentTitle } from "@/shared/composables/useDocumentTitle"
@@ -278,21 +270,18 @@ watch(
                     </div>
                 </dl>
 
-                <div class="flex max-w-md flex-col gap-1 border-t border-neutral-200 pt-4">
+                <div v-if="!isSelf" class="flex max-w-md flex-col gap-1 border-t border-neutral-200 pt-4 pb-8">
                     <FieldLabel for="user-details-role">Cargo na plataforma</FieldLabel>
                     <Select
                         id="user-details-role"
                         v-model="selectedRole"
                         class="w-full"
                         :options="roleOptions"
-                        :disabled="savingRole || (isSelf && user.isAdmin)"
+                        :disabled="savingRole"
                         placeholder="Seleccionar cargo"
                     />
-                    <p v-if="isSelf && user.isAdmin" class="text-sm leading-5 text-neutral-500">
-                        Não podes remover o teu próprio acesso de administrador.
-                    </p>
                     <div class="pt-2">
-                        <Button type="button" :disabled="!canSaveRole" @click="saveRole(isSelf && user.isAdmin)">
+                        <Button type="button" :disabled="!canSaveRole" @click="saveRole(false)">
                             {{ savingRole ? "A guardar…" : "Guardar cargo" }}
                         </Button>
                     </div>

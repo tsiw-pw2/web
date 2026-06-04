@@ -5,18 +5,18 @@ import type { SettingsProfile } from "@/modules/settings/types/profile"
 import { describeListMutationFailure, toastFromListMutationError } from "@/infrastructure/apiMutationToast"
 import { toastError, toastSuccess } from "@/infrastructure/appToast"
 import { isValidAvatarUrlField } from "@/shared/lib/avatarUrl"
-import { validateProfileBirthDate } from "@/shared/lib/birthDate"
+import { validateProfilePhone } from "@/shared/lib/phoneDigits"
 
 type SettingsProfileFormSaveSlice = {
     profileName: Ref<string>
     profileEmail: Ref<string>
     profilePhone: Ref<string>
-    profileBirthDate: Ref<string>
     profileAvatarUrl: Ref<string>
     pendingAvatarFile: Ref<File | null>
     applyProfileToForm: (p: SettingsProfile, options?: { bumpAvatarCache?: boolean }) => void
 }
 
+// Composable que gere a lógica de definições perfil grava.
 export function useSettingsProfileSave(
     profile: Ref<SettingsProfile | null | undefined> | undefined,
     form: SettingsProfileFormSaveSlice,
@@ -25,16 +25,17 @@ export function useSettingsProfileSave(
     const profileSaveError = ref<string | null>(null)
     const savingProfile = ref(false)
 
+// Valida os dados e envia a actualização do perfil (com avatar opcional).
     async function saveProfile() {
         profileSaveError.value = null
         if (!form.pendingAvatarFile.value && !isValidAvatarUrlField(form.profileAvatarUrl.value)) {
             profileSaveError.value = "Não foi possível validar a foto. Recarrega a página ou remove a imagem."
             return
         }
-        const birthDateError = validateProfileBirthDate(form.profileBirthDate.value)
-        if (birthDateError) {
-            profileSaveError.value = birthDateError
-            toastError(birthDateError)
+        const phoneError = validateProfilePhone(form.profilePhone.value)
+        if (phoneError) {
+            profileSaveError.value = phoneError
+            toastError(phoneError)
             return
         }
         savingProfile.value = true
@@ -44,7 +45,6 @@ export function useSettingsProfileSave(
                 name: form.profileName.value,
                 email: form.profileEmail.value,
                 phone: form.profilePhone.value,
-                birthDate: form.profileBirthDate.value,
                 avatarUrl: form.pendingAvatarFile.value !== null ? "" : form.profileAvatarUrl.value.trim(),
                 avatarFile: form.pendingAvatarFile.value,
             })

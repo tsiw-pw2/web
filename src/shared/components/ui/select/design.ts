@@ -13,6 +13,7 @@ export const SELECT_CLEAR_BUTTON = FIELD_CLEAR_BUTTON
 
 export const SELECT_PANEL_LAYOUT = "select-shadow-content fixed z-[110] max-h-60 overflow-auto rounded-lg bg-white p-1 text-neutral-900 outline-none"
 
+// Classes Tailwind do rótulo do select consoante valor, placeholder e estado.
 export function selectLabelClasses(hasSelectedLabel: boolean, hasPlaceholder: boolean, isDisabled: boolean) {
     return cn(
         "min-w-0 flex-1 truncate bg-transparent px-0.5 text-start text-sm font-medium leading-5 outline-none",
@@ -21,6 +22,7 @@ export function selectLabelClasses(hasSelectedLabel: boolean, hasPlaceholder: bo
     )
 }
 
+// Classes Tailwind de cada opção do painel do select (destaque ao passar o rato).
 export function selectOptionClasses(isHighlighted: boolean) {
     return cn(
         "relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-left text-sm font-medium leading-5 outline-none",

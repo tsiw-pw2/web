@@ -18,11 +18,13 @@ type CampaignAtBeach = {
     locationLabel: string
 }
 
+// Composable que gere a lógica de início activas campanhas mapa.
 export function useHomeActiveCampaignsMap(isAuthenticated: Ref<boolean>) {
     const points = ref<HomeCampaignMapPoint[]>([])
     const loading = ref(false)
     const error = ref<string | null>(null)
 
+// Carrega campanhas por praia identificador.
     async function loadCampaignsByBeachId(): Promise<Map<string, CampaignAtBeach>> {
         const list = await fetchCampaignsPage(1, PAGINATED_LIST_MAX_PAGE_SIZE, {
             status: [...ACTIVE_STATUSES],
@@ -47,6 +49,7 @@ export function useHomeActiveCampaignsMap(isAuthenticated: Ref<boolean>) {
         return campaignByBeachId
     }
 
+// Carrega points.
     async function loadPoints() {
         if (!isAuthenticated.value) {
             points.value = []

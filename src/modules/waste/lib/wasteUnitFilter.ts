@@ -8,6 +8,7 @@ export const WASTE_UNIT_SELECT_OPTIONS = unitOptions.map((o) => ({
     label: o.label,
 }))
 
+// Indica se resíduos unidade chave.
 export function isWasteUnitKey(value: unknown): value is WasteUnitKey {
     return typeof value === "string" && WASTE_UNIT_KEYS.includes(value as WasteUnitKey)
 }

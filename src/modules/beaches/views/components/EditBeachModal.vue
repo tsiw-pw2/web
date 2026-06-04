@@ -21,6 +21,7 @@ const emit = defineEmits<{
     save: [payload: BeachUpsertDraft]
 }>()
 
+// Fecha o modal ou painel.
 function close() {
     open.value = false
 }
@@ -37,6 +38,7 @@ const nameInputId = computed(() => `edit-beach-name-${props.beach?.id ?? ""}`)
 
 const concelhoOptions = computed(() => concelhoSelectOptionsForDistrict(district.value))
 
+// Sincroniza o formulário com os dados da praia.
 function syncFromBeach() {
     const b = props.beach
     if (!b) return
@@ -55,6 +57,7 @@ const canProceed = computed(() => {
     return true
 })
 
+// Valida e submete o formulário.
 function onProceed() {
     const n = name.value.trim()
     const m = municipality.value

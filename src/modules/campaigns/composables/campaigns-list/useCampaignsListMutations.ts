@@ -7,7 +7,10 @@ import type { usePaginatedListRoute } from "@/shared/composables/usePaginatedLis
 
 type RouteApi = Pick<ReturnType<typeof usePaginatedListRoute>, "syncRouteFromRefs">
 
+// Composable que gere a lógica de campanhas lista mutations.
 export function useCampaignsListMutations(routeApi: RouteApi) {
+
+// Remove a campanha da lista, sincroniza a rota e mostra toast de sucesso.
     async function removeCampaign(id: string) {
         try {
             await removeCampaignFromList(id)
@@ -21,16 +24,19 @@ export function useCampaignsListMutations(routeApi: RouteApi) {
         }
     }
 
+// Cria a campanha na lista e sincroniza a paginação na rota.
     async function addCampaign(draft: CampaignCreateDraft) {
         await addCampaignToList(draft)
         await routeApi.syncRouteFromRefs()
     }
 
+// Actualiza campanha.
     async function updateCampaign(id: string, draft: CampaignCreateDraft) {
         await updateCampaignInList(id, draft)
         await routeApi.syncRouteFromRefs()
     }
 
+// Cria campanha com notificação.
     async function createCampaignWithToast(draft: CampaignCreateDraft) {
         try {
             await addCampaign(draft)
@@ -43,6 +49,7 @@ export function useCampaignsListMutations(routeApi: RouteApi) {
         }
     }
 
+// Actualiza a campanha na lista e notifica sucesso ou erro da operação.
     async function saveCampaignWithToast(id: string, draft: CampaignCreateDraft) {
         try {
             await updateCampaign(id, draft)

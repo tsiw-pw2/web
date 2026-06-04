@@ -6,6 +6,7 @@ import { visibleCampaignDetailsTabs } from "@/modules/campaigns/lib/campaignDeta
 import { getCampaignDetails } from "@/modules/campaigns/services/campaignDetails"
 import type { CampaignDetails } from "@/modules/campaigns/types/details"
 
+// Composable que gere a lógica de campanha detalhes núcleo.
 export function useCampaignDetailsCore(
     activeTab: Ref<CampaignDetailsTabId>,
     canManageRegistrations: Ref<boolean>,
@@ -24,14 +25,17 @@ export function useCampaignDetailsCore(
 
     const visibleTabs = computed(() => visibleCampaignDetailsTabs(canManageRegistrations.value))
 
+// Gera rota dos detalhes da campanha para um separador.
     function tabRoute(tab: CampaignDetailsTabId) {
         return { name: "campaign-details" as const, params: { campaignId: campaignId.value, tab } }
     }
 
+// Navega volta.
     function goBack() {
         router.push({ name: "campaigns" })
     }
 
+// Carrega .
     async function load() {
         loading.value = true
         error.value = false
@@ -46,6 +50,7 @@ export function useCampaignDetailsCore(
         }
     }
 
+// Actualiza métricas, permissão de comentário e inscrição do visualizador via API.
     async function refreshCampaignMetrics() {
         if (!campaignId.value) return
         try {

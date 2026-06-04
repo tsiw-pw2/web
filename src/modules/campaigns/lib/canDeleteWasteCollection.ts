@@ -1,6 +1,7 @@
 import type { CampaignDetails, CampaignDetailsWasteCollection } from "@/modules/campaigns/types/details"
 import type { SettingsProfile } from "@/modules/settings/types/profile"
 
+// Verifica se é possível eliminação resíduos recolha.
 export function canDeleteWasteCollection(
     campaign: CampaignDetails | null,
     profile: SettingsProfile | null,

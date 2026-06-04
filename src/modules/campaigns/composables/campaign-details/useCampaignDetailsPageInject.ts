@@ -1,6 +1,7 @@
 import { inject } from "vue"
 import { campaignDetailsPageKey, type CampaignDetailsPageContext } from "@/modules/campaigns/composables/campaign-details/campaignDetailsPageContext"
 
+// Composable que gere a lógica de campanha detalhes página injecção.
 export function useCampaignDetailsPageInject(): CampaignDetailsPageContext {
     const ctx = inject(campaignDetailsPageKey)
     if (!ctx) {

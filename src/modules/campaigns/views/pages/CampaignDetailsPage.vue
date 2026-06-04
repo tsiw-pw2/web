@@ -1,6 +1,5 @@
-<script setup lang="ts">
-import { computed, provide } from "vue"
-import { RouterLink } from "vue-router"
+<script setup lang="ts">import { computed, provide } from "vue"
+
 import { campaignDetailsPageKey } from "@/modules/campaigns/composables/campaign-details/campaignDetailsPageContext"
 import { useCampaignDetailsPageState } from "@/modules/campaigns/composables/campaign-details/useCampaignDetailsPageState"
 import { CAMPAIGN_DETAILS_TAB_CONFIG } from "@/modules/campaigns/lib/campaignDetailsTabConfig"
@@ -50,8 +49,8 @@ useDocumentTitle(browserTitle)
         class="flex min-h-0 flex-1 flex-col gap-6"
         :class="isInformacoesTab ? 'overflow-hidden' : 'overflow-y-auto overscroll-none'"
     >
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div class="min-w-0">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <div class="min-w-0 flex-1">
                 <h2 class="truncate text-xl font-semibold leading-8 text-neutral-950 sm:text-2xl">
                     {{ campaign?.title ?? "Campanha" }}
                 </h2>
@@ -75,7 +74,7 @@ useDocumentTitle(browserTitle)
         />
 
         <div v-else-if="campaign" class="flex min-h-0 flex-1 flex-col gap-6">
-                <AnimatedTabBar ariaLabel="Secções da campanha" class="min-w-0 px-px">
+                <AnimatedTabBar ariaLabel="Secções da campanha" class="min-w-0">
                     <RouterLink
                         v-for="t in visibleTabs"
                         :key="t.id"

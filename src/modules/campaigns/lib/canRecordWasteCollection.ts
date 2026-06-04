@@ -2,6 +2,7 @@ import type { CampaignDetails } from "@/modules/campaigns/types/details"
 import { profileIsAdmin } from "@/modules/auth/lib/profileCapabilities"
 import type { SettingsProfile } from "@/modules/settings/types/profile"
 
+// Verifica se é possível registo resíduos recolha.
 export function canRecordWasteCollection(
     campaign: CampaignDetails | null,
     profile: SettingsProfile | null,

@@ -1,6 +1,5 @@
-<script setup lang="ts">
-import type { RouteLocationRaw } from "vue-router"
-import { RouterLink } from "vue-router"
+<script setup lang="ts">import type { RouteLocationRaw } from "vue-router"
+
 import DashboardPanel from "@/modules/dashboard/components/DashboardPanel.vue"
 import CampaignIcon from "@/shared/components/icons/dashboard/DashboardCampaignIcon.vue"
 import CoastIcon from "@/shared/components/icons/dashboard/DashboardCoastIcon.vue"

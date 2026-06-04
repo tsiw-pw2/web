@@ -98,6 +98,7 @@ const statusOptions = CAMPAIGN_STATUS_SELECT_OPTIONS
                                 v-model="form.endDate"
                                 class="w-full"
                                 type="date"
+                                :min="form.startDate || undefined"
                                 left-icon="calendar"
                             />
                         </div>

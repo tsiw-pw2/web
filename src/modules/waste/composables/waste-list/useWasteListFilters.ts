@@ -7,10 +7,12 @@ import { useRoute, useRouter } from "vue-router"
 const SEARCH_DEBOUNCE_MS = 300
 const MAX_SEARCH_LENGTH = 100
 
+// Compara dois arrays de strings elemento a elemento.
 function sameStringArray(a: readonly string[], b: readonly string[]): boolean {
     return a.length === b.length && a.every((value, index) => value === b[index])
 }
 
+// Serializa os filtros da listagem de resíduos para detetar alterações na query.
 function wasteFilterQuerySignature(query: Record<string, unknown>): string {
     const parsed = readWasteListFiltersFromQuery(query)
     return JSON.stringify({
@@ -20,6 +22,7 @@ function wasteFilterQuerySignature(query: Record<string, unknown>): string {
     })
 }
 
+// Analisa units.
 function parseUnits(raw: unknown): WasteUnitKey[] {
     if (raw == null) return []
     const parts = Array.isArray(raw) ? raw : typeof raw === "string" && raw !== "" ? [raw] : []
@@ -33,6 +36,7 @@ function parseUnits(raw: unknown): WasteUnitKey[] {
     return [...seen]
 }
 
+// Analisa categorias.
 function parseCategories(raw: unknown): string[] {
     if (raw == null) return []
     const parts = Array.isArray(raw) ? raw : typeof raw === "string" && raw !== "" ? [raw] : []
@@ -44,11 +48,13 @@ function parseCategories(raw: unknown): string[] {
     return [...seen]
 }
 
+// Analisa pesquisa.
 function parseSearch(raw: unknown): string {
     if (typeof raw !== "string" || raw === "") return ""
     return raw.trim().slice(0, MAX_SEARCH_LENGTH)
 }
 
+// Lê resíduos lista filtros de consulta.
 export function readWasteListFiltersFromQuery(query: Record<string, unknown>): WasteListFilters {
     const units = parseUnits(query.unit)
     const categories = parseCategories(query.category)
@@ -59,6 +65,7 @@ export function readWasteListFiltersFromQuery(query: Record<string, unknown>): W
     }
 }
 
+// Composable que gere a lógica de resíduos lista filtros.
 export function useWasteListFilters(onFiltersChange: () => void) {
     const route = useRoute()
     const router = useRouter()
@@ -70,6 +77,7 @@ export function useWasteListFilters(onFiltersChange: () => void) {
     let skipRouteWatch = false
     let skipFilterWatch = false
 
+// Sincroniza de rota.
     function syncFromRoute() {
         skipFilterWatch = true
         const parsed = readWasteListFiltersFromQuery(route.query as Record<string, unknown>)
@@ -107,6 +115,7 @@ export function useWasteListFilters(onFiltersChange: () => void) {
         () => search.value.trim() !== "" || units.value.length > 0 || categories.value.length > 0,
     )
 
+// Limpa pesquisa, unidades e categorias e actualiza a query da rota.
     async function clearAllFilters() {
         skipFilterWatch = true
         search.value = ""
@@ -116,10 +125,13 @@ export function useWasteListFilters(onFiltersChange: () => void) {
         await pushFiltersToRoute()
     }
 
+// Envia filtros para rota.
     async function pushFiltersToRoute() {
         const nextQuery: Record<string, string | string[] | undefined> = {
             ...(route.query as Record<string, string | string[] | undefined>),
         }
+
+// Define ou eliminação.
         const setOrDelete = (key: string, value: string) => {
             if (value) nextQuery[key] = value
             else delete nextQuery[key]

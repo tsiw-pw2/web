@@ -1,3 +1,4 @@
+// Serializa um objeto de strings para JSON, omitindo valores nulos.
 export function stringifyRecordStrings(record: Record<string, string | undefined | null>): string {
     const out: Record<string, string> = {}
     for (const key of Object.keys(record)) {

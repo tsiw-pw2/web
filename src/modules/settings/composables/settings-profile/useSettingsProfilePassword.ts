@@ -3,6 +3,7 @@ import { changeProfilePassword } from "@/modules/settings/services/profile"
 import { describeListMutationFailure, toastFromListMutationError } from "@/infrastructure/apiMutationToast"
 import { toastSuccess } from "@/infrastructure/appToast"
 
+// Composable que gere a lógica de definições perfil palavra-passe.
 export function useSettingsProfilePassword() {
     const currentPassword = ref("")
     const newPassword = ref("")
@@ -18,6 +19,7 @@ export function useSettingsProfilePassword() {
         )
     })
 
+// Repõe palavra-passe formulário.
     function resetPasswordForm() {
         currentPassword.value = ""
         newPassword.value = ""
@@ -25,6 +27,7 @@ export function useSettingsProfilePassword() {
         passwordSaveError.value = null
     }
 
+// Valida e altera a palavra-passe, renovando a sessão em caso de sucesso.
     async function savePassword() {
         passwordSaveError.value = null
         if (newPassword.value !== confirmPassword.value) {

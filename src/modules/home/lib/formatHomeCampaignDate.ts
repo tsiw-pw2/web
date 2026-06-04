@@ -1,3 +1,4 @@
+// Formata início campanha data.
 export function formatHomeCampaignDate(iso: string): string {
     const trimmed = iso.trim()
     if (!trimmed) return "—"
@@ -10,6 +11,7 @@ export function formatHomeCampaignDate(iso: string): string {
     }).format(date)
 }
 
+// Formata início campanha localização.
 export function formatHomeCampaignLocation(municipality: string | null, district: string | null): string {
     const parts = [district?.trim(), municipality?.trim()].filter((part) => part && part.length > 0)
     return parts.length > 0 ? parts.join(", ") : "—"

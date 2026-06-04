@@ -5,6 +5,7 @@ import { createWasteCategory, deleteWasteCategory, fetchWasteCategories, updateW
 import { toastFromListMutationError } from "@/infrastructure/apiMutationToast"
 import { toastSuccess } from "@/infrastructure/appToast"
 
+// Composable que gere a lógica de definições resíduos categorias.
 export function useSettingsWasteCategories() {
     const categories = ref<WasteCategory[]>([])
     const page = ref(1)
@@ -13,6 +14,7 @@ export function useSettingsWasteCategories() {
     const loading = ref(false)
     const error = ref<string | null>(null)
 
+// Obtém a página actual de categorias de resíduos da API.
     async function reload() {
         loading.value = true
         error.value = null
@@ -30,12 +32,14 @@ export function useSettingsWasteCategories() {
         }
     }
 
+// Navega para anterior página.
     async function goToPrevPage() {
         if (page.value <= 1) return
         page.value -= 1
         await reload()
     }
 
+// Navega para seguinte página.
     async function goToNextPage() {
         const maxPage = Math.max(1, Math.ceil(total.value / pageSize.value))
         if (page.value >= maxPage) return
@@ -43,6 +47,7 @@ export function useSettingsWasteCategories() {
         await reload()
     }
 
+// Cria categoria.
     async function createCategory(draft: WasteCategoryUpsertDraft) {
         try {
             await createWasteCategory(draft)
@@ -58,9 +63,11 @@ export function useSettingsWasteCategories() {
         }
     }
 
+// Actualiza a categoria na API, recarrega a lista e notifica sucesso.
     async function saveCategory(id: string, draft: WasteCategoryUpsertDraft) {
         try {
-            await updateWasteCategory(id, draft)
+            const item = categories.value.find((c) => c.id === id)
+            await updateWasteCategory(item ?? id, draft)
             await reload()
             toastSuccess("Categoria guardada", "As alterações ficaram disponíveis nos resíduos.")
         } catch (e) {
@@ -73,9 +80,11 @@ export function useSettingsWasteCategories() {
         }
     }
 
+// Elimina a categoria na API, recarrega a lista e notifica sucesso.
     async function removeCategory(id: string) {
         try {
-            await deleteWasteCategory(id)
+            const item = categories.value.find((c) => c.id === id)
+            await deleteWasteCategory(item ?? id)
             await reload()
             toastSuccess("Categoria eliminada")
         } catch (e) {

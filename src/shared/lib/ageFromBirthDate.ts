@@ -1,3 +1,4 @@
+// Calcula a idade a partir da data de nascimento ISO.
 export function ageFromBirthDate(birthDateIso: string | null | undefined, referenceDate = new Date()): number | null {
     if (typeof birthDateIso !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(birthDateIso)) {
         return null
@@ -18,6 +19,7 @@ export function ageFromBirthDate(birthDateIso: string | null | undefined, refere
     return age >= 0 ? age : null
 }
 
+// Divide o nome completo em primeiro nome e apelido.
 export function splitDisplayName(fullName: string): { firstName: string; lastName: string } {
     const trimmed = fullName.trim()
     if (!trimmed) return { firstName: "—", lastName: "—" }

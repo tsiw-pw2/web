@@ -10,10 +10,12 @@ const props = defineProps<{
 
 const BADGE_VALUE_LABEL = "Resíduo mais comum"
 
+// Verifica se a linha deve mostrar um distintivo.
 function isBadgeValueRow(row: DashboardKeyValueRow): boolean {
     return row.label === BADGE_VALUE_LABEL
 }
 
+// Verifica se o valor deve ser truncado com tooltip.
 function shouldTruncateValue(row: DashboardKeyValueRow): boolean {
     const min = props.valueTruncateMinLength
     if (min == null || min <= 0) return false

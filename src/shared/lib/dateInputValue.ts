@@ -1,3 +1,4 @@
+// Converte valor desconhecido para yyyy-MM-dd do input date.
 export function toDateInputValueFromUnknown(value: string | undefined | null): string {
     if (value == null) return ""
     const t = String(value).trim()

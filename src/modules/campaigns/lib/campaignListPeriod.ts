@@ -1,5 +1,6 @@
 import { formatDatePtDayMonthYear } from "@/shared/lib/formatPt"
 
+// Analisa data only.
 function parseDateOnly(value: string): Date | null {
     const trimmed = value.trim()
     if (!trimmed) return null
@@ -8,6 +9,7 @@ function parseDateOnly(value: string): Date | null {
     return date
 }
 
+// Calcula dias entre duas datas (inclusive).
 function diffDaysInclusive(startDate: string, endDate: string): number | null {
     const start = parseDateOnly(startDate)
     const end = parseDateOnly(endDate || startDate)
@@ -20,6 +22,7 @@ function diffDaysInclusive(startDate: string, endDate: string): number | null {
     return diffDays
 }
 
+// Formata duração de dias.
 function formatDurationFromDays(diffDays: number): string {
     if (diffDays >= 28 && diffDays % 30 === 0) {
         const months = diffDays / 30
@@ -32,17 +35,20 @@ function formatDurationFromDays(diffDays: number): string {
     return diffDays === 1 ? "1 dia" : `${diffDays} dias`
 }
 
+// Formata campanha duração rótulo.
 export function formatCampaignDurationLabel(startDate: string, endDate: string): string {
     const diffDays = diffDaysInclusive(startDate, endDate)
     if (diffDays == null) return "—"
     return formatDurationFromDays(diffDays)
 }
 
+// Formata tooltip data.
 function formatTooltipDate(value: string): string {
     const formatted = formatDatePtDayMonthYear(value)
     return formatted === value.trim() ? "—" : formatted
 }
 
+// Formata campanha período tooltip.
 export function formatCampaignPeriodTooltip(startDate: string, endDate: string): string {
     const start = formatTooltipDate(startDate)
     const end = formatTooltipDate(endDate || startDate)

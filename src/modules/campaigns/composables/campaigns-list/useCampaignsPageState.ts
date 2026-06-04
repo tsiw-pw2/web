@@ -7,6 +7,7 @@ import { watch } from "vue"
 
 export type { CampaignCreateDraft, CampaignListItem } from "@/modules/campaigns/types/list"
 
+// Composable que gere a lógica de campanhas página estado.
 export function useCampaignsPageState() {
     const routeApi = usePaginatedListRoute({
         page: campaignsPage,

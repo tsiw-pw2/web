@@ -1,6 +1,7 @@
 import { useRegisterForm } from "@/modules/auth/composables/register/useRegisterForm"
 import { useRegisterSubmit } from "@/modules/auth/composables/register/useRegisterSubmit"
 
+// Composable que gere a lógica de registo página estado.
 export function useRegisterPageState() {
     const form = useRegisterForm()
     const submitState = useRegisterSubmit(form)

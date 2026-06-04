@@ -1,18 +1,12 @@
 <script setup lang="ts">
 import { computed, inject } from "vue"
 import { settingsProfileKey } from "@/modules/settings/settingsInjection"
-import { ageFromBirthDate } from "@/shared/lib/ageFromBirthDate"
 import ApiStateBadge from "@/shared/components/ui/ApiStateBadge.vue"
 import { userRoleTableBadge } from "@/shared/lib/tableValueBadge"
 
 const profile = inject(settingsProfileKey)
 
 const nameLabel = computed(() => profile?.value?.name?.trim() || "—")
-
-const ageLabel = computed(() => {
-    const age = ageFromBirthDate(profile?.value?.birthDate ?? null)
-    return age != null ? String(age) : "—"
-})
 
 const emailLabel = computed(() => profile?.value?.email?.trim() || "—")
 
@@ -25,7 +19,6 @@ const roleBadge = computed(() => {
 })
 
 const rows = computed(() => [
-    { label: "Idade", value: ageLabel.value },
     { label: "Email", value: emailLabel.value },
     { label: "Telefone", value: phoneLabel.value },
 ])

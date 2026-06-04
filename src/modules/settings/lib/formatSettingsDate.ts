@@ -1,3 +1,4 @@
+// Formata definições data time.
 export function formatSettingsDateTime(iso: string | null | undefined): string {
     if (!iso) return "—"
     const d = new Date(iso)
@@ -11,6 +12,7 @@ export function formatSettingsDateTime(iso: string | null | undefined): string {
     }).format(d)
 }
 
+// Formata definições data only.
 export function formatSettingsDateOnly(iso: string | null | undefined): string {
     if (!iso) return "—"
     const d = new Date(`${iso.slice(0, 10)}T12:00:00Z`)

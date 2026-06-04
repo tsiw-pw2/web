@@ -1,36 +1,34 @@
-import { getApiBaseUrl } from "@/infrastructure/config"
 import { setAccessToken } from "@/infrastructure/access-token"
-import {
-    API_UNAVAILABLE_NETWORK_MESSAGE,
-    ApiServiceUnavailableError,
-    apiUnavailableMessageFromResponse,
-    shouldTreatResponseAsUnavailable,
-} from "@/infrastructure/apiErrors"
-
-type RegisterSuccessBody = {
-    session?: { token?: string }
-    token?: string
-    message?: string
-    errors?: Record<string, string[]>
-}
+import { clearApiRootCache, loadApiRoot, rootLink } from "@/infrastructure/apiDiscovery"
+import { followHref } from "@/infrastructure/hypermediaClient"
+import { extractApiErrorMessage } from "@/infrastructure/hypermedia.types"
+import { API_UNAVAILABLE_NETWORK_MESSAGE, ApiServiceUnavailableError, } from "@/infrastructure/apiErrors"
+import { isApiRequestError } from "@/infrastructure/request"
 
 export class RegisterServiceUnavailableError extends ApiServiceUnavailableError {
     override readonly name = "RegisterServiceUnavailableError"
 }
 
+// Verifica se o erro é de indisponibilidade do serviço de registo.
 export function isRegisterServiceUnavailableError(e: unknown): e is RegisterServiceUnavailableError {
     return e instanceof RegisterServiceUnavailableError
 }
 
-function throwUnexpectedRegisterResponse(res: Response, rawText: string): never {
-    if (shouldTreatResponseAsUnavailable(res, rawText)) {
-        throw new RegisterServiceUnavailableError(apiUnavailableMessageFromResponse(res, rawText))
-    }
-    throw new RegisterServiceUnavailableError(API_UNAVAILABLE_NETWORK_MESSAGE)
+type SessionResponse = {
+    id: string
+    token: string
+    user: Record<string, unknown>
+    links?: Record<string, unknown>
 }
 
-function registerErrorMessage(parsed: RegisterSuccessBody): string {
-    const credentials = parsed.errors?.credentials
+// Formata a mensagem de erro amigável para falhas de registo.
+function registerErrorMessage(body: unknown): string {
+    if (!body || typeof body !== "object") {
+        return "Não foi possível criar a conta. Verifica os dados e tenta novamente."
+    }
+    const record = body as Record<string, unknown>
+    const errors = record.errors as Record<string, string[]> | undefined
+    const credentials = errors?.credentials
     if (Array.isArray(credentials) && credentials.length > 0) {
         const msg = credentials[0]?.trim()
         if (msg === "Unable to create account" || msg === "Invalid name, email or password") {
@@ -40,64 +38,46 @@ function registerErrorMessage(parsed: RegisterSuccessBody): string {
             return msg
         }
     }
-    const apiMsg = typeof parsed.message === "string" ? parsed.message.trim() : ""
+    const apiMsg = extractApiErrorMessage(body) ?? ""
     if (apiMsg.length > 0 && apiMsg !== "Validation error") {
         return apiMsg
     }
     return "Não foi possível criar a conta. Verifica os dados e tenta novamente."
 }
 
-function extractAccessToken(parsed: RegisterSuccessBody): string | null {
-    const sessionToken = parsed.session?.token
-    if (typeof sessionToken === "string" && sessionToken.length > 0) {
-        return sessionToken
-    }
-    if (typeof parsed.token === "string" && parsed.token.length > 0) {
-        return parsed.token
-    }
-    return null
-}
-
+// Regista um novo utilizador e inicia sessão automaticamente.
 export async function registerWithCredentials(
     name: string,
     email: string,
     password: string,
 ): Promise<void> {
-    const url = `${getApiBaseUrl()}/users`
-    let res: Response
     try {
-        res = await fetch(url, {
+        await loadApiRoot(true)
+        const usersLink = await rootLink("users")
+        await followHref(usersLink, { method: "POST", body: { name, email, password } })
+        const sessionsLink = await rootLink("sessions")
+        const session = await followHref<SessionResponse>(sessionsLink, {
             method: "POST",
-            credentials: "include",
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ name, email, password }),
+            body: { email, password },
         })
-    } catch {
-        throw new RegisterServiceUnavailableError(API_UNAVAILABLE_NETWORK_MESSAGE)
-    }
-
-    const rawText = await res.text()
-
-    let parsed: RegisterSuccessBody
-    try {
-        if (rawText.trim().length === 0 && !res.ok) {
-            throw new SyntaxError("empty")
+        if (!session.token) {
+            throw new Error(
+                "Conta criada, mas não foi possível iniciar sessão. Entra com o teu email e palavra-passe.",
+            )
         }
-        parsed = JSON.parse(rawText) as RegisterSuccessBody
-        if (parsed === null || typeof parsed !== "object") {
-            throw new SyntaxError("not-object")
+        setAccessToken(session.token)
+        clearApiRootCache()
+        await loadApiRoot(true)
+    } catch (e) {
+        if (e instanceof RegisterServiceUnavailableError) {
+            throw e
         }
-    } catch {
-        throwUnexpectedRegisterResponse(res, rawText)
+        if (e instanceof ApiServiceUnavailableError) {
+            throw new RegisterServiceUnavailableError(API_UNAVAILABLE_NETWORK_MESSAGE)
+        }
+        if (isApiRequestError(e)) {
+            throw new Error(registerErrorMessage({ error_description: e.message }))
+        }
+        throw e
     }
-
-    const token = extractAccessToken(parsed)
-    if (!res.ok || token == null) {
-        throw new Error(registerErrorMessage(parsed))
-    }
-
-    setAccessToken(token)
 }

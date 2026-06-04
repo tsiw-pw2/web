@@ -17,6 +17,7 @@ const props = withDefaults(
 
 const panelRef = ref<HTMLElement | null>(null)
 
+// Fecha o modal ao clicar no fundo.
 function closeFromBackdrop() {
     open.value = false
 }
@@ -32,6 +33,7 @@ onBeforeUnmount(() => {
     }
 })
 
+// Verifica se o elemento está provavelmente visível.
 function isLikelyVisible(el: HTMLElement): boolean {
     if (el.closest('[aria-hidden="true"]')) return false
     const r = el.getBoundingClientRect()
@@ -41,6 +43,7 @@ function isLikelyVisible(el: HTMLElement): boolean {
     return true
 }
 
+// Tenta focar o primeiro campo editável do painel.
 function tryFocusFirstField(panel: HTMLElement): boolean {
     const form = panel.querySelector("form")
     const scope = form ?? panel
@@ -70,8 +73,10 @@ function tryFocusFirstField(panel: HTMLElement): boolean {
     return false
 }
 
+// Agenda tentativas de foco no primeiro campo do modal.
 function scheduleInitialFocus(panel: HTMLElement | null) {
     if (!panel) return
+    // Executa o foco inicial no primeiro campo.
     const run = () => {
         tryFocusFirstField(panel)
     }

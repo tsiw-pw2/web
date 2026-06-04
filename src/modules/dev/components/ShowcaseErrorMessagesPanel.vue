@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue"
-import {
-    SHOWCASE_ERROR_MESSAGE_GROUPS,
-    showcaseErrorMessageCount,
-} from "@/modules/dev/lib/showcaseErrorMessages"
+import { SHOWCASE_ERROR_MESSAGE_GROUPS, showcaseErrorMessageCount, } from "@/modules/dev/lib/showcaseErrorMessages"
 import AnimatedTabBar from "@/shared/components/ui/tabs/AnimatedTabBar.vue"
 import AnimatedTabTrigger from "@/shared/components/ui/tabs/AnimatedTabTrigger.vue"
 
@@ -14,12 +11,14 @@ const activeGroup = computed(() =>
     SHOWCASE_ERROR_MESSAGE_GROUPS.find((group) => group.id === activeGroupId.value),
 )
 
+// Encurta o texto da origem do erro.
 function shortSource(source: string): string {
     const path = source.split(" · ")[0]?.trim() ?? source
     const segments = path.split("/")
     return segments.length > 2 ? segments.slice(-2).join("/") : path
 }
 
+// Selecciona um grupo de mensagens de erro.
 function selectGroup(id: string) {
     activeGroupId.value = id
 }

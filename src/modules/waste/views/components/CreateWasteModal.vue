@@ -19,6 +19,7 @@ const emit = defineEmits<{
     create: [payload: WasteUpsertDraft]
 }>()
 
+// Fecha o modal ou painel.
 function close() {
     open.value = false
 }

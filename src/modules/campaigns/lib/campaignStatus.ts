@@ -23,6 +23,7 @@ export const CAMPAIGN_STATUS_SELECT_OPTIONS = CAMPAIGN_STATUS_KEYS.map((value) =
     label: CAMPAIGN_STATUS_LABELS[value],
 }))
 
+// Devolve o rótulo legível do estado da campanha.
 export function campaignStatusLabel(key: CampaignStatusKey | string | undefined | null): string {
     if (!key) return "—"
     return CAMPAIGN_STATUS_LABELS[key as CampaignStatusKey] ?? "—"
@@ -36,6 +37,7 @@ export const ENROLLABLE_CAMPAIGN_STATUS_KEYS = new Set<CampaignStatusKey>([
 
 const ENROLLMENT_CLOSED_STATUS_KEYS = new Set<CampaignStatusKey>(["planeada", "concluida", "cancelada"])
 
+// Indica se inscrição fechada estado.
 export function isEnrollmentClosedStatus(key: CampaignStatusKey): boolean {
     return ENROLLMENT_CLOSED_STATUS_KEYS.has(key)
 }

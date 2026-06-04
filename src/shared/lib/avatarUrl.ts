@@ -1,3 +1,4 @@
+// Resolve avatar apresentação src.
 export function resolveAvatarDisplaySrc(url: string | null | undefined, cacheBust?: number | string | null): string {
     const t = (url ?? "").trim()
     if (t.length === 0) return ""
@@ -7,6 +8,7 @@ export function resolveAvatarDisplaySrc(url: string | null | undefined, cacheBus
     return `${t}${sep}v=${encodeURIComponent(String(cacheBust))}`
 }
 
+// Indica se valid avatar URL campo.
 export function isValidAvatarUrlField(input: string): boolean {
     const t = input.trim()
     if (t === "") return true

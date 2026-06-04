@@ -5,6 +5,7 @@ export type PaginationQueryKeys = {
     pageSize: string
 }
 
+// Analisa página de rota consulta.
 export function parsePageFromRouteQuery(query: LocationQuery, key: string): number | undefined {
     const raw = query[key]
     const s = Array.isArray(raw) ? raw[0] : raw
@@ -14,6 +15,7 @@ export function parsePageFromRouteQuery(query: LocationQuery, key: string): numb
     return n
 }
 
+// Analisa página size de rota consulta.
 export function parsePageSizeFromRouteQuery(query: LocationQuery, key: string, maxPageSize: number): number | undefined {
     const raw = query[key]
     const s = Array.isArray(raw) ? raw[0] : raw
@@ -23,6 +25,7 @@ export function parsePageSizeFromRouteQuery(query: LocationQuery, key: string, m
     return n
 }
 
+// Atualiza a query da rota com página e tamanho de página.
 export function mergeRouteQueryWithPagination(query: LocationQuery, page: number, pageSize: number, defaultPageSize: number, keys: PaginationQueryKeys): LocationQuery {
     const next: LocationQuery = { ...query }
     if (page <= 1) {

@@ -9,13 +9,13 @@ import { useCampaignDetailsWaste } from "@/modules/campaigns/composables/campaig
 import { useCampaignRegistrationActions } from "@/modules/campaigns/composables/campaign-details/useCampaignRegistrationActions"
 import { campaignDetailsTabFromRoute } from "@/modules/campaigns/lib/campaignDetailsTabs"
 
+// Composable que gere a lógica de campanha detalhes página estado.
 export function useCampaignDetailsPageState() {
     const route = useRoute()
     const activeTab = computed(() => campaignDetailsTabFromRoute(route.params.tab))
     const canManageRegistrations = ref(false)
 
     const campaignId = computed(() => String(route.params.campaignId ?? ""))
-    const tabs = useCampaignDetailsTabs(campaignId, activeTab)
 
     const core = useCampaignDetailsCore(
         activeTab,
@@ -28,6 +28,8 @@ export function useCampaignDetailsPageState() {
             tabs.resetTabState()
         },
     )
+
+    const tabs = useCampaignDetailsTabs(campaignId, core.campaign, activeTab)
 
     const registration = useCampaignRegistrationActions(
         core.campaignId,
@@ -46,13 +48,12 @@ export function useCampaignDetailsPageState() {
 
     const display = useCampaignDetailsDisplay(core.campaign, core.profile)
     const comments = useCampaignDetailsComments(
-        core.campaignId,
+        core.campaign,
         core.profile,
         tabs.reloadCommentsFirstPage,
         core.refreshCampaignMetrics,
     )
     const waste = useCampaignDetailsWaste(
-        core.campaignId,
         core.campaign,
         {
             wasteBeachId: tabs.wasteBeachId,

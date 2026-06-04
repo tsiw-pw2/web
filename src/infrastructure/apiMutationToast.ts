@@ -4,6 +4,7 @@ import { isApiRequestError } from "@/infrastructure/request"
 
 export type ListMutationToastMode = "create" | "save" | "delete"
 
+// Traduz um erro de mutação numa mensagem amigável para o utilizador.
 export function describeListMutationFailure(
     e: unknown,
     opts: { forbiddenDetail?: string; conflictDetail?: string } = {},
@@ -34,6 +35,7 @@ export function describeListMutationFailure(
     return "Verifica a ligação, os dados e tenta outra vez."
 }
 
+// Mostra toast de erro adequado a falhas de criar, guardar ou eliminar.
 export function toastFromListMutationError(
     e: unknown,
     opts: { mode: ListMutationToastMode; forbiddenDetail?: string; conflictDetail?: string },

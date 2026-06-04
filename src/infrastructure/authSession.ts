@@ -1,5 +1,6 @@
-import { getApiBaseUrl } from "@/infrastructure/config"
-import { setAccessToken } from "@/infrastructure/access-token"
+import { apiPatch } from "./apiClient"
+import { clearApiRootCache, loadApiRoot } from "./apiDiscovery"
+import { setAccessToken } from "./access-token"
 
 type RefreshBody = {
     token?: string
@@ -7,26 +8,20 @@ type RefreshBody = {
 
 let restoreInFlight: Promise<boolean> | null = null
 
+// Tenta renovar a sessão com o cookie existente e devolve sucesso ou falha.
 export async function tryRestoreSession(): Promise<boolean> {
     if (restoreInFlight) {
         return restoreInFlight
     }
     restoreInFlight = (async () => {
-        const url = `${getApiBaseUrl()}/sessions/current`
         try {
-            const res = await fetch(url, {
-                method: "PATCH",
-                credentials: "include",
-                headers: { Accept: "application/json" },
-            })
-            if (!res.ok) {
-                return false
-            }
-            const body = (await res.json()) as RefreshBody
-            if (typeof body.token !== "string" || body.token.length === 0) {
+            const body = await apiPatch<RefreshBody>("/sessions/current")
+            if (typeof body?.token !== "string" || body.token.length === 0) {
                 return false
             }
             setAccessToken(body.token)
+            clearApiRootCache()
+            await loadApiRoot(true)
             return true
         } catch {
             return false

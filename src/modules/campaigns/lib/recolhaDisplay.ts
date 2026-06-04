@@ -1,3 +1,4 @@
+// Formata recolha peso grams.
 export function formatRecolhaWeightGrams(
     actualWeightKg: string | null,
     estimatedWeightKg: string | null,

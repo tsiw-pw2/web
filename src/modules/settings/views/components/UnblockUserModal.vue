@@ -13,10 +13,12 @@ const emit = defineEmits<{
     confirm: []
 }>()
 
+// Fecha o modal ou painel.
 function close() {
     open.value = false
 }
 
+// Confirma a acção de eliminação ou bloqueio.
 function onConfirm() {
     emit("confirm")
     close()

@@ -4,17 +4,15 @@ import { toastAccountBlocked, toastServiceUnavailable } from "@/infrastructure/a
 import { resolvePostAuthRedirect } from "@/modules/auth/lib/postAuthRedirect"
 import { LOGIN_GENERIC_ERROR_MESSAGE } from "@/modules/auth/lib/loginFormConstants"
 import type { useLoginForm } from "@/modules/auth/composables/login/useLoginForm"
-import {
-    isLoginAccountBlockedError,
-    isLoginServiceUnavailableError,
-    loginWithCredentials,
-} from "@/modules/auth/services/login"
+import { isLoginAccountBlockedError, isLoginServiceUnavailableError, loginWithCredentials, } from "@/modules/auth/services/login"
 
+// Composable que gere a lógica de autenticação submissão.
 export function useLoginSubmit(form: ReturnType<typeof useLoginForm>) {
     const router = useRouter()
     const route = useRoute()
     const isSubmitting = ref(false)
 
+// Autentica com email e palavra-passe e redirecciona para o destino pós-login.
     async function submit() {
         form.clearErrors()
         isSubmitting.value = true

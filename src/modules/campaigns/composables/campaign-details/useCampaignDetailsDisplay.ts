@@ -7,6 +7,7 @@ import type { CampaignDetails } from "@/modules/campaigns/types/details"
 import type { SettingsProfile } from "@/modules/settings/types/profile"
 import { formatWeightKg } from "@/shared/lib/formatPt"
 
+// Composable que gere a lógica de campanha detalhes apresentação.
 export function useCampaignDetailsDisplay(
     campaign: Ref<CampaignDetails | null>,
     profile: Ref<SettingsProfile | null>,
@@ -25,6 +26,7 @@ export function useCampaignDetailsDisplay(
 
     const canRecordWaste = computed(() => canRecordWasteCollection(campaign.value, profile.value))
 
+// Verifica se é possível eliminação resíduos row.
     function canDeleteWasteRow(row: CampaignDetailsWasteCollection) {
         return canDeleteWasteCollection(campaign.value, profile.value, row)
     }

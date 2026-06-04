@@ -31,6 +31,7 @@ const {
 const { canRecordWaste, canDeleteWasteRow } = display
 const campaign = computed(() => core.campaign.value!)
 
+// Emite eliminação de uma recolha de resíduos.
 function onDeleteWasteRow(row: CampaignDetailsWasteCollection) {
     openDeleteWasteCollection(row)
 }

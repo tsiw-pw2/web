@@ -16,6 +16,7 @@ const emit = defineEmits<{
     confirm: [reason: string]
 }>()
 
+// Fecha o modal ou painel.
 function close() {
     open.value = false
 }
@@ -25,6 +26,7 @@ const isConfirming = ref(false)
 
 const canConfirm = computed(() => reason.value.trim().length > 0)
 
+// Confirma a acção de eliminação ou bloqueio.
 function onConfirm() {
     if (!canConfirm.value || isConfirming.value) return
     isConfirming.value = true

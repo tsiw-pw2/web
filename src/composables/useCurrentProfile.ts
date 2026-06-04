@@ -11,6 +11,7 @@ const error = ref<string | null>(null)
 
 let loadPromise: Promise<SettingsProfile | null> | null = null
 
+// Sincroniza a cache de avatar e nome com o perfil carregado.
 function syncAvatarCache(p: SettingsProfile, avatarCacheBust?: number) {
     setProfileSummaryCache({
         avatarUrl: p.avatarUrl ?? null,
@@ -19,6 +20,7 @@ function syncAvatarCache(p: SettingsProfile, avatarCacheBust?: number) {
     })
 }
 
+// Carrega o perfil do utilizador autenticado (com deduplicação e cache).
 export async function loadCurrentProfile(options?: { force?: boolean }): Promise<SettingsProfile | null> {
     const force = options?.force === true
     if (!force && profile.value) return profile.value
@@ -52,23 +54,28 @@ export async function loadCurrentProfile(options?: { force?: boolean }): Promise
     return loadPromise
 }
 
+// Invalida o perfil em memória para forçar novo carregamento.
 export function invalidateCurrentProfile() {
   profile.value = null
   error.value = null
   loadPromise = null
 }
 
+// Composable partilhado para estado e acções do perfil do utilizador.
 export function useCurrentProfile() {
+  // Delega no carregamento global do perfil com opção de forçar refresh.
   async function loadProfile(options?: { force?: boolean }): Promise<SettingsProfile | null> {
     return loadCurrentProfile(options)
   }
 
+  // Actualiza o perfil local e a cache de avatar na UI.
   function setProfile(p: SettingsProfile, options?: { avatarCacheBust?: number }) {
     profile.value = p
     error.value = null
     syncAvatarCache(p, options?.avatarCacheBust)
   }
 
+  // Limpa o perfil em memória e pede novo carregamento na próxima leitura.
   function invalidateProfile() {
     invalidateCurrentProfile()
   }

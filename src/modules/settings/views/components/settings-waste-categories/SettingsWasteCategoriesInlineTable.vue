@@ -33,6 +33,7 @@ const emit = defineEmits<{
 const createInputRef = ref<HTMLInputElement | null>(null)
 const editInputRef = ref<HTMLInputElement | null>(null)
 
+// Resolve a referência de elemento para HTMLElement.
 function resolveElementRef(el: Element | ComponentPublicInstance | null) {
     if (el && "$el" in el) {
         const node = el.$el
@@ -41,10 +42,12 @@ function resolveElementRef(el: Element | ComponentPublicInstance | null) {
     return el instanceof HTMLInputElement ? el : null
 }
 
+// Associa a referência do input de criação.
 function setCreateInputRef(el: Element | ComponentPublicInstance | null) {
     createInputRef.value = resolveElementRef(el)
 }
 
+// Associa a referência do input de edição.
 function setEditInputRef(el: Element | ComponentPublicInstance | null) {
     editInputRef.value = resolveElementRef(el)
 }

@@ -12,6 +12,7 @@ type RegistrationTabs = {
     registrations: Ref<CampaignDetailsRegistration[]>
 }
 
+// Composable que gere a lógica de campanha detalhes inscrição linhas.
 export function useCampaignDetailsRegistrationRows(
     tabs: RegistrationTabs,
     registration: RegistrationActions,
@@ -22,11 +23,13 @@ export function useCampaignDetailsRegistrationRows(
             : "",
     )
 
+// Abre edição da inscrição pela linha selecionada.
     function onEditRegistrationRow(rowId: string) {
         const row = tabs.registrations.value.find((r) => r.id === rowId)
         if (row) registration.openEditRegistration(row)
     }
 
+// Abre eliminação da inscrição pela linha selecionada.
     function onDeleteRegistrationRow(rowId: string) {
         const row = tabs.registrations.value.find((r) => r.id === rowId)
         if (row) registration.openDeleteRegistration(row)

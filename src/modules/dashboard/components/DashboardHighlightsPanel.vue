@@ -1,6 +1,5 @@
-<script setup lang="ts">
-import type { RouteLocationRaw } from "vue-router"
-import { RouterLink } from "vue-router"
+<script setup lang="ts">import type { RouteLocationRaw } from "vue-router"
+
 import DashboardKeyValueRows from "@/modules/dashboard/components/DashboardKeyValueRows.vue"
 import DashboardPanel from "@/modules/dashboard/components/DashboardPanel.vue"
 import DashboardPanelHeader from "@/modules/dashboard/components/DashboardPanelHeader.vue"

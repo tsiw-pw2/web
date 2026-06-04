@@ -1,4 +1,5 @@
 import type { CampaignStatusKey } from "@/modules/campaigns/lib/campaignStatus"
+import type { ResourceLinks } from "@/infrastructure/hypermedia.types"
 
 export type CampaignDetailsOrganizer = {
     id: string
@@ -30,6 +31,7 @@ export type CampaignDetailsRegistration = {
     attendance: boolean | null
     createdAt?: string
     user?: CampaignDetailsRegistrationUser | null
+    links?: ResourceLinks
 }
 
 export type CampaignDetailsViewerRegistration = {
@@ -37,6 +39,7 @@ export type CampaignDetailsViewerRegistration = {
     role: number
     status: number
     attendance: boolean | null
+    links?: ResourceLinks
 }
 
 export type CampaignDetailsComment = {
@@ -45,6 +48,7 @@ export type CampaignDetailsComment = {
     createdAt: string
     user: { id: string; name: string } | null
     isVisible?: boolean
+    links?: ResourceLinks
 }
 
 export type CampaignDetailsWasteCollection = {
@@ -56,6 +60,7 @@ export type CampaignDetailsWasteCollection = {
     beach: { id: string; name: string } | null
     waste: { id: string; name: string } | null
     recordedBy: { id: string; name: string } | null
+    links?: ResourceLinks
 }
 
 export type CampaignWasteByTypeRow = {
@@ -79,6 +84,7 @@ export type CampaignDetailsMetrics = {
 
 export type CampaignDetails = {
     id: string
+    links?: ResourceLinks
     title: string
     description: string | null
     meetingLocation: string

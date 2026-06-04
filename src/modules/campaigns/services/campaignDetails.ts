@@ -1,8 +1,12 @@
-import { unwrapResource } from "@/infrastructure/hateoas"
-import { requestApiData } from "@/infrastructure/request"
+import { href } from "@/infrastructure/apiDiscovery"
+import { apiGet } from "@/infrastructure/apiClient"
 import type { CampaignDetails } from "@/modules/campaigns/types/details"
+import type { ResourceLinks } from "@/infrastructure/hypermedia.types"
 
-export async function getCampaignDetails(campaignId: string): Promise<CampaignDetails> {
-    const body = await requestApiData<unknown>(`/campaigns/${campaignId}`, { method: "GET" })
-    return unwrapResource<CampaignDetails>(body)
+export type CampaignDetailsResource = CampaignDetails & { links?: ResourceLinks }
+
+// Obtém os detalhes de uma campanha pelo identificador.
+export async function getCampaignDetails(campaignId: string): Promise<CampaignDetailsResource> {
+    const base = await href("campaigns")
+    return apiGet<CampaignDetailsResource>(`${base}/${campaignId}`)
 }

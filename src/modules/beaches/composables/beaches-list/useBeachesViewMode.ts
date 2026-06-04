@@ -7,6 +7,7 @@ export type BeachesViewMode = "list" | "map"
 
 const MAP_PAGE_SIZE = 100
 
+// Composable que gere a lógica de beaches vista modo.
 export function useBeachesViewMode() {
     const route = useRoute()
     const router = useRouter()
@@ -19,6 +20,7 @@ export function useBeachesViewMode() {
     const mapLoading = ref(false)
     const mapError = ref(false)
 
+// Carrega mapa beaches.
     async function loadMapBeaches() {
         mapLoading.value = true
         mapError.value = false
@@ -33,6 +35,7 @@ export function useBeachesViewMode() {
         }
     }
 
+// Define vista modo.
     async function setViewMode(next: BeachesViewMode) {
         const nextQuery = { ...route.query }
         if (next === "map") {

@@ -6,6 +6,7 @@ import { registerRouterMiddleware } from "@/app/middleware/registerRouterMiddlew
 import { router } from "@/app/router"
 import { tryRestoreSession } from "@/infrastructure/authSession"
 
+// Inicializa a aplicação Vue: sessão, plugins e router.
 export async function createApplication() {
     await tryRestoreSession()
     const app = createApp(App)

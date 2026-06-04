@@ -1,25 +1,10 @@
-import {
-    API_UNAVAILABLE_NETWORK_MESSAGE,
-    API_UNAVAILABLE_RESPONSE_MESSAGE,
-} from "@/infrastructure/apiErrors"
+import { API_UNAVAILABLE_NETWORK_MESSAGE, API_UNAVAILABLE_RESPONSE_MESSAGE, } from "@/infrastructure/apiErrors"
 import { CLIENT_SAFE_REQUEST_FAILED } from "@/infrastructure/request"
 import { LOGIN_GENERIC_ERROR_MESSAGE } from "@/modules/auth/lib/loginFormConstants"
 import { REGISTER_GENERIC_ERROR_MESSAGE } from "@/modules/auth/lib/registerFormConstants"
-import {
-    beachCreateMutationMessages,
-    beachDeleteMutationMessages,
-    beachSaveMutationMessages,
-} from "@/modules/beaches/lib/beachListMutationMessages"
-import {
-    campaignsCreateMutationMessages,
-    campaignsDeleteMutationMessages,
-    campaignsSaveMutationMessages,
-} from "@/modules/campaigns/lib/campaignsListMutationMessages"
-import {
-    wasteCreateMutationMessages,
-    wasteDeleteMutationMessages,
-    wasteSaveMutationMessages,
-} from "@/modules/waste/lib/wasteListMutationMessages"
+import { beachCreateMutationMessages, beachDeleteMutationMessages, beachSaveMutationMessages, } from "@/modules/beaches/lib/beachListMutationMessages"
+import { campaignsCreateMutationMessages, campaignsDeleteMutationMessages, campaignsSaveMutationMessages, } from "@/modules/campaigns/lib/campaignsListMutationMessages"
+import { wasteCreateMutationMessages, wasteDeleteMutationMessages, wasteSaveMutationMessages, } from "@/modules/waste/lib/wasteListMutationMessages"
 import { avatarFileValidationMessage } from "@/shared/lib/avatarConstraints"
 
 export type ShowcaseErrorMessageRow = {

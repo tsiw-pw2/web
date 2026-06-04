@@ -1,13 +1,4 @@
-import {
-    computed,
-    nextTick,
-    onBeforeUnmount,
-    onMounted,
-    ref,
-    watch,
-    type InjectionKey,
-    type Ref,
-} from "vue"
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch, type InjectionKey, type Ref, } from "vue"
 
 type TabRegistration = {
     el: HTMLElement
@@ -21,6 +12,7 @@ export type AnimatedTabBarContext = {
 
 export const ANIMATED_TAB_BAR_KEY: InjectionKey<AnimatedTabBarContext> = Symbol("animatedTabBar")
 
+// Composable que gere a lógica de animado separador indicador.
 export function useAnimatedTabIndicator(containerRef: Ref<HTMLElement | null | undefined>) {
     const registrations = ref(new Map<symbol, TabRegistration>())
     const offsetX = ref(0)
@@ -31,6 +23,7 @@ export function useAnimatedTabIndicator(containerRef: Ref<HTMLElement | null | u
     let resizeObserver: ResizeObserver | null = null
     let enableTransitionsFrame = 0
 
+// Ativa transições do indicador após o layout estabilizar.
     function scheduleEnableTransitions() {
         if (transitionsEnabled.value) return
         cancelAnimationFrame(enableTransitionsFrame)
@@ -41,6 +34,7 @@ export function useAnimatedTabIndicator(containerRef: Ref<HTMLElement | null | u
         })
     }
 
+// Actualiza .
     function update() {
         const container = containerRef.value
         if (!container) return
@@ -69,6 +63,7 @@ export function useAnimatedTabIndicator(containerRef: Ref<HTMLElement | null | u
         }
     }
 
+// Regista separador.
     function registerTab(id: symbol, el: HTMLElement | null, isActive: () => boolean) {
         if (!el) {
             registrations.value.delete(id)
@@ -80,6 +75,7 @@ export function useAnimatedTabIndicator(containerRef: Ref<HTMLElement | null | u
         void nextTick(update)
     }
 
+// Recalcula o indicador quando a janela é redimensionada.
     function onWindowResize() {
         update()
     }

@@ -9,15 +9,18 @@ const loadingRef = ref(false)
 const creatingRef = ref(false)
 const loadedRef = ref(false)
 
+// Ordena categorias de resíduo por nome (locale pt).
 function sortCategories(items: WasteCategory[]) {
     return [...items].sort((a, b) => a.name.localeCompare(b.name, "pt"))
 }
 
+// Procura categoria pelo nome (comparação normalizada).
 function findCategoryByName(name: string) {
     const normalized = normalizeForSearch(name)
     return categoriesRef.value.find((category) => normalizeForSearch(category.name) === normalized) ?? null
 }
 
+// Composable que gere a lógica de resíduos categoria opções.
 export function useWasteCategoryOptions() {
     const categoryOptions = computed(() =>
         categoriesRef.value.map((category) => ({
@@ -26,6 +29,7 @@ export function useWasteCategoryOptions() {
         })),
     )
 
+// Carrega categorias.
     async function loadCategories(force = false) {
         if (loadedRef.value && !force) return
         loadingRef.value = true
@@ -38,6 +42,7 @@ export function useWasteCategoryOptions() {
         }
     }
 
+// Cria categoria.
     async function createCategory(name: string): Promise<WasteCategory> {
         const trimmed = name.trim()
         const existing = findCategoryByName(trimmed)

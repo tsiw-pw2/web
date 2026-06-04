@@ -2,10 +2,7 @@
 import { computed, inject, ref, watch } from "vue"
 import type { SettingsUserRow } from "@/modules/settings/types/settingsUser"
 import { formatSettingsDateOnly, formatSettingsDateTime } from "@/modules/settings/lib/formatSettingsDate"
-import {
-    SETTINGS_USER_ROLE_OPTIONS,
-    type SettingsUserRoleKey,
-} from "@/modules/settings/lib/settingsUserRole"
+import { SETTINGS_USER_ROLE_OPTIONS, type SettingsUserRoleKey, } from "@/modules/settings/lib/settingsUserRole"
 import { settingsProfileKey } from "@/modules/settings/settingsInjection"
 import { userRoleLabel } from "@/modules/settings/lib/userRoleLabel"
 import { userAccountStateBadge } from "@/shared/lib/apiStatePresentation"

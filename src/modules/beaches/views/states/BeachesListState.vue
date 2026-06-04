@@ -20,10 +20,12 @@ const emit = defineEmits<{
 
 const districtLabel = Object.fromEntries(DISTRICT_SELECT_OPTIONS.map((o) => [o.value, o.label])) as Record<string, string>
 
+// Obtém a etiqueta legível do distrito.
 function labelForDistrict(code: string) {
     return districtLabel[code] ?? code
 }
 
+// Formata uma coordenada para exibição.
 function formatCoordinate(value: string) {
     const trimmed = value.trim()
     if (!trimmed) return "—"

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Component } from "vue"
 import { computed, onMounted } from "vue"
-import { RouterLink, useRoute } from "vue-router"
+import { useRoute } from "vue-router"
 import { routePaths } from "@/app/router"
 import { useCurrentProfile } from "@/composables/useCurrentProfile"
 import { canAccessDashboard } from "@/modules/auth/lib/accessPolicy"
@@ -65,6 +65,7 @@ onMounted(() => {
     void loadProfile()
 })
 
+// Verifica se a rota está activa.
 function isActive(names: readonly string[]) {
     return names.includes(route.name as string)
 }

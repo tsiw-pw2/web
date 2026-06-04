@@ -1,4 +1,5 @@
 import type { CampaignCreateDraft, CampaignListFilters, CampaignListItem } from "@/modules/campaigns/types/list"
+import type { ResourceLinks } from "@/infrastructure/hypermedia.types"
 import { ref } from "vue"
 import { toastListPossiblyStale } from "@/infrastructure/appToast"
 import { createCampaign } from "@/modules/campaigns/services/campaigns/createCampaign"
@@ -14,6 +15,7 @@ export const campaignsTotal = ref(0)
 
 let loadGeneration = 0
 let listFilters: CampaignListFilters = {}
+let listLinks: ResourceLinks | undefined
 
 export function setCampaignsListFilters(filters: CampaignListFilters) {
     listFilters = filters
@@ -29,7 +31,13 @@ async function applyPageResult(data: Awaited<ReturnType<typeof fetchCampaignsPag
 async function fetchAndApply(opts?: { page?: number; pageSize?: number }): Promise<void> {
     if (opts?.page != null) campaignsPage.value = opts.page
     if (opts?.pageSize != null) campaignsPageSize.value = opts.pageSize
-    const data = await fetchCampaignsPage(campaignsPage.value, campaignsPageSize.value, listFilters)
+    const data = await fetchCampaignsPage(
+        campaignsPage.value,
+        campaignsPageSize.value,
+        listFilters,
+        listLinks,
+    )
+    listLinks = data.links
     await applyPageResult(data)
     loadGeneration++
 }
@@ -46,8 +54,14 @@ export async function loadCampaignsList(opts?: { page?: number; pageSize?: numbe
     const gen = ++loadGeneration
     if (opts?.page != null) campaignsPage.value = opts.page
     if (opts?.pageSize != null) campaignsPageSize.value = opts.pageSize
-    const data = await fetchCampaignsPage(campaignsPage.value, campaignsPageSize.value, listFilters)
+    const data = await fetchCampaignsPage(
+        campaignsPage.value,
+        campaignsPageSize.value,
+        listFilters,
+        listLinks,
+    )
     if (gen !== loadGeneration) return
+    listLinks = data.links
     await applyPageResult(data)
 }
 
@@ -64,7 +78,8 @@ async function reloadListAfterMutation(): Promise<void> {
 }
 
 export async function removeCampaignFromList(id: string): Promise<void> {
-    await deleteCampaign(id)
+    const item = campaigns.value.find((c) => c.id === id)
+    await deleteCampaign(item ?? id)
     await reloadListAfterMutation()
 }
 
@@ -74,7 +89,8 @@ export async function addCampaignToList(draft: CampaignCreateDraft): Promise<voi
 }
 
 export async function updateCampaignInList(id: string, draft: CampaignCreateDraft): Promise<void> {
-    await updateCampaign(id, draft)
+    const item = campaigns.value.find((c) => c.id === id)
+    await updateCampaign(item ?? id, draft)
     await tryFetchAndApply()
 }
 

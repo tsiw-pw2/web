@@ -1,7 +1,9 @@
-import { unwrapList } from "@/infrastructure/hateoas"
-import { requestApiData } from "@/infrastructure/request"
 import type { CampaignDetailsWasteCollection } from "@/modules/campaigns/types/details"
 import type { PaginatedResult } from "@/types/pagination"
+import {
+    fetchCampaignSubResourcePage,
+    type CampaignLinkParent,
+} from "@/modules/campaigns/services/campaignHypermedia"
 
 export type ListCampaignWasteCollectionsQuery = {
     page: number
@@ -9,20 +11,17 @@ export type ListCampaignWasteCollectionsQuery = {
     beachId?: string
 }
 
+// Lista as recolhas de resíduos de uma campanha de forma paginada.
 export async function listCampaignWasteCollections(
-    campaignId: string,
+    campaign: CampaignLinkParent,
     query: ListCampaignWasteCollectionsQuery,
 ): Promise<PaginatedResult<CampaignDetailsWasteCollection>> {
-    const q = new URLSearchParams({
-        page: String(query.page),
-        pageSize: String(query.pageSize),
-    })
-    if (query.beachId) {
-        q.set("beachId", query.beachId)
-    }
-    const body = await requestApiData<unknown>(
-        `/campaigns/${campaignId}/waste-collections?${q}`,
-        { method: "GET" },
+    return fetchCampaignSubResourcePage<CampaignDetailsWasteCollection>(
+        campaign,
+        "wasteCollections",
+        "waste-collections",
+        query.page,
+        query.pageSize,
+        query.beachId ? { beachId: query.beachId } : undefined,
     )
-    return unwrapList<CampaignDetailsWasteCollection>(body)
 }

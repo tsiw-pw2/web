@@ -1,11 +1,5 @@
-import {
-    campaignStatusLabel,
-    type CampaignStatusKey,
-} from "@/modules/campaigns/lib/campaignStatus"
-import {
-    registrationRoleLabel,
-    registrationStatusLabel,
-} from "@/modules/campaigns/lib/registrationLabels"
+import { campaignStatusLabel, type CampaignStatusKey, } from "@/modules/campaigns/lib/campaignStatus"
+import { registrationRoleLabel, registrationStatusLabel, } from "@/modules/campaigns/lib/registrationLabels"
 import { settingsUserRoleFromFlags, type SettingsUserRoleKey } from "@/modules/settings/lib/settingsUserRole"
 import { userRoleLabel } from "@/modules/settings/lib/userRoleLabel"
 import type { SettingsUserRow } from "@/modules/settings/types/settingsUser"

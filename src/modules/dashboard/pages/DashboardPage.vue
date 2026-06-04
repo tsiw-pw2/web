@@ -1,11 +1,9 @@
-<script setup lang="ts">
-import { computed, onMounted } from "vue"
-import { RouterLink } from "vue-router"
+<script setup lang="ts">import { computed, onMounted } from "vue"
 import { useCurrentProfile } from "@/composables/useCurrentProfile"
-import { DashboardKeyValuePanel, DashboardMetricPanel } from "@/modules/dashboard"
 import CampaignIcon from "@/shared/components/icons/dashboard/DashboardCampaignIcon.vue"
 import CoastIcon from "@/shared/components/icons/dashboard/DashboardCoastIcon.vue"
 import VolunteerIcon from "@/shared/components/icons/dashboard/DashboardVolunteerIcon.vue"
+import { DashboardKeyValuePanel, DashboardMetricPanel } from "@/modules/dashboard"
 import { useDashboardOverview } from "@/modules/dashboard/composables/useDashboardOverview"
 import { routePaths } from "@/app/router"
 import ResourceErrorState from "@/shared/components/states/ResourceErrorState.vue"

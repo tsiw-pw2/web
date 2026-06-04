@@ -24,12 +24,14 @@ const chooseImageLabelClass = cn(
     "focus-visible:outline-2 focus-visible:outline-neutral-100",
 )
 
+// Inicia a escolha de imagem no clique do rato.
 function onChooseImageMouseDown() {
     if (savingProfile.value) return
     const input = profileAvatarFileInputRef.value
     if (input) input.value = ""
 }
 
+// Abre o selector de imagem ao activar a área do avatar.
 function onAvatarAreaActivate() {
     openProfileAvatarFilePicker(savingProfile.value)
 }

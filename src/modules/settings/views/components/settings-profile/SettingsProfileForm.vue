@@ -14,7 +14,6 @@ const {
     profileName,
     profileEmail,
     profilePhone,
-    profileBirthDate,
     savingProfile,
     isProfileFormDirty,
     saveProfile,
@@ -58,16 +57,13 @@ const isBlocked = computed(() => profile?.value?.isBlocked === true)
 
         <div class="flex flex-col gap-1">
             <FieldLabel for="profile-phone" optional>Telefone</FieldLabel>
-            <Input id="profile-phone" v-model="profilePhone" class="w-full" type="tel" autocomplete="tel" :disabled="isBlocked" />
-        </div>
-
-        <div class="flex flex-col gap-1">
-            <FieldLabel for="profile-birth-date" required>Data de nascimento</FieldLabel>
             <Input
-                id="profile-birth-date"
-                v-model="profileBirthDate"
+                id="profile-phone"
+                v-model="profilePhone"
                 class="w-full"
-                type="date"
+                type="tel"
+                inputmode="numeric"
+                autocomplete="tel"
                 :disabled="isBlocked"
             />
         </div>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { RouteLocationRaw } from "vue-router"
-import { RouterLink, useRoute } from "vue-router"
+import { useRoute } from "vue-router"
 
 const props = withDefaults(
     defineProps<{
@@ -16,6 +16,7 @@ const props = withDefaults(
 
 const route = useRoute()
 
+// Determina se a rota de navegação está activa.
 function isActiveRoute(isRouteActive: boolean): boolean {
     if (props.activeRouteNames != null && props.activeRouteNames.length > 0) {
         const name = route.name
@@ -24,6 +25,7 @@ function isActiveRoute(isRouteActive: boolean): boolean {
     return isRouteActive
 }
 
+// Navega para o destino ao clicar.
 function onNavigate(e: MouseEvent, navigate: (e?: MouseEvent) => void) {
     navigate(e)
 }

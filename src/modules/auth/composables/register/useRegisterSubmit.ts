@@ -4,15 +4,14 @@ import { toastServiceUnavailable } from "@/infrastructure/appToast"
 import { resolvePostAuthRedirect } from "@/modules/auth/lib/postAuthRedirect"
 import { REGISTER_GENERIC_ERROR_MESSAGE } from "@/modules/auth/lib/registerFormConstants"
 import type { useRegisterForm } from "@/modules/auth/composables/register/useRegisterForm"
-import {
-    isRegisterServiceUnavailableError,
-    registerWithCredentials,
-} from "@/modules/auth/services/register"
+import { isRegisterServiceUnavailableError, registerWithCredentials, } from "@/modules/auth/services/register"
 
+// Composable que gere a lógica de registo submissão.
 export function useRegisterSubmit(form: ReturnType<typeof useRegisterForm>) {
     const router = useRouter()
     const isSubmitting = ref(false)
 
+// Valida o formulário, regista a conta e redirecciona após autenticação.
     async function submit() {
         form.clearErrors()
 

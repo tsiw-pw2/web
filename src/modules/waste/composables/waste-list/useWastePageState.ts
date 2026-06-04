@@ -1,13 +1,6 @@
 import { computed, watch } from "vue"
 import { useCurrentProfile } from "@/composables/useCurrentProfile"
-import {
-    wasteItemsListRef,
-    wastePage,
-    wastePageSize,
-    wasteTotal,
-    loadWasteItemsList,
-    setWasteListFilters,
-} from "@/modules/waste/composables/waste-list/wasteListState"
+import { wasteItemsListRef, wastePage, wastePageSize, wasteTotal, loadWasteItemsList, setWasteListFilters, } from "@/modules/waste/composables/waste-list/wasteListState"
 import { useWasteListFilters } from "@/modules/waste/composables/waste-list/useWasteListFilters"
 import { useWasteCategoryOptions } from "@/modules/waste/composables/useWasteCategoryOptions"
 import { useWasteListMutations } from "@/modules/waste/composables/waste-list/useWasteListMutations"
@@ -16,6 +9,7 @@ import { usePaginatedListRoute } from "@/shared/composables/usePaginatedListRout
 
 export type { WasteListItem, WasteUpsertDraft } from "@/modules/waste/types/list"
 
+// Composable que gere a lógica de resíduos página estado.
 export function useWastePageState() {
     const routeApi = usePaginatedListRoute({
         page: wastePage,

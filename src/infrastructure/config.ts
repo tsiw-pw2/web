@@ -1,3 +1,4 @@
+// Resolve o URL base da API a partir das variáveis de ambiente Vite.
 export function getApiBaseUrl(): string {
     const fromUrl = import.meta.env.VITE_API_URL
     const fromLegacy = import.meta.env.VITE_API_BASE_URL

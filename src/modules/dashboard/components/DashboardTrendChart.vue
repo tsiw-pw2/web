@@ -5,6 +5,7 @@ const props = defineProps<{
     points: DashboardMonthlyTrendPoint[]
 }>()
 
+// Formata o mês para o eixo do gráfico.
 function monthLabel(month: string): string {
     const [y, m] = month.split("-")
     const d = new Date(Number(y), Number(m) - 1, 1)
@@ -12,6 +13,7 @@ function monthLabel(month: string): string {
     return d.toLocaleDateString("pt-PT", { month: "short", year: "numeric" })
 }
 
+// Calcula o peso máximo para escala do gráfico.
 function maxWeight(): number {
     let max = 0
     for (const p of props.points) {

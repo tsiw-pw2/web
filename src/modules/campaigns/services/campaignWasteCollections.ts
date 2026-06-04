@@ -1,6 +1,7 @@
-import { unwrapResource } from "@/infrastructure/hateoas"
-import { requestApiData } from "@/infrastructure/request"
+import { followHref, followLink, getLink } from "@/infrastructure/hypermediaClient"
+import type { CampaignLinkParent } from "@/modules/campaigns/services/campaignHypermedia"
 import type { CampaignDetailsWasteCollection } from "@/modules/campaigns/types/details"
+import type { ResourceLinks } from "@/infrastructure/hypermedia.types"
 
 export type CreateCampaignWasteCollectionBody = {
     beachId: string
@@ -9,20 +10,28 @@ export type CreateCampaignWasteCollectionBody = {
     actualWeightKg?: number | null
 }
 
+type WasteCollectionResource = CampaignDetailsWasteCollection & { links?: ResourceLinks }
+
+// Regista uma nova recolha de resíduos numa campanha.
 export async function postCampaignWasteCollection(
-    campaignId: string,
+    campaign: CampaignLinkParent,
     body: CreateCampaignWasteCollectionBody,
 ): Promise<CampaignDetailsWasteCollection> {
-    const resBody = await requestApiData<unknown>(`/campaigns/${campaignId}/waste-collections`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-    })
-    return unwrapResource<CampaignDetailsWasteCollection>(resBody)
+    const link = getLink(campaign, "wasteCollections")
+    if (link?.href) {
+        return followHref<WasteCollectionResource>(link, { method: "POST", body })
+    }
+    return followHref<WasteCollectionResource>(
+        { href: `/campaigns/${campaign.id}/waste-collections`, method: "POST" },
+        { method: "POST", body },
+    )
 }
 
-export async function deleteCampaignWasteCollection(campaignId: string, collectionId: string): Promise<void> {
-    await requestApiData<null>(`/campaigns/${campaignId}/waste-collections/${collectionId}`, {
-        method: "DELETE",
-    })
+// Elimina uma recolha de resíduos de uma campanha.
+export async function deleteCampaignWasteCollection(collection: WasteCollectionResource): Promise<void> {
+    if (getLink(collection, "delete")) {
+        await followLink(collection, "delete", { method: "DELETE" })
+        return
+    }
+    throw new Error("Waste collection delete link not available")
 }

@@ -1,5 +1,6 @@
 export const MIN_CAMPAIGN_PARTICIPANT_AGE = 16
 
+// Calcula a idade em anos completos a partir de ISO de nascimento.
 export function ageInFullYears(birthDateIso: string, referenceDate = new Date()): number | null {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDateIso)) return null
     const y = Number(birthDateIso.slice(0, 4))
@@ -15,6 +16,7 @@ export function ageInFullYears(birthDateIso: string, referenceDate = new Date())
     return age
 }
 
+// Composable que gere a lógica de r meets minimum idade.
 export function userMeetsMinimumAge(
     birthDateIso: string,
     minAge = MIN_CAMPAIGN_PARTICIPANT_AGE,
@@ -24,6 +26,7 @@ export function userMeetsMinimumAge(
     return age != null && age >= minAge
 }
 
+// Valida perfil nascimento data.
 export function validateProfileBirthDate(value: string): string | null {
     const trimmed = value.trim()
     if (!trimmed) {
@@ -43,6 +46,7 @@ export function validateProfileBirthDate(value: string): string | null {
     return null
 }
 
+// Mensagem que impede inscrição por data de nascimento em falta ou idade mínima.
 export function campaignEnrollmentProfileBlockMessage(profileBirthDate: string | null | undefined): string | null {
     const trimmed = profileBirthDate?.trim() ?? ""
     if (!trimmed) {

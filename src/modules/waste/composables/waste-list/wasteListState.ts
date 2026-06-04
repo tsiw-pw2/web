@@ -1,4 +1,5 @@
 import type { WasteListFilters, WasteListItem } from "@/modules/waste/types/list"
+import type { ResourceLinks } from "@/infrastructure/hypermedia.types"
 import { ref } from "vue"
 import { toastListPossiblyStale } from "@/infrastructure/appToast"
 import { createWaste } from "@/modules/waste/services/waste/createWaste"
@@ -15,6 +16,7 @@ export const wasteTotal = ref(0)
 
 let loadGeneration = 0
 let listFilters: WasteListFilters = {}
+let listLinks: ResourceLinks | undefined
 
 export function setWasteListFilters(filters: WasteListFilters) {
     listFilters = filters
@@ -30,7 +32,8 @@ async function applyPageResult(data: Awaited<ReturnType<typeof fetchWastePage>>)
 async function fetchAndApply(opts?: { page?: number; pageSize?: number }): Promise<void> {
     if (opts?.page != null) wastePage.value = opts.page
     if (opts?.pageSize != null) wastePageSize.value = opts.pageSize
-    const data = await fetchWastePage(wastePage.value, wastePageSize.value, listFilters)
+    const data = await fetchWastePage(wastePage.value, wastePageSize.value, listFilters, listLinks)
+    listLinks = data.links
     await applyPageResult(data)
     loadGeneration++
 }
@@ -47,8 +50,9 @@ export async function loadWasteItemsList(opts?: { page?: number; pageSize?: numb
     const gen = ++loadGeneration
     if (opts?.page != null) wastePage.value = opts.page
     if (opts?.pageSize != null) wastePageSize.value = opts.pageSize
-    const data = await fetchWastePage(wastePage.value, wastePageSize.value, listFilters)
+    const data = await fetchWastePage(wastePage.value, wastePageSize.value, listFilters, listLinks)
     if (gen !== loadGeneration) return
+    listLinks = data.links
     await applyPageResult(data)
 }
 
@@ -65,7 +69,8 @@ async function reloadListAfterMutation(): Promise<void> {
 }
 
 export async function removeWasteFromList(id: string): Promise<void> {
-    await deleteWaste(id)
+    const item = items.value.find((w) => w.id === id)
+    await deleteWaste(item ?? id)
     await reloadListAfterMutation()
 }
 
@@ -75,7 +80,8 @@ export async function addWasteToList(draft: WasteUpsertDraft): Promise<void> {
 }
 
 export async function updateWasteInList(id: string, draft: WasteUpsertDraft): Promise<void> {
-    await updateWaste(id, draft)
+    const item = items.value.find((w) => w.id === id)
+    await updateWaste(item ?? id, draft)
     await tryFetchAndApply()
 }
 

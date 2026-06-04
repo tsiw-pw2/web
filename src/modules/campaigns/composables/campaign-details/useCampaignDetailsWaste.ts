@@ -1,9 +1,5 @@
 import { computed, ref, type Ref } from "vue"
-import {
-    deleteCampaignWasteCollection,
-    postCampaignWasteCollection,
-    type CreateCampaignWasteCollectionBody,
-} from "@/modules/campaigns/services/campaignWasteCollections"
+import { deleteCampaignWasteCollection, postCampaignWasteCollection, type CreateCampaignWasteCollectionBody, } from "@/modules/campaigns/services/campaignWasteCollections"
 import type { CampaignDetails, CampaignDetailsWasteCollection } from "@/modules/campaigns/types/details"
 import { toastError, toastSuccess } from "@/infrastructure/appToast"
 import { isApiRequestError } from "@/infrastructure/request"
@@ -15,8 +11,8 @@ type WasteTabs = {
     reloadWasteFirstPage: () => void | Promise<void>
 }
 
+// Composable que gere a lógica de campanha detalhes resíduos.
 export function useCampaignDetailsWaste(
-    campaignId: Ref<string>,
     campaign: Ref<CampaignDetails | null>,
     tabs: WasteTabs,
     refreshCampaignMetrics: () => void | Promise<void>,
@@ -55,10 +51,12 @@ export function useCampaignDetailsWaste(
             : (campaign.value?.metrics.wasteCollectionsCount ?? 0),
     )
 
+// Regista uma recolha de resíduos na campanha e actualiza listagem e métricas.
     async function onCreateWasteCollection(body: CreateCampaignWasteCollectionBody) {
         postingWasteCollection.value = true
         try {
-            await postCampaignWasteCollection(campaignId.value, body)
+            if (!campaign.value) return
+            await postCampaignWasteCollection(campaign.value, body)
             await tabs.reloadWasteFirstPage()
             await refreshCampaignMetrics()
             toastSuccess("Recolha registada")
@@ -73,6 +71,7 @@ export function useCampaignDetailsWaste(
         }
     }
 
+// Abre eliminação resíduos recolha.
     function openDeleteWasteCollection(row: CampaignDetailsWasteCollection) {
         deleteWasteCollectionTarget.value = row
         deleteWasteCollectionOpen.value = true
@@ -86,12 +85,13 @@ export function useCampaignDetailsWaste(
         return beachName ? `${wasteName} · ${beachName}` : wasteName
     })
 
+// Apaga a recolha seleccionada e refresca listagem e métricas da campanha.
     async function confirmDeleteWasteCollection() {
         const target = deleteWasteCollectionTarget.value
         if (!target || deletingWasteCollectionId.value) return
         deletingWasteCollectionId.value = target.id
         try {
-            await deleteCampaignWasteCollection(campaignId.value, target.id)
+            await deleteCampaignWasteCollection(target)
             await tabs.reloadWasteFirstPage()
             await refreshCampaignMetrics()
             toastSuccess("Recolha apagada")

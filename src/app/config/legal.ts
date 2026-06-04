@@ -1,3 +1,4 @@
+// Lê e-mail.
 function readEmail(value: string | undefined, fallback: string): string {
     if (typeof value === "string" && value.trim().length > 0) {
         return value.trim()

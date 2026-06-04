@@ -15,14 +15,17 @@ export class ApiServiceUnavailableError extends Error {
     }
 }
 
+// Verifica se o erro é uma instância de ApiServiceUnavailableError.
 export function isApiServiceUnavailableError(e: unknown): e is ApiServiceUnavailableError {
     return e instanceof ApiServiceUnavailableError
 }
 
+// Indica se o código HTTP corresponde a indisponibilidade upstream (502–504).
 function isUpstreamUnavailableStatus(status: number): boolean {
     return status === 502 || status === 503 || status === 504
 }
 
+// Deteta respostas HTML em vez de JSON (proxy ou servidor em falha).
 function isHtmlLikeResponse(contentType: string, rawText: string): boolean {
     const ct = contentType.toLowerCase()
     if (ct.includes("text/html")) return true
@@ -30,6 +33,7 @@ function isHtmlLikeResponse(contentType: string, rawText: string): boolean {
     return t.startsWith("<!DOCTYPE") || t.startsWith("<html")
 }
 
+// Escolhe a mensagem amigável consoante o tipo de resposta indisponível.
 export function apiUnavailableMessageFromResponse(res: Response, rawText: string): string {
     const contentType = res.headers.get("content-type") ?? ""
     const isEmpty = rawText.trim().length === 0
@@ -46,6 +50,7 @@ export function apiUnavailableMessageFromResponse(res: Response, rawText: string
     return API_UNAVAILABLE_NETWORK_MESSAGE
 }
 
+// Determina se a resposta deve ser tratada como serviço indisponível.
 export function shouldTreatResponseAsUnavailable(res: Response, rawText: string): boolean {
     const contentType = res.headers.get("content-type") ?? ""
     const isEmpty = rawText.trim().length === 0
@@ -56,6 +61,7 @@ export function shouldTreatResponseAsUnavailable(res: Response, rawText: string)
     )
 }
 
+// Descreve uma falha genérica da API com mensagem de recurso opcional.
 export function describeApiFailure(e: unknown, fallback = "Verifica a ligação e tenta outra vez."): string {
     if (isApiServiceUnavailableError(e)) {
         return e.friendlyMessage
@@ -63,6 +69,7 @@ export function describeApiFailure(e: unknown, fallback = "Verifica a ligação 
     return fallback
 }
 
+// Descreve falha ao carregar um recurso específico da API.
 export function describeApiLoadFailure(e: unknown, resourcePhrase: string): string {
     if (isApiServiceUnavailableError(e)) {
         return e.friendlyMessage

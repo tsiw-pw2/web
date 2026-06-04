@@ -54,6 +54,7 @@ const {
 const isCreateSubmitting = ref(false)
 const isEditSubmitting = ref(false)
 
+// Cria uma nova categoria de resíduo.
 async function handleCreateCategory(name: string) {
     try {
         const category = await createCategory(name)
@@ -63,6 +64,7 @@ async function handleCreateCategory(name: string) {
     }
 }
 
+// Cria um novo registo de resíduo.
 async function handleCreate(payload: WasteUpsertDraft) {
     if (isCreateSubmitting.value) return
     isCreateSubmitting.value = true
@@ -74,6 +76,7 @@ async function handleCreate(payload: WasteUpsertDraft) {
     }
 }
 
+// Guarda as alterações do resíduo.
 async function handleSave(payload: WasteUpsertDraft) {
     if (!editWasteId.value || isEditSubmitting.value) return
     isEditSubmitting.value = true

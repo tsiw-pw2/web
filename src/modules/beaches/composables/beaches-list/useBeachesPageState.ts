@@ -5,6 +5,7 @@ import { usePaginatedListRoute } from "@/shared/composables/usePaginatedListRout
 
 export type { BeachListItem, BeachUpsertDraft } from "@/modules/beaches/types/list"
 
+// Composable que gere a lógica de beaches página estado.
 export function useBeachesPageState() {
     const routeApi = usePaginatedListRoute({
         page: beachesPage,

@@ -13,6 +13,7 @@ export type InputIconName = keyof typeof INPUT_ICONS
 
 export type InputIconProp = Component | InputIconName
 
+// Resolve o ícone de input: aceita nome registado ou componente Vue directo.
 export function resolveInputIcon(icon: InputIconProp | undefined): Component | null {
     if (icon == null) return null
     if (typeof icon === "string") {

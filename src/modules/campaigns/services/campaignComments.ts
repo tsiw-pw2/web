@@ -1,21 +1,30 @@
-import { requestApiData } from "@/infrastructure/request"
+import { followHref, followLink, getLink } from "@/infrastructure/hypermediaClient"
+import type { CampaignLinkParent } from "@/modules/campaigns/services/campaignHypermedia"
+import type { ResourceLinks } from "@/infrastructure/hypermedia.types"
 
-export async function postCampaignComment(campaignId: string, body: string): Promise<void> {
-    await requestApiData(`/campaigns/${campaignId}/comments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ body }),
-    })
+type CommentResource = { id: string; links?: ResourceLinks }
+
+// Publica um comentário numa campanha.
+export async function postCampaignComment(campaign: CampaignLinkParent, body: string): Promise<void> {
+    const link = getLink(campaign, "comments")
+    if (link?.href) {
+        await followHref(link, { method: "POST", body: { body } })
+        return
+    }
+    await followHref(
+        { href: `/campaigns/${campaign.id}/comments`, method: "POST" },
+        { method: "POST", body: { body } },
+    )
 }
 
+// Altera a visibilidade de um comentário de campanha.
 export async function patchCampaignCommentVisibility(
-    campaignId: string,
-    commentId: string,
+    comment: CommentResource,
     isVisible: boolean,
 ): Promise<void> {
-    await requestApiData(`/campaigns/${campaignId}/comments/${commentId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isVisible }),
-    })
+    if (getLink(comment, "update")) {
+        await followLink(comment, "update", { method: "PATCH", body: { isVisible } })
+        return
+    }
+    throw new Error("Comment update link not available")
 }

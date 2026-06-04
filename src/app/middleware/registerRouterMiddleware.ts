@@ -1,6 +1,7 @@
 import type { Router } from "vue-router"
 import type { AccessCapability } from "@/modules/auth/lib/accessPolicy"
 import { loadCurrentProfile } from "@/composables/useCurrentProfile"
+import { loadApiRoot } from "@/infrastructure/apiDiscovery"
 import { getAccessToken } from "@/infrastructure/access-token"
 import { registerSessionExpiredHandler } from "@/infrastructure/sessionExpired"
 import { profileHasCapability } from "@/modules/auth/lib/accessPolicy"
@@ -73,6 +74,12 @@ export function registerRouterMiddleware(router: Router) {
                 name: LOGIN_ROUTE_NAME,
                 query: { redirect: to.fullPath },
             }
+        }
+
+        try {
+            await loadApiRoot()
+        } catch {
+            return { name: LOGIN_ROUTE_NAME, query: { redirect: to.fullPath } }
         }
 
         const capability = to.meta.requiresCapability

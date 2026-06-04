@@ -1,10 +1,15 @@
-import { tryRestoreSession } from "@/infrastructure/authSession"
-import { unwrapResource } from "@/infrastructure/hateoas"
-import { requestApiData, requestApiFormData } from "@/infrastructure/request"
+import { href } from "@/infrastructure/apiDiscovery"
+import { apiGet } from "@/infrastructure/apiClient"
+import { followHref, followLink } from "@/infrastructure/hypermediaClient"
+import { getLink } from "@/infrastructure/hypermediaClient"
 import { settingsUserRoleFromFlags } from "@/modules/settings/lib/settingsUserRole"
 import type { SettingsProfile } from "@/modules/settings/types/profile"
+import { normalizePhoneDigits } from "@/shared/lib/phoneDigits"
 
-function normalizeProfile(raw: SettingsProfile): SettingsProfile {
+type ProfileResource = SettingsProfile & { links?: Record<string, { href: string; method?: string }> }
+
+// Normaliza o papel e campos opcionais do perfil devolvido pela API.
+function normalizeProfile(raw: ProfileResource): SettingsProfile {
     return {
         ...raw,
         role: raw.role ?? settingsUserRoleFromFlags(raw),
@@ -14,76 +19,88 @@ function normalizeProfile(raw: SettingsProfile): SettingsProfile {
     }
 }
 
+// Obtém o perfil do utilizador autenticado.
 export async function fetchProfile(): Promise<SettingsProfile> {
-    const body = await requestApiData<unknown>("/users/me", { method: "GET" })
-    const profile = normalizeProfile(unwrapResource<SettingsProfile>(body))
-    if (profile.role === "admin" || profile.role === "organizer") {
-        await tryRestoreSession()
-    }
-    return profile
+    const body = await apiGet<ProfileResource>(await href("userMe"))
+    return normalizeProfile(body)
 }
 
+// Actualiza o perfil do utilizador autenticado (sem ficheiro de avatar).
+function phoneForApi(phone: string): string {
+    const trimmed = phone.trim()
+    if (trimmed.length === 0) return ""
+    return normalizePhoneDigits(trimmed)
+}
+
+// Actualiza o perfil do utilizador autenticado (sem ficheiro de avatar).
 export async function updateProfileApi(payload: {
     name: string
     email: string
     phone: string
-    birthDate: string
     avatarUrl: string
 }): Promise<SettingsProfile> {
-    const phoneTrimmed = payload.phone.trim()
+    const current = await apiGet<ProfileResource>(await href("userMe"))
     const avatarTrimmed = payload.avatarUrl.trim()
-    const birthTrimmed = payload.birthDate.trim()
-    const body = await requestApiData<unknown>("/users/me", {
+    const updateLink = getLink(current, "update")
+    if (!updateLink) {
+        throw new Error("Profile update link not available")
+    }
+    const body = await followHref<ProfileResource>(updateLink, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        body: {
             name: payload.name.trim(),
             email: payload.email.trim(),
-            phone: phoneTrimmed.length > 0 ? phoneTrimmed : "",
-            birthDate: birthTrimmed.length > 0 ? birthTrimmed : "",
+            phone: phoneForApi(payload.phone),
             avatarUrl: avatarTrimmed.length > 0 ? avatarTrimmed : "",
-        }),
+        },
     })
-    return normalizeProfile(unwrapResource<SettingsProfile>(body))
+    return normalizeProfile(body)
 }
 
+// Actualiza o perfil, enviando ficheiro de avatar quando fornecido.
 export async function updateProfileWithOptionalAvatarFile(payload: {
     name: string
     email: string
     phone: string
-    birthDate: string
     avatarUrl: string
     avatarFile: File | null
 }): Promise<SettingsProfile> {
+    const current = await apiGet<ProfileResource>(await href("userMe"))
     if (payload.avatarFile) {
+        const avatarLink = getLink(current, "avatar")
+        if (!avatarLink) {
+            throw new Error("Profile avatar link not available")
+        }
         const formData = new FormData()
         formData.append("name", payload.name.trim())
         formData.append("email", payload.email.trim())
-        formData.append("phone", payload.phone.trim())
-        formData.append("birthDate", payload.birthDate.trim())
+        formData.append("phone", phoneForApi(payload.phone))
         formData.append("avatar", payload.avatarFile)
-        const body = await requestApiFormData<unknown>("/users/me", formData, { method: "PATCH" })
-        return normalizeProfile(unwrapResource<SettingsProfile>(body))
+        const body = await followHref<ProfileResource>(avatarLink, {
+            method: "PATCH",
+            formData,
+        })
+        return normalizeProfile(body)
     }
     return updateProfileApi({
         name: payload.name,
         email: payload.email,
         phone: payload.phone,
-        birthDate: payload.birthDate,
         avatarUrl: payload.avatarUrl,
     })
 }
 
+// Altera a palavra-passe do utilizador autenticado.
 export async function changeProfilePassword(payload: {
     currentPassword: string
     newPassword: string
 }): Promise<void> {
-    await requestApiData("/users/me/password", {
+    const current = await apiGet<ProfileResource>(await href("userMe"))
+    await followLink(current, "password", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        body: {
             currentPassword: payload.currentPassword,
             newPassword: payload.newPassword,
-        }),
+        },
     })
 }

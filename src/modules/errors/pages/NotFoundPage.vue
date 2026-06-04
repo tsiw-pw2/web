@@ -1,6 +1,4 @@
-<script setup lang="ts">
-import { computed, onMounted } from "vue"
-import { RouterLink } from "vue-router"
+<script setup lang="ts">import { computed, onMounted } from "vue"
 import { routePaths } from "@/app/router"
 import { useCurrentProfile } from "@/composables/useCurrentProfile"
 import { useIsAuthenticated } from "@/composables/useIsAuthenticated"

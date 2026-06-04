@@ -1,4 +1,5 @@
 import type { BeachListItem, BeachUpsertDraft } from "@/modules/beaches/types/list"
+import type { ResourceLinks } from "@/infrastructure/hypermedia.types"
 import { ref } from "vue"
 import { toastListPossiblyStale } from "@/infrastructure/appToast"
 import { createBeach } from "@/modules/beaches/services/beaches/createBeach"
@@ -13,6 +14,7 @@ export const beachesPageSize = ref(PAGINATED_LIST_DEFAULT_PAGE_SIZE)
 export const beachesTotal = ref(0)
 
 let loadGeneration = 0
+let listLinks: ResourceLinks | undefined
 
 async function applyPageResult(data: Awaited<ReturnType<typeof fetchBeachesPage>>) {
     items.value = data.items
@@ -24,7 +26,8 @@ async function applyPageResult(data: Awaited<ReturnType<typeof fetchBeachesPage>
 async function fetchAndApply(opts?: { page?: number; pageSize?: number }): Promise<void> {
     if (opts?.page != null) beachesPage.value = opts.page
     if (opts?.pageSize != null) beachesPageSize.value = opts.pageSize
-    const data = await fetchBeachesPage(beachesPage.value, beachesPageSize.value)
+    const data = await fetchBeachesPage(beachesPage.value, beachesPageSize.value, listLinks)
+    listLinks = data.links
     await applyPageResult(data)
     loadGeneration++
 }
@@ -41,8 +44,9 @@ export async function loadBeachesList(opts?: { page?: number; pageSize?: number 
     const gen = ++loadGeneration
     if (opts?.page != null) beachesPage.value = opts.page
     if (opts?.pageSize != null) beachesPageSize.value = opts.pageSize
-    const data = await fetchBeachesPage(beachesPage.value, beachesPageSize.value)
+    const data = await fetchBeachesPage(beachesPage.value, beachesPageSize.value, listLinks)
     if (gen !== loadGeneration) return
+    listLinks = data.links
     await applyPageResult(data)
 }
 
@@ -59,7 +63,8 @@ async function reloadListAfterMutation(): Promise<void> {
 }
 
 export async function removeBeachFromList(id: string): Promise<void> {
-    await deleteBeach(id)
+    const item = items.value.find((b) => b.id === id)
+    await deleteBeach(item ?? id)
     await reloadListAfterMutation()
 }
 
@@ -69,7 +74,8 @@ export async function addBeachToList(draft: BeachUpsertDraft): Promise<void> {
 }
 
 export async function updateBeachInList(id: string, draft: BeachUpsertDraft): Promise<void> {
-    await updateBeach(id, draft)
+    const item = items.value.find((b) => b.id === id)
+    await updateBeach(item ?? id, draft)
     await tryFetchAndApply()
 }
 

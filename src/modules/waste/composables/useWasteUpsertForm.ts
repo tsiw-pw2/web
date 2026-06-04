@@ -9,6 +9,7 @@ export type WasteUpsertMode = "create" | "edit"
 
 const WEIGHT_ERROR_MESSAGE = "Introduz um valor em gramas (mínimo 1 g)."
 
+// Composable que gere a lógica de resíduos criação ou actualização formulário.
 export function useWasteUpsertForm(
     open: Ref<boolean>,
     mode: WasteUpsertMode,
@@ -43,10 +44,12 @@ export function useWasteUpsertForm(
         return true
     })
 
+// Indica se a unidade peso exige validação de gramas.
     function requiresWeightValidation(): boolean {
         return normalizeWasteUnit(unit.value) === "peso"
     }
 
+// Valida peso.
     function validateWeight(): boolean {
         if (!requiresWeightValidation()) {
             weightError.value = ""
@@ -60,11 +63,13 @@ export function useWasteUpsertForm(
         return true
     }
 
+// Valida formulário.
     function validateForm(): boolean {
         const weightOk = validateWeight()
         return weightOk && name.value.trim().length > 0 && Boolean(categoryId.value)
     }
 
+// Constrói draft.
     function buildDraft(): WasteUpsertDraft | null {
         const normalizedUnit = normalizeWasteUnit(unit.value)
         if (normalizedUnit === "peso" && !isWeightGramsInputValid(weightGrams.value)) {
@@ -90,6 +95,7 @@ export function useWasteUpsertForm(
         }
     }
 
+// Repõe formulário.
     function resetForm() {
         name.value = ""
         categoryId.value = undefined
@@ -98,6 +104,7 @@ export function useWasteUpsertForm(
         weightError.value = ""
     }
 
+// Sincroniza de resíduos.
     function syncFromWaste(w: WasteListItem) {
         name.value = w.name
         categoryId.value = w.categoryId
@@ -109,6 +116,7 @@ export function useWasteUpsertForm(
         weightError.value = ""
     }
 
+// Sincroniza o formulário de edição com os dados mais recentes da API.
     async function refreshWasteFromApi(id: string) {
         try {
             const item = await fetchWasteItem(id)
@@ -122,6 +130,7 @@ export function useWasteUpsertForm(
         }
     }
 
+// Preenche o formulário para edição a partir da listagem ou API.
     function bootstrapEdit() {
         const item = initialItem.value
         if (item) {
@@ -147,6 +156,7 @@ export function useWasteUpsertForm(
             })
     }
 
+// Valida o rascunho e dispara o callback de submissão.
     function submit() {
         if (!validateForm()) return
         const draft = buildDraft()

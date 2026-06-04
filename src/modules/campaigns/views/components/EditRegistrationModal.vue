@@ -40,10 +40,12 @@ const attendanceOptions = [
     { value: "false", label: "Ausente" },
 ]
 
+// Fecha o modal ou painel.
 function close() {
     open.value = false
 }
 
+// Preenche o formulário com os dados da inscrição.
 function applyRegistration(r: CampaignDetailsRegistration | null) {
     if (!r) {
         status.value = undefined
@@ -67,6 +69,7 @@ watch(open, (isOpen) => {
     if (isOpen) applyRegistration(props.registration)
 })
 
+// Guarda os dados do formulário.
 function onSave() {
     const body: PatchRegistrationBody = {
         status: Number(status.value),
@@ -78,6 +81,7 @@ function onSave() {
     emit("save", body)
 }
 
+// Obtém o nome do voluntário para exibição.
 const volunteerName = () => props.registration?.user?.name?.trim() || "Voluntário"
 </script>
 

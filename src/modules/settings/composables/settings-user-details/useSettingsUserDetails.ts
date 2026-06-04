@@ -2,11 +2,7 @@ import { describeApiLoadFailure } from "@/infrastructure/apiErrors"
 import { toastFromListMutationError } from "@/infrastructure/apiMutationToast"
 import { toastSuccess } from "@/infrastructure/appToast"
 import type { SettingsUserDetailsTabId } from "@/modules/settings/lib/settingsUserDetailsTabs"
-import {
-    fetchSettingsUserDetail,
-    fetchSettingsUserOrganizedCampaigns,
-    fetchSettingsUserRegistrations,
-} from "@/modules/settings/services/settingsUserDetails"
+import { fetchSettingsUserDetail, fetchSettingsUserOrganizedCampaigns, fetchSettingsUserRegistrations, } from "@/modules/settings/services/settingsUserDetails"
 import { updateUserRole } from "@/modules/settings/services/settingsUsers"
 import type { SettingsUserRoleKey } from "@/modules/settings/lib/settingsUserRole"
 import type { SettingsUserDetail, SettingsUserOrganizedCampaignRow, SettingsUserRegistrationRow } from "@/modules/settings/types/settingsUserDetails"
@@ -15,6 +11,7 @@ import { computed, ref, watch, type Ref } from "vue"
 
 const TAB_PAGE_SIZE = 10
 
+// Composable que gere a lógica de definições utilizador detalhes.
 export function useSettingsUserDetails(userId: Ref<string>, activeTab: Ref<SettingsUserDetailsTabId>) {
     const user = ref<SettingsUserDetail | null>(null)
     const loading = ref(true)
@@ -38,6 +35,7 @@ export function useSettingsUserDetails(userId: Ref<string>, activeTab: Ref<Setti
         return selectedRole.value !== u.role
     })
 
+// Carrega utilizador.
     async function loadUser() {
         loading.value = true
         error.value = null
@@ -53,6 +51,7 @@ export function useSettingsUserDetails(userId: Ref<string>, activeTab: Ref<Setti
         }
     }
 
+// Carrega inscrições.
     async function loadRegistrations() {
         registrationsLoading.value = true
         try {
@@ -68,6 +67,7 @@ export function useSettingsUserDetails(userId: Ref<string>, activeTab: Ref<Setti
         }
     }
 
+// Carrega organized campanhas.
     async function loadOrganizedCampaigns() {
         organizedLoading.value = true
         try {
@@ -83,6 +83,7 @@ export function useSettingsUserDetails(userId: Ref<string>, activeTab: Ref<Setti
         }
     }
 
+// Repõe separador lists.
     function resetTabLists() {
         registrationsPage.value = 1
         organizedPage.value = 1
@@ -92,6 +93,7 @@ export function useSettingsUserDetails(userId: Ref<string>, activeTab: Ref<Setti
         organizedTotal.value = 0
     }
 
+// Sincroniza separador load.
     async function syncTabLoad(tab: SettingsUserDetailsTabId) {
         if (tab === "participacoes") {
             await loadRegistrations()
@@ -102,6 +104,7 @@ export function useSettingsUserDetails(userId: Ref<string>, activeTab: Ref<Setti
         }
     }
 
+// Persiste o cargo seleccionado do utilizador e recarrega o perfil.
     async function saveRole(isSelfAdmin: boolean) {
         const u = user.value
         if (!u || !selectedRole.value || !canSaveRole.value) return
@@ -118,12 +121,14 @@ export function useSettingsUserDetails(userId: Ref<string>, activeTab: Ref<Setti
         }
     }
 
+// Navega inscrições anterior.
     function goRegistrationsPrev() {
         if (registrationsPage.value <= 1) return
         registrationsPage.value -= 1
         void loadRegistrations()
     }
 
+// Navega inscrições seguinte.
     function goRegistrationsNext() {
         const pages = totalPagesFromTotal(registrationsTotal.value, TAB_PAGE_SIZE)
         if (registrationsPage.value >= pages) return
@@ -131,12 +136,14 @@ export function useSettingsUserDetails(userId: Ref<string>, activeTab: Ref<Setti
         void loadRegistrations()
     }
 
+// Navega organized anterior.
     function goOrganizedPrev() {
         if (organizedPage.value <= 1) return
         organizedPage.value -= 1
         void loadOrganizedCampaigns()
     }
 
+// Navega organized seguinte.
     function goOrganizedNext() {
         const pages = totalPagesFromTotal(organizedTotal.value, TAB_PAGE_SIZE)
         if (organizedPage.value >= pages) return

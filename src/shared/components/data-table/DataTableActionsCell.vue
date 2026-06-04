@@ -24,12 +24,14 @@ const emit = defineEmits<{
     delete: [rowId: string]
 }>()
 
+// Emite o evento de edição.
 function onEdit(e: MouseEvent) {
     e.preventDefault()
     e.stopPropagation()
     emit("edit", props.rowId)
 }
 
+// Emite o evento de eliminação.
 function onDelete(e: MouseEvent) {
     e.preventDefault()
     e.stopPropagation()

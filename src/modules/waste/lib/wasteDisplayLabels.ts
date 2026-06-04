@@ -9,10 +9,12 @@ export const unitLabel: Record<string, string> = {
     kg: "Peso",
 }
 
+// Normaliza resíduos unidade.
 export function normalizeWasteUnit(code: string) {
     return code === "kg" ? "peso" : code
 }
 
+// Devolve o rótulo da unidade do resíduo (peso/unidade).
 export function labelUnit(code: string) {
     const key = normalizeWasteUnit(code)
     return unitLabel[key] ?? key

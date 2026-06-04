@@ -8,10 +8,12 @@ import { useRoute, useRouter } from "vue-router"
 const SEARCH_DEBOUNCE_MS = 300
 const MAX_SEARCH_LENGTH = 100
 
+// Compara dois arrays de strings elemento a elemento.
 function sameStringArray(a: readonly string[], b: readonly string[]): boolean {
     return a.length === b.length && a.every((value, index) => value === b[index])
 }
 
+// Serializa os filtros da listagem de campanhas para detetar alterações na query.
 function campaignFilterQuerySignature(query: Record<string, unknown>): string {
     const parsed = readCampaignListFiltersFromQuery(query)
     return JSON.stringify({
@@ -21,6 +23,7 @@ function campaignFilterQuerySignature(query: Record<string, unknown>): string {
     })
 }
 
+// Analisa statuses.
 function parseStatuses(raw: unknown): CampaignStatusKey[] {
     if (raw == null) return []
     const parts = Array.isArray(raw) ? raw : typeof raw === "string" && raw !== "" ? [raw] : []
@@ -33,16 +36,19 @@ function parseStatuses(raw: unknown): CampaignStatusKey[] {
     return [...seen]
 }
 
+// Analisa distrito.
 function parseDistrict(raw: unknown): string | undefined {
     if (typeof raw !== "string" || raw === "") return undefined
     return raw
 }
 
+// Analisa pesquisa.
 function parseSearch(raw: unknown): string {
     if (typeof raw !== "string" || raw === "") return ""
     return raw.trim().slice(0, MAX_SEARCH_LENGTH)
 }
 
+// Lê campanha lista filtros de consulta.
 export function readCampaignListFiltersFromQuery(query: Record<string, unknown>): CampaignListFilters {
     const statuses = parseStatuses(query.status)
     return {
@@ -52,6 +58,7 @@ export function readCampaignListFiltersFromQuery(query: Record<string, unknown>)
     }
 }
 
+// Composable que gere a lógica de campanhas lista filtros.
 export function useCampaignsListFilters(onFiltersChange: () => void) {
     const route = useRoute()
     const router = useRouter()
@@ -63,6 +70,7 @@ export function useCampaignsListFilters(onFiltersChange: () => void) {
     let skipRouteWatch = false
     let skipFilterWatch = false
 
+// Sincroniza de rota.
     function syncFromRoute() {
         skipFilterWatch = true
         const parsed = readCampaignListFiltersFromQuery(route.query as Record<string, unknown>)
@@ -100,6 +108,7 @@ export function useCampaignsListFilters(onFiltersChange: () => void) {
         () => search.value.trim() !== "" || statuses.value.length > 0 || district.value !== "",
     )
 
+// Limpa pesquisa, estados e distrito e actualiza a query da rota.
     async function clearAllFilters() {
         skipFilterWatch = true
         search.value = ""
@@ -109,10 +118,13 @@ export function useCampaignsListFilters(onFiltersChange: () => void) {
         await pushFiltersToRoute()
     }
 
+// Envia filtros para rota.
     async function pushFiltersToRoute() {
         const nextQuery: Record<string, string | string[] | undefined> = {
             ...(route.query as Record<string, string | string[] | undefined>),
         }
+
+// Define ou eliminação.
         const setOrDelete = (key: string, value: string) => {
             if (value) nextQuery[key] = value
             else delete nextQuery[key]

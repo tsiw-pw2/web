@@ -1,9 +1,11 @@
+// Formata data pt day month.
 export function formatDatePtDayMonth(iso: string): string {
     const date = new Date(iso)
     if (Number.isNaN(date.getTime())) return iso
     return new Intl.DateTimeFormat("pt-PT", { day: "numeric", month: "long" }).format(date)
 }
 
+// Formata data pt day month year.
 export function formatDatePtDayMonthYear(iso: string): string {
     const trimmed = iso.trim()
     if (!trimmed) return iso
@@ -13,6 +15,7 @@ export function formatDatePtDayMonthYear(iso: string): string {
     return formatted.replace(/\s+de\s+/g, " ").trim()
 }
 
+// Formata data pt day month slash.
 export function formatDatePtDayMonthSlash(iso: string): string {
     const trimmed = iso.trim()
     if (!trimmed) return "—"
@@ -29,22 +32,26 @@ export function formatDatePtDayMonthSlash(iso: string): string {
     return `${day}/${month}`
 }
 
+// Remove o ano de uma data longa em português.
 export function stripYearFromPtLongDate(value: string): string {
     return value.replace(/\s+de\s+\d{4}$/, "")
 }
 
+// Formata data pt.
 export function formatDatePt(iso: string): string {
     const date = new Date(iso)
     if (Number.isNaN(date.getTime())) return iso
     return new Intl.DateTimeFormat("pt-PT", { dateStyle: "medium" }).format(date)
 }
 
+// Formata data time pt.
 export function formatDateTimePt(iso: string): string {
     const date = new Date(iso)
     if (Number.isNaN(date.getTime())) return iso
     return new Intl.DateTimeFormat("pt-PT", { dateStyle: "medium", timeStyle: "short" }).format(date)
 }
 
+// Formata comentário time ago.
 export function formatCommentTimeAgo(iso: string): string {
     const date = new Date(iso)
     if (Number.isNaN(date.getTime())) return iso
@@ -61,6 +68,7 @@ export function formatCommentTimeAgo(iso: string): string {
     return new Intl.DateTimeFormat("pt-PT", { dateStyle: "short" }).format(date)
 }
 
+// Formata peso kg.
 export function formatWeightKg(kg: number): string {
     if (!Number.isFinite(kg) || kg <= 0) return "—"
     return `${new Intl.NumberFormat("pt-PT", { maximumFractionDigits: 1 }).format(kg)} kg`

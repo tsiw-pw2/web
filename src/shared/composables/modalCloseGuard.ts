@@ -7,6 +7,7 @@ export type ModalCloseGuard = {
 
 export const modalCloseGuardKey: InjectionKey<ModalCloseGuard> = Symbol("modalCloseGuard")
 
+// Composable que gere a lógica de modal close protecção.
 export function useModalCloseGuard() {
     const guard = inject(modalCloseGuardKey, null)
     return {

@@ -9,6 +9,7 @@ import type { CampaignDetails, CampaignDetailsRegistration, CampaignDetailsViewe
 import type { SettingsProfile } from "@/modules/settings/types/profile"
 import { campaignEnrollmentProfileBlockMessage } from "@/shared/lib/birthDate"
 
+// Mostra toast de erro adequado a falhas de inscrição na API.
 function registrationToastError(e: unknown, fallbackTitle: string) {
     if (isApiRequestError(e)) {
         if (e.httpStatus === 403) {
@@ -27,6 +28,7 @@ function registrationToastError(e: unknown, fallbackTitle: string) {
     toastError(fallbackTitle, "Verifica a ligação e tenta outra vez.")
 }
 
+// Composable que gere a lógica de campanha inscrição actions.
 export function useCampaignRegistrationActions(
     campaignId: Ref<string>,
     campaign: Ref<CampaignDetails | null>,
@@ -46,6 +48,7 @@ export function useCampaignRegistrationActions(
     const deleteRegistrationOpen = ref(false)
     const deleteRegistrationTarget = ref<CampaignDetailsRegistration | null>(null)
 
+// Sincroniza my inscrição de campanha.
     function syncMyRegistrationFromCampaign(c: CampaignDetails | null) {
         myRegistration.value = c?.viewerRegistration ?? null
     }
@@ -87,6 +90,7 @@ export function useCampaignRegistrationActions(
         return campaignEnrollmentProfileBlockMessage(p.birthDate)
     })
 
+// Refresca a campanha e a primeira página de inscrições após mudança de inscrição.
     async function refreshCampaignAfterRegistrationChange() {
         if (!campaignId.value) return
         try {
@@ -103,11 +107,13 @@ export function useCampaignRegistrationActions(
         await reloadRegistrationsFirstPage()
     }
 
+// Inscreve o utilizador na campanha e sincroniza o estado local.
     async function enroll() {
         if (!canEnroll.value || enrolling.value) return
         enrolling.value = true
         try {
-            const created = await createCampaignRegistration(campaignId.value)
+            if (!campaign.value) return
+            const created = await createCampaignRegistration(campaign.value)
             myRegistration.value = {
                 id: created.id,
                 role: created.role,
@@ -123,12 +129,13 @@ export function useCampaignRegistrationActions(
         }
     }
 
+// Verifica se é possível cel my inscrição.
     async function cancelMyRegistration() {
         const reg = myRegistration.value
         if (!reg || reg.status === 2 || canceling.value) return
         canceling.value = true
         try {
-            const updated = await patchRegistration(campaignId.value, reg.id, { status: 2 })
+            const updated = await patchRegistration(reg, { status: 2 })
             myRegistration.value = {
                 id: updated.id,
                 role: updated.role,
@@ -145,17 +152,19 @@ export function useCampaignRegistrationActions(
         }
     }
 
+// Abre edição inscrição.
     function openEditRegistration(row: CampaignDetailsRegistration) {
         editRegistrationTarget.value = row
         editRegistrationOpen.value = true
     }
 
+// Persiste as alterações da inscrição em edição na API.
     async function saveEditRegistration(body: PatchRegistrationBody) {
         const target = editRegistrationTarget.value
         if (!target || savingRegistrationId.value) return
         savingRegistrationId.value = target.id
         try {
-            await patchRegistration(campaignId.value, target.id, body)
+            await patchRegistration(target, body)
             toastSuccess("Inscrição atualizada")
             editRegistrationOpen.value = false
             editRegistrationTarget.value = null
@@ -167,17 +176,19 @@ export function useCampaignRegistrationActions(
         }
     }
 
+// Abre eliminação inscrição.
     function openDeleteRegistration(row: CampaignDetailsRegistration) {
         deleteRegistrationTarget.value = row
         deleteRegistrationOpen.value = true
     }
 
+// Remove a inscrição seleccionada e actualiza a listagem.
     async function confirmDeleteRegistration() {
         const target = deleteRegistrationTarget.value
         if (!target || deletingRegistrationId.value) return
         deletingRegistrationId.value = target.id
         try {
-            await deleteRegistration(campaignId.value, target.id)
+            await deleteRegistration(target)
             toastSuccess("Inscrição removida")
             deleteRegistrationOpen.value = false
             deleteRegistrationTarget.value = null

@@ -28,6 +28,7 @@ const SLUG_TO_DISTRICT_LABEL: Record<string, string> = {
     faro: "Faro",
 }
 
+// Lista opções de concelho para um distrito (slug).
 export function concelhoSelectOptionsForDistrict(districtSlug: string | undefined) {
     if (!districtSlug) return []
     const districtLabel = SLUG_TO_DISTRICT_LABEL[districtSlug]
@@ -37,6 +38,7 @@ export function concelhoSelectOptionsForDistrict(districtSlug: string | undefine
     return options
 }
 
+// Obtém o slug do distrito a partir do nome do concelho.
 export function districtSlugFromMunicipalityName(name: string): string | undefined {
     const trimmed = name.trim()
     if (!trimmed) return undefined

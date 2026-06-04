@@ -1,3 +1,4 @@
+// Constrói pedido conta e-mail body.
 export function buildRequestAccountEmailBody(responsibleName: string, institutionalEmail: string): string {
     return [
         "Exmos. Senhores,",
@@ -14,6 +15,7 @@ export function buildRequestAccountEmailBody(responsibleName: string, institutio
     ].join("\n")
 }
 
+// Constrói pedido conta e-mail preview.
 export function buildRequestAccountEmailPreview(
     emailFrom: string,
     emailTo: string,

@@ -1,23 +1,15 @@
-import { getApiBaseUrl } from "@/infrastructure/config"
 import { setAccessToken } from "@/infrastructure/access-token"
-
-type LoginSuccessBody = {
-    token?: string
-    user?: unknown
-    message?: string
-}
-
-import {
-    API_UNAVAILABLE_NETWORK_MESSAGE,
-    ApiServiceUnavailableError,
-    apiUnavailableMessageFromResponse,
-    shouldTreatResponseAsUnavailable,
-} from "@/infrastructure/apiErrors"
+import { clearApiRootCache, loadApiRoot, rootLink } from "@/infrastructure/apiDiscovery"
+import { followHref } from "@/infrastructure/hypermediaClient"
+import { extractApiErrorMessage } from "@/infrastructure/hypermedia.types"
+import { isApiRequestError } from "@/infrastructure/request"
+import { API_UNAVAILABLE_NETWORK_MESSAGE, ApiServiceUnavailableError, } from "@/infrastructure/apiErrors"
 
 export class LoginServiceUnavailableError extends ApiServiceUnavailableError {
     override readonly name = "LoginServiceUnavailableError"
 }
 
+// Verifica se o erro é de indisponibilidade do serviço de login.
 export function isLoginServiceUnavailableError(e: unknown): e is LoginServiceUnavailableError {
     return e instanceof LoginServiceUnavailableError
 }
@@ -25,16 +17,26 @@ export function isLoginServiceUnavailableError(e: unknown): e is LoginServiceUna
 export class LoginAccountBlockedError extends Error {
     override readonly name = "LoginAccountBlockedError"
 
+    // Constrói o erro de conta bloqueada com a mensagem indicada.
     constructor(message: string) {
         super(message)
         Object.setPrototypeOf(this, new.target.prototype)
     }
 }
 
+// Verifica se o erro indica conta bloqueada no login.
 export function isLoginAccountBlockedError(e: unknown): e is LoginAccountBlockedError {
     return e instanceof LoginAccountBlockedError
 }
 
+type SessionResponse = {
+    id: string
+    token: string
+    user: Record<string, unknown>
+    links?: Record<string, unknown>
+}
+
+// Formata a mensagem de conta bloqueada a partir da resposta da API.
 function blockedAccountMessage(apiMessage: string): string {
     const trimmed = apiMessage.trim()
     if (trimmed.length > 0 && trimmed !== "Account blocked") {
@@ -43,52 +45,50 @@ function blockedAccountMessage(apiMessage: string): string {
     return "A tua conta foi bloqueada. Contacta a equipa Mariva se precisares de ajuda."
 }
 
-function throwUnexpectedLoginResponse(res: Response, rawText: string): never {
-    if (shouldTreatResponseAsUnavailable(res, rawText)) {
-        throw new LoginServiceUnavailableError(apiUnavailableMessageFromResponse(res, rawText))
+// Formata a mensagem de erro amigável para falhas de autenticação.
+function loginFriendlyMessage(status: number, body: unknown): string {
+    const apiMsg = extractApiErrorMessage(body) ?? ""
+    if (status === 403) {
+        return blockedAccountMessage(apiMsg)
     }
-    throw new LoginServiceUnavailableError(API_UNAVAILABLE_NETWORK_MESSAGE)
+    if (
+        apiMsg === "Invalid credentials" ||
+        apiMsg === "Unauthorized" ||
+        apiMsg.length === 0
+    ) {
+        return "Credenciais inválidas."
+    }
+    return apiMsg
 }
 
+// Inicia sessão com email e palavra-passe e guarda o token.
 export async function loginWithCredentials(email: string, password: string): Promise<void> {
-    const url = `${getApiBaseUrl()}/sessions`
-    let res: Response
     try {
-        res = await fetch(url, {
+        await loadApiRoot(true)
+        const sessionsLink = await rootLink("sessions")
+        const session = await followHref<SessionResponse>(sessionsLink, {
             method: "POST",
-            credentials: "include",
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ email, password }),
+            body: { email, password },
         })
-    } catch {
-        throw new LoginServiceUnavailableError(API_UNAVAILABLE_NETWORK_MESSAGE)
-    }
-
-    const rawText = await res.text()
-
-    let parsed: LoginSuccessBody
-    try {
-        if (rawText.trim().length === 0 && !res.ok) {
-            throw new SyntaxError("empty")
+        if (!session.token) {
+            throw new Error("Credenciais inválidas.")
         }
-        parsed = JSON.parse(rawText) as LoginSuccessBody
-        if (parsed === null || typeof parsed !== "object") {
-            throw new SyntaxError("not-object")
+        setAccessToken(session.token)
+        clearApiRootCache()
+        await loadApiRoot(true)
+    } catch (e) {
+        if (e instanceof LoginServiceUnavailableError || e instanceof LoginAccountBlockedError) {
+            throw e
         }
-    } catch {
-        throwUnexpectedLoginResponse(res, rawText)
-    }
-
-    if (!res.ok || typeof parsed.token !== "string" || parsed.token.length === 0) {
-        const apiMsg = parsed.message ?? ""
-        if (res.status === 403) {
-            throw new LoginAccountBlockedError(blockedAccountMessage(apiMsg))
+        if (isApiRequestError(e)) {
+            if (e.httpStatus === 403) {
+                throw new LoginAccountBlockedError(blockedAccountMessage(e.message))
+            }
+            throw new Error(loginFriendlyMessage(e.httpStatus, { error_description: e.message }))
         }
-        const friendly = apiMsg === "Invalid credentials" || apiMsg === "Unauthorized" ? "Credenciais inválidas." : apiMsg.length > 0 ? apiMsg : "Credenciais inválidas."
-        throw new Error(friendly)
+        if (e instanceof ApiServiceUnavailableError) {
+            throw new LoginServiceUnavailableError(API_UNAVAILABLE_NETWORK_MESSAGE)
+        }
+        throw e
     }
-    setAccessToken(parsed.token)
 }

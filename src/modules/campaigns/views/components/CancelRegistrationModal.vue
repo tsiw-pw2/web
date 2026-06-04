@@ -9,6 +9,7 @@ defineProps<{
     busy?: boolean
 }>()
 
+// Fecha o modal ou painel.
 function close() {
     open.value = false
 }
@@ -17,6 +18,7 @@ const emit = defineEmits<{
     confirm: []
 }>()
 
+// Confirma a acção de eliminação ou bloqueio.
 function onConfirm() {
     emit("confirm")
 }

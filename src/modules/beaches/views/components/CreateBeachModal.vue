@@ -17,6 +17,7 @@ const emit = defineEmits<{
     create: [payload: BeachUpsertDraft]
 }>()
 
+// Fecha o modal ou painel.
 function close() {
     open.value = false
 }
@@ -39,6 +40,7 @@ const canProceed = computed(() => {
     return true
 })
 
+// Repor os campos do formulário.
 function resetForm() {
     name.value = ""
     municipality.value = undefined
@@ -47,6 +49,7 @@ function resetForm() {
     longitude.value = ""
 }
 
+// Valida e submete o formulário.
 function onProceed() {
     const n = name.value.trim()
     const m = municipality.value

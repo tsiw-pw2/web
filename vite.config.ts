@@ -21,7 +21,18 @@ export default defineConfig(({ mode }) => {
         },
         server: {
             proxy: {
-                "^/(sessions|users|campaigns|beaches|waste-items|waste-categories|dashboard)": {
+                "^/$": {
+                    target: apiTarget,
+                    changeOrigin: true,
+                    bypass(req) {
+                        const accept = req.headers?.accept ?? ""
+                        if (accept.includes("application/json")) {
+                            return null
+                        }
+                        return req.url
+                    },
+                },
+                "^/(sessions|users|campaigns|beaches|waste-items|waste-categories|dashboards)": {
                     target: apiTarget,
                     changeOrigin: true,
                 },

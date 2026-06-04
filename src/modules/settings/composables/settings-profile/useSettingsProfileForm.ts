@@ -5,15 +5,16 @@ import { isValidAvatarUrlField, resolveAvatarDisplaySrc } from "@/shared/lib/ava
 import { initialsFromDisplayName } from "@/shared/lib/userInitials"
 import { toastError } from "@/infrastructure/appToast"
 
+// Indica se blob avatar preview URL.
 function isBlobAvatarPreviewUrl(s: string): boolean {
     return s.trim().startsWith("blob:")
 }
 
+// Composable que gere a lógica de definições perfil formulário.
 export function useSettingsProfileForm(profile: Ref<SettingsProfile | null | undefined> | undefined) {
     const profileName = ref("")
     const profileEmail = ref("")
     const profilePhone = ref("")
-    const profileBirthDate = ref("")
     const profileAvatarUrl = ref("")
     const previewAvatarErrored = ref(false)
     const pendingAvatarFile = ref<File | null>(null)
@@ -39,10 +40,12 @@ export function useSettingsProfileForm(profile: Ref<SettingsProfile | null | und
         previewAvatarErrored.value = false
     })
 
+// Marca falha ao carregar a pré-visualização do avatar.
     function onAvatarPreviewError() {
         previewAvatarErrored.value = true
     }
 
+// Revoga URL blob da pré-visualização local do avatar.
     function revokeLocalAvatarPreviewIfNeeded() {
         const u = profileAvatarUrl.value
         if (u.trim().startsWith("blob:")) {
@@ -50,6 +53,7 @@ export function useSettingsProfileForm(profile: Ref<SettingsProfile | null | und
         }
     }
 
+// Abre perfil avatar file picker.
     function openProfileAvatarFilePicker(savingProfile: boolean) {
         if (savingProfile) return
         const input = profileAvatarFileInputRef.value
@@ -58,6 +62,7 @@ export function useSettingsProfileForm(profile: Ref<SettingsProfile | null | und
         input.click()
     }
 
+// Remove ficheiro pendente e limpa a pré-visualização do avatar.
     function removeProfileAvatarSelection() {
         revokeLocalAvatarPreviewIfNeeded()
         pendingAvatarFile.value = null
@@ -67,6 +72,7 @@ export function useSettingsProfileForm(profile: Ref<SettingsProfile | null | und
         }
     }
 
+// Valida e aplica ficheiro de avatar selecionado no perfil.
     function onAvatarFileSelected(ev: Event) {
         const input = ev.target as HTMLInputElement
         const file = input.files?.[0]
@@ -82,17 +88,18 @@ export function useSettingsProfileForm(profile: Ref<SettingsProfile | null | und
         profileAvatarUrl.value = URL.createObjectURL(file)
     }
 
+// Força atualização da imagem de avatar com cache-bust.
     function bumpProfileAvatarDisplayCache() {
         profileAvatarDisplayCacheBust.value = Date.now()
     }
 
+// Aplica perfil para formulário.
     function applyProfileToForm(p: SettingsProfile, options?: { bumpAvatarCache?: boolean }) {
         revokeLocalAvatarPreviewIfNeeded()
         pendingAvatarFile.value = null
         profileName.value = p.name
         profileEmail.value = p.email
         profilePhone.value = p.phone ?? ""
-        profileBirthDate.value = p.birthDate ?? ""
         profileAvatarUrl.value = p.avatarUrl ?? ""
         if (options?.bumpAvatarCache && (p.avatarUrl ?? "").trim().length > 0) {
             bumpProfileAvatarDisplayCache()
@@ -117,7 +124,6 @@ export function useSettingsProfileForm(profile: Ref<SettingsProfile | null | und
             profileName.value !== p.name ||
             profileEmail.value !== p.email ||
             profilePhone.value !== (p.phone ?? "") ||
-            profileBirthDate.value !== (p.birthDate ?? "") ||
             profileAvatarUrl.value.trim() !== (p.avatarUrl ?? "").trim()
         )
     })
@@ -130,7 +136,6 @@ export function useSettingsProfileForm(profile: Ref<SettingsProfile | null | und
         profileName,
         profileEmail,
         profilePhone,
-        profileBirthDate,
         profileAvatarUrl,
         pendingAvatarFile,
         profileAvatarFileInputRef,

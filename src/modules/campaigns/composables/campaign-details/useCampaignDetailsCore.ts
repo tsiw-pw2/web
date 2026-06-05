@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch, type Ref } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { type CampaignDetailsTabId, DEFAULT_CAMPAIGN_DETAILS_TAB, isCampaignDetailsTabId } from "@/modules/campaigns/lib/campaignDetailsTabs"
 import { visibleCampaignDetailsTabs } from "@/modules/campaigns/lib/campaignDetailsTabConfig"
+import { mergeCampaignEnrollmentSnapshot } from "@/modules/campaigns/lib/mergeCampaignEnrollmentSnapshot"
 import { getCampaignDetails } from "@/modules/campaigns/services/campaignDetails"
 import type { CampaignDetails } from "@/modules/campaigns/types/details"
 
@@ -56,9 +57,7 @@ export function useCampaignDetailsCore(
         try {
             const d = await getCampaignDetails(campaignId.value)
             if (campaign.value) {
-                campaign.value.metrics = d.metrics
-                campaign.value.viewerCanPostComment = d.viewerCanPostComment
-                campaign.value.viewerRegistration = d.viewerRegistration
+                mergeCampaignEnrollmentSnapshot(campaign.value, d)
             }
             onCampaignLoaded(d)
         } catch {

@@ -8,10 +8,10 @@ import VolunteerIcon from "@/shared/components/icons/dashboard/DashboardVoluntee
 defineProps<{
     campaignCount: number
     beachCount: number
-    volunteerCount: number
+    userCount: number
     campaignsTo: string | RouteLocationRaw
     beachesTo: string | RouteLocationRaw
-    volunteersTo: string | RouteLocationRaw
+    usersTo: string | RouteLocationRaw
 }>()
 
 const iconClass = "size-5 shrink-0 text-neutral-500"
@@ -41,13 +41,13 @@ const iconClass = "size-5 shrink-0 text-neutral-500"
                 </div>
             </RouterLink>
             <RouterLink
-                :to="volunteersTo"
+                :to="usersTo"
                 class="group flex min-w-0 items-start gap-3 rounded-lg outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-300"
             >
                 <VolunteerIcon :class="iconClass" />
                 <div class="min-w-0 flex-1">
-                    <p class="text-base font-medium leading-6 text-neutral-950 group-hover:text-neutral-700">Voluntários</p>
-                    <p class="text-[32px] font-medium leading-10 text-neutral-950 tabular-nums">{{ volunteerCount }}</p>
+                    <p class="text-base font-medium leading-6 text-neutral-950 group-hover:text-neutral-700">Utilizadores</p>
+                    <p class="text-[32px] font-medium leading-10 text-neutral-950 tabular-nums">{{ userCount }}</p>
                 </div>
             </RouterLink>
         </div>

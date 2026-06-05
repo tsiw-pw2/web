@@ -17,7 +17,6 @@ export function canVolunteerEnroll(
     myRegistration: CampaignDetailsRegistration | null | undefined,
 ): boolean {
     if (!profile) return false
-    if (campaign.organizer?.id === profile.id) return false
     if (profile.isBlocked) return false
     if (!hasEligibleBirthDate(profile)) return false
     if (!ENROLLABLE_CAMPAIGN_STATUS_KEYS.has(campaign.editStatus)) return false

@@ -46,7 +46,7 @@ const hideChrome = computed(() => route.meta?.hideChrome === true)
         <div class="flex min-h-0 flex-1 flex-col">
             <div class="mx-2 mb-2 flex min-h-0 flex-1 flex-col md:mb-0">
                 <main class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl bg-white md:rounded-b-sm md:rounded-t-lg">
-                    <div class="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain">
+                    <div class="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-px">
                         <div class="mx-auto flex w-full min-h-0 max-w-5xl flex-1 flex-col px-3 pt-6 pb-8 sm:px-4 md:pt-8">
                             <RouterView v-slot="{ Component }">
                                 <component :is="Component" class="flex min-h-0 w-full flex-1 flex-col" />

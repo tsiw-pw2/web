@@ -1,3 +1,4 @@
+import { invalidateCurrentProfile } from "@/composables/useCurrentProfile"
 import { setAccessToken } from "@/infrastructure/access-token"
 import { clearApiRootCache, loadApiRoot, rootLink } from "@/infrastructure/apiDiscovery"
 import { followHref } from "@/infrastructure/hypermediaClient"
@@ -74,6 +75,7 @@ export async function loginWithCredentials(email: string, password: string): Pro
             throw new Error("Credenciais inválidas.")
         }
         setAccessToken(session.token)
+        invalidateCurrentProfile()
         clearApiRootCache()
         await loadApiRoot(true)
     } catch (e) {

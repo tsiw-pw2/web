@@ -1,10 +1,14 @@
+import type { BeachListFilters } from "@/modules/beaches/types/filters"
 import type { BeachListItem, BeachUpsertDraft } from "@/modules/beaches/types/list"
 import type { ResourceLinks } from "@/infrastructure/hypermedia.types"
 import { ref } from "vue"
 import { toastListPossiblyStale } from "@/infrastructure/appToast"
 import { createBeach } from "@/modules/beaches/services/beaches/createBeach"
 import { deleteBeach } from "@/modules/beaches/services/beaches/deleteBeach"
-import { fetchBeachesPage } from "@/modules/beaches/services/beaches/fetchBeachesPage"
+import {
+    beachListFiltersSignature,
+    fetchBeachesPage,
+} from "@/modules/beaches/services/beaches/fetchBeachesPage"
 import { updateBeach } from "@/modules/beaches/services/beaches/updateBeach"
 import { PAGINATED_LIST_DEFAULT_PAGE_SIZE } from "@/shared/lib/paginatedListDefaults"
 
@@ -14,7 +18,18 @@ export const beachesPageSize = ref(PAGINATED_LIST_DEFAULT_PAGE_SIZE)
 export const beachesTotal = ref(0)
 
 let loadGeneration = 0
+let listFilters: BeachListFilters = {}
 let listLinks: ResourceLinks | undefined
+let lastFiltersSignature = beachListFiltersSignature(listFilters)
+
+export function setBeachesListFilters(filters: BeachListFilters) {
+    const nextSignature = beachListFiltersSignature(filters)
+    if (nextSignature !== lastFiltersSignature) {
+        listLinks = undefined
+        lastFiltersSignature = nextSignature
+    }
+    listFilters = filters
+}
 
 async function applyPageResult(data: Awaited<ReturnType<typeof fetchBeachesPage>>) {
     items.value = data.items
@@ -26,7 +41,12 @@ async function applyPageResult(data: Awaited<ReturnType<typeof fetchBeachesPage>
 async function fetchAndApply(opts?: { page?: number; pageSize?: number }): Promise<void> {
     if (opts?.page != null) beachesPage.value = opts.page
     if (opts?.pageSize != null) beachesPageSize.value = opts.pageSize
-    const data = await fetchBeachesPage(beachesPage.value, beachesPageSize.value, listLinks)
+    const data = await fetchBeachesPage(
+        beachesPage.value,
+        beachesPageSize.value,
+        listFilters,
+        listLinks,
+    )
     listLinks = data.links
     await applyPageResult(data)
     loadGeneration++
@@ -44,7 +64,12 @@ export async function loadBeachesList(opts?: { page?: number; pageSize?: number 
     const gen = ++loadGeneration
     if (opts?.page != null) beachesPage.value = opts.page
     if (opts?.pageSize != null) beachesPageSize.value = opts.pageSize
-    const data = await fetchBeachesPage(beachesPage.value, beachesPageSize.value, listLinks)
+    const data = await fetchBeachesPage(
+        beachesPage.value,
+        beachesPageSize.value,
+        listFilters,
+        listLinks,
+    )
     if (gen !== loadGeneration) return
     listLinks = data.links
     await applyPageResult(data)

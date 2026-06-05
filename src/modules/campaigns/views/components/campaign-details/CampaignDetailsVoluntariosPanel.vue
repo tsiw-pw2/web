@@ -85,10 +85,9 @@ const campaign = computed(() => core.campaign.value!)
                             <DataTableActionsCell
                                 v-if="canManageRegistrations"
                                 :row-id="row.id"
+                                :show-delete="false"
                                 edit-label="Gerir inscrição"
-                                delete-label="Remover inscrição"
                                 @edit="registrationRows.onEditRegistrationRow"
-                                @delete="registrationRows.onDeleteRegistrationRow"
                             />
                         </tr>
                     </tbody>

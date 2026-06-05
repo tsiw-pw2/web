@@ -4,7 +4,6 @@ import type { CampaignDetailsRegistration } from "@/modules/campaigns/types/deta
 
 type RegistrationActions = {
     openEditRegistration: (row: CampaignDetailsRegistration) => void
-    openDeleteRegistration: (row: CampaignDetailsRegistration) => void
     myRegistration: Ref<{ status: number } | null>
 }
 
@@ -29,15 +28,8 @@ export function useCampaignDetailsRegistrationRows(
         if (row) registration.openEditRegistration(row)
     }
 
-// Abre eliminação da inscrição pela linha selecionada.
-    function onDeleteRegistrationRow(rowId: string) {
-        const row = tabs.registrations.value.find((r) => r.id === rowId)
-        if (row) registration.openDeleteRegistration(row)
-    }
-
     return {
         myRegistrationStatusLabel,
         onEditRegistrationRow,
-        onDeleteRegistrationRow,
     }
 }

@@ -11,6 +11,7 @@ const { core, display, registration, registrationRows } = useCampaignDetailsPage
 
 const {
     canEnroll,
+    showEnrollmentClosed,
     showMyRegistrationStatus,
     enrollmentProfileBlockReason,
     canceling,
@@ -104,7 +105,7 @@ const profile = computed(() => core.profile.value)
                     <div class="text-neutral-950"> {{ campaign.metrics.commentsCount }} </div>
                 </div>
                 <div
-                    v-if="profile && (canEnroll || showMyRegistrationStatus || enrollmentProfileBlockReason)"
+                    v-if="profile && (canEnroll || showMyRegistrationStatus || enrollmentProfileBlockReason || showEnrollmentClosed)"
                     class="flex flex-col gap-3"
                 >
                     <div v-if="showMyRegistrationStatus" class="flex flex-col gap-3">
@@ -139,6 +140,9 @@ const profile = computed(() => core.profile.value)
                         <RouterLink :to="routePaths.settingsProfile" class="font-medium text-neutral-950 underline">
                             Ir ao perfil
                         </RouterLink>
+                    </p>
+                    <p v-else-if="showEnrollmentClosed" class="text-sm leading-5 text-neutral-600">
+                        As inscrições não estão abertas nesta campanha.
                     </p>
                 </div>
             </div>

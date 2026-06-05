@@ -6,7 +6,6 @@ import { getAccessToken } from "@/infrastructure/access-token"
 import { registerSessionExpiredHandler } from "@/infrastructure/sessionExpired"
 import { profileHasCapability } from "@/modules/auth/lib/accessPolicy"
 import { resolveDefaultAuthedRoute } from "@/modules/auth/lib/postAuthRedirect"
-import { safeInternalRedirectPath } from "@/shared/lib/safeRedirect"
 
 const LOGIN_ROUTE_NAME = "login"
 const REGISTER_ROUTE_NAME = "register"
@@ -25,7 +24,7 @@ function capabilityFallbackRoute(capability: AccessCapability): { name: string; 
 async function redirectIfCapabilityDenied(
     capability: AccessCapability,
 ): Promise<{ name: string; replace: true } | true> {
-    const profile = await loadCurrentProfile()
+    const profile = await loadCurrentProfile({ force: true })
     if (profileHasCapability(profile, capability)) {
         return true
     }
@@ -53,11 +52,7 @@ export function registerRouterMiddleware(router: Router) {
     registerSessionExpiredHandler(() => {
         const current = router.currentRoute.value
         if (current.meta.requiresAuth !== true) return
-        const redirect = safeInternalRedirectPath(current.fullPath)
-        void router.replace({
-            name: LOGIN_ROUTE_NAME,
-            query: redirect ? { redirect } : undefined,
-        })
+        void router.replace({ name: LOGIN_ROUTE_NAME })
     })
 
     router.beforeEach(async (to) => {
@@ -68,18 +63,19 @@ export function registerRouterMiddleware(router: Router) {
             return await resolveDefaultAuthedRoute(to.query.redirect)
         }
 
+        if (authenticated && routeName === "not-found") {
+            return await resolveDefaultAuthedRoute()
+        }
+
         if (to.meta.requiresAuth !== true) return true
         if (!authenticated) {
-            return {
-                name: LOGIN_ROUTE_NAME,
-                query: { redirect: to.fullPath },
-            }
+            return { name: LOGIN_ROUTE_NAME }
         }
 
         try {
             await loadApiRoot()
         } catch {
-            return { name: LOGIN_ROUTE_NAME, query: { redirect: to.fullPath } }
+            return { name: LOGIN_ROUTE_NAME }
         }
 
         const capability = to.meta.requiresCapability

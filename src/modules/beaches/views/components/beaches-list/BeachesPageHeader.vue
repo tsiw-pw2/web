@@ -12,8 +12,11 @@ const { canManage } = useCanManageCatalog()
 <template>
     <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <h2 class="text-xl font-semibold leading-8 text-neutral-950 sm:text-2xl">Praias</h2>
-        <Button v-if="canManage" class="w-full shrink-0 touch-manipulation sm:w-auto" @click="emit('create')">
-            Criar Praia
-        </Button>
+        <div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center sm:justify-end">
+            <slot name="actions" />
+            <Button v-if="canManage" class="w-full shrink-0 touch-manipulation sm:w-auto" @click="emit('create')">
+                Criar Praia
+            </Button>
+        </div>
     </div>
 </template>

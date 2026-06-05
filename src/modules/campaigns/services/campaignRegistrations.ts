@@ -15,9 +15,9 @@ type RegistrationResource = CampaignDetailsRegistration & { links?: ResourceLink
 export async function createCampaignRegistration(
     campaign: CampaignLinkParent,
 ): Promise<CampaignDetailsRegistration> {
-    const link = getLink(campaign, "registrations")
-    if (link?.href) {
-        return followHref<RegistrationResource>(link, { method: "POST" })
+    const selfRegistration = getLink(campaign, "selfRegistration")
+    if (selfRegistration?.href) {
+        return followHref<RegistrationResource>(selfRegistration, { method: "POST" })
     }
     return followHref<RegistrationResource>(
         { href: `/campaigns/${campaign.id}/registrations`, method: "POST" },
@@ -34,13 +34,4 @@ export async function patchRegistration(
         return followLink(registration, "update", { method: "PATCH", body })
     }
     throw new Error("Registration update link not available")
-}
-
-// Elimina uma inscrição de uma campanha.
-export async function deleteRegistration(registration: RegistrationResource): Promise<void> {
-    if (getLink(registration, "delete")) {
-        await followLink(registration, "delete", { method: "DELETE" })
-        return
-    }
-    throw new Error("Registration delete link not available")
 }

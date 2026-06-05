@@ -11,7 +11,7 @@ export const FIELD_CLEAR_BUTTON =
 
 export const SELECT_CLEAR_BUTTON = FIELD_CLEAR_BUTTON
 
-export const SELECT_PANEL_LAYOUT = "select-shadow-content fixed z-[110] max-h-60 overflow-auto rounded-lg bg-white p-1 text-neutral-900 outline-none"
+export const SELECT_PANEL_LAYOUT = "select-shadow-content fixed z-[1000] max-h-60 overflow-auto rounded-lg bg-white p-1 text-neutral-900 outline-none"
 
 // Classes Tailwind do rótulo do select consoante valor, placeholder e estado.
 export function selectLabelClasses(hasSelectedLabel: boolean, hasPlaceholder: boolean, isDisabled: boolean) {

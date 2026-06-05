@@ -23,6 +23,8 @@ export function profileHasCapability(
 }
 
 export function canAccessDashboard(profile: SettingsProfile | null | undefined): boolean {
+    const role = profileRole(profile)
+    if (!role || role === "volunteer") return false
     return profileHasCapability(profile, "dashboard")
 }
 

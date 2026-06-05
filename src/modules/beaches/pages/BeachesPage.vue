@@ -2,16 +2,21 @@
 import { useCanManageCatalog } from "@/modules/auth/composables/useCanManageCatalog"
 import { useBeachesPageState } from "@/modules/beaches/composables/beaches-list/useBeachesPageState"
 import { useBeachesViewMode } from "@/modules/beaches/composables/beaches-list/useBeachesViewMode"
+import { areBeachCoordinatesValid } from "@/modules/beaches/lib/beachCoordinates"
+import { beachMapSelectLabel } from "@/modules/beaches/lib/beachMapPoints"
 import BeachesPageContent from "@/modules/beaches/views/components/beaches-list/BeachesPageContent.vue"
 import BeachesPageHeader from "@/modules/beaches/views/components/beaches-list/BeachesPageHeader.vue"
 import BeachesPageModals from "@/modules/beaches/views/components/beaches-list/BeachesPageModals.vue"
 import type { BeachUpsertDraft } from "@/modules/beaches/types/list"
 import AnimatedTabBar from "@/shared/components/ui/tabs/AnimatedTabBar.vue"
 import AnimatedTabTrigger from "@/shared/components/ui/tabs/AnimatedTabTrigger.vue"
+import SearchableSelect from "@/shared/components/ui/searchable-select/SearchableSelect.vue"
+import { computed } from "vue"
 
 const page = useBeachesPageState()
 const beachesView = useBeachesViewMode()
-const { viewMode, mapBeaches, mapLoading, mapError, setViewMode, reloadMap } = beachesView
+const { viewMode, mapBeaches, mapLoading, mapError, focusBeachId, focusBeachOnMap, setViewMode, reloadMap } =
+    beachesView
 const { canManage } = useCanManageCatalog()
 
 const {
@@ -39,12 +44,39 @@ const {
     confirmDeleteBeach,
     removeBeach,
 } = page
+
+const mapBeachSelectOptions = computed(() =>
+    mapBeaches.value
+        .filter((beach) => areBeachCoordinatesValid(beach.latitude, beach.longitude))
+        .map((beach) => ({
+            value: beach.id,
+            label: beachMapSelectLabel(beach),
+        })),
+)
+
+const mapBeachPicker = computed({
+    get: () => focusBeachId.value,
+    set: (id: string | undefined) => focusBeachOnMap(id),
+})
 </script>
 
 <template>
     <div class="flex min-h-0 flex-1 flex-col gap-6">
-        <div class="flex shrink-0 flex-col gap-4">
-            <BeachesPageHeader @create="openCreateModal" />
+        <div class="relative z-20 flex shrink-0 flex-col gap-4">
+            <BeachesPageHeader @create="openCreateModal">
+                <template #actions>
+                    <SearchableSelect
+                        v-if="viewMode === 'map' && mapBeachSelectOptions.length > 0"
+                        id="beaches-map-focus"
+                        v-model="mapBeachPicker"
+                        class="w-full shrink-0 sm:w-[280px]"
+                        filter-mode
+                        :options="mapBeachSelectOptions"
+                        placeholder="Ir para uma praia…"
+                        clear-label="Limpar seleção"
+                    />
+                </template>
+            </BeachesPageHeader>
             <AnimatedTabBar ariaLabel="Vista de praias" class="min-w-0 px-px">
                 <AnimatedTabTrigger
                     id="beaches-tab-list"
@@ -66,26 +98,28 @@ const {
                 </AnimatedTabTrigger>
             </AnimatedTabBar>
         </div>
-        <div class="flex min-h-0 flex-1 flex-col">
-        <BeachesPageContent
-            :view-mode="viewMode"
-            :loading="loading"
-            :error="error"
-            :error-hint="errorHint"
-            :beaches="beaches"
-            :map-beaches="mapBeaches"
-            :map-loading="mapLoading"
-            :map-error="mapError"
-            :page="currentPage"
-            :page-size="pageSize"
-            :total="total"
-            @retry="viewMode === 'map' ? reloadMap() : reload()"
-            @create="openCreateModal"
-            @edit="openEditModal"
-            @delete="openDeleteModal"
-            @prev="goToPrevPage"
-            @next="goToNextPage"
-        />
+        <div class="relative z-0 flex min-h-0 flex-1 flex-col">
+            <BeachesPageContent
+                :view-mode="viewMode"
+                :loading="loading"
+                :error="error"
+                :error-hint="errorHint"
+                :beaches="beaches"
+                :map-beaches="mapBeaches"
+                :map-loading="mapLoading"
+                :map-error="mapError"
+                :focus-beach-id="focusBeachId"
+                :page="currentPage"
+                :page-size="pageSize"
+                :total="total"
+                @retry="viewMode === 'map' ? reloadMap() : reload()"
+                @create="openCreateModal"
+                @edit="openEditModal"
+                @delete="openDeleteModal"
+                @prev="goToPrevPage"
+                @next="goToNextPage"
+                @update:focus-beach-id="focusBeachOnMap"
+            />
         </div>
     </div>
     <BeachesPageModals

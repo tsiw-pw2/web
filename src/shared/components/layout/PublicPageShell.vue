@@ -41,6 +41,7 @@ const mainWidthClass = props.narrow ? "max-w-3xl" : "max-w-6xl"
                 :class="[
                     title ? 'mt-8' : '',
                     centered ? 'mx-auto w-full max-w-sm shrink-0' : 'w-full',
+                    'px-px',
                 ]"
             >
                 <slot />

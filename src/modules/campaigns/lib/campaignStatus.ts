@@ -32,10 +32,14 @@ export function campaignStatusLabel(key: CampaignStatusKey | string | undefined 
 export const ENROLLABLE_CAMPAIGN_STATUS_KEYS = new Set<CampaignStatusKey>([
     "aberta_inscricoes",
     "encerrada_inscricoes",
-    "em_progresso",
 ])
 
-const ENROLLMENT_CLOSED_STATUS_KEYS = new Set<CampaignStatusKey>(["planeada", "concluida", "cancelada"])
+const ENROLLMENT_CLOSED_STATUS_KEYS = new Set<CampaignStatusKey>([
+    "planeada",
+    "em_progresso",
+    "concluida",
+    "cancelada",
+])
 
 // Indica se inscrição fechada estado.
 export function isEnrollmentClosedStatus(key: CampaignStatusKey): boolean {

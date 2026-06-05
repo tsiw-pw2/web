@@ -34,7 +34,7 @@ const showAction = computed(() => props.canRecord && props.hasBeaches)
         @action="emit('record')"
     >
         <template #icon>
-            <MobileNavWasteIcon class="size-6" />
+            <MobileNavWasteIcon :stroke-width="1.5" />
         </template>
     </CampaignDetailsTabEmptyState>
 </template>

@@ -1,14 +1,20 @@
-<template>
-     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" class="shrink-0" aria-hidden="true">
+<script setup lang="ts">
+withDefaults(
+    defineProps<{
+        strokeWidth?: number | string
+    }>(),
+    { strokeWidth: 2 },
+)
+</script>
 
+<template>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" class="shrink-0" aria-hidden="true">
         <path
             d="M15 21.25H8.59093C7.01213 21.25 5.70351 20.0263 5.59768 18.4511L4.75 5.83333L5.92991 4.07703C6.48716 3.24756 7.42084 2.75 8.42012 2.75H15.5799C16.5792 2.75 17.5128 3.24756 18.0701 4.07704L19.25 5.83333L18.5 17.25M3.75 6H20.25M19 19C19 20.3807 17.8807 21.5 16.5 21.5C15.1193 21.5 14 20.3807 14 19C14 17.6193 15.1193 16.5 16.5 16.5C17.8807 16.5 19 17.6193 19 19Z"
             stroke="currentColor"
-            stroke-width="2"
+            :stroke-width="strokeWidth"
             stroke-linecap="round"
             stroke-linejoin="round"
         />
-         </svg
-    >
+    </svg>
 </template>
-

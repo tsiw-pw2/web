@@ -1,5 +1,7 @@
-<script setup lang="ts">import { computed, onMounted } from "vue"
+<script setup lang="ts">import { computed, onMounted, watch } from "vue"
+import { useRouter } from "vue-router"
 import { useCurrentProfile } from "@/composables/useCurrentProfile"
+import { canAccessDashboard } from "@/modules/auth/lib/accessPolicy"
 import CampaignIcon from "@/shared/components/icons/dashboard/DashboardCampaignIcon.vue"
 import CoastIcon from "@/shared/components/icons/dashboard/DashboardCoastIcon.vue"
 import VolunteerIcon from "@/shared/components/icons/dashboard/DashboardVolunteerIcon.vue"
@@ -11,6 +13,7 @@ import PageContentInset from "@/shared/components/layout/PageContentInset.vue"
 import { stripYearFromPtLongDate } from "@/shared/lib/formatPt"
 import type { DashboardKeyValueRow } from "@/modules/dashboard/types"
 
+const router = useRouter()
 const { overview, loading, error, reload } = useDashboardOverview()
 const { profile, loadProfile } = useCurrentProfile()
 
@@ -18,9 +21,19 @@ onMounted(() => {
     void loadProfile()
 })
 
+watch(
+    profile,
+    (p) => {
+        if (p && !canAccessDashboard(p)) {
+            void router.replace(routePaths.campaigns)
+        }
+    },
+    { immediate: true },
+)
+
 const showAdminStyleMetrics = computed(() => {
     const p = profile.value
-    if (!p) return true
+    if (!p) return false
     return p.isAdmin === true || p.isOrganizer === true
 })
 
@@ -78,9 +91,9 @@ const nextCampaignDisplayRows = computed((): DashboardKeyValueRow[] => {
                 </DashboardMetricPanel>
                 <DashboardMetricPanel
                     class="sm:col-span-2 lg:col-span-2"
-                    title="Voluntários"
-                    :value="String(overview.metrics.volunteerCount)"
-                    :more-to="{ name: 'settings-users', query: { role: 'volunteer' } }"
+                    title="Utilizadores"
+                    :value="String(overview.metrics.userCount)"
+                    :more-to="{ name: 'settings-users' }"
                 >
                     <template #icon>
                         <VolunteerIcon />

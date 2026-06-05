@@ -1,3 +1,4 @@
+import type { BeachListFilters } from "@/modules/beaches/types/filters"
 import type { BeachListItem } from "@/modules/beaches/types/list"
 import type { PaginatedResult } from "@/types/pagination"
 import { href } from "@/infrastructure/apiDiscovery"
@@ -9,13 +10,24 @@ export type BeachesPageResult = PaginatedResult<BeachListItem> & {
     links?: ResourceLinks
 }
 
+function appendFilters(q: URLSearchParams, filters?: BeachListFilters) {
+    if (!filters?.q) return
+    q.set("q", filters.q)
+}
+
+export function beachListFiltersSignature(filters?: BeachListFilters): string {
+    return JSON.stringify({ q: filters?.q ?? "" })
+}
+
 // Obtém uma página da listagem de praias.
 export async function fetchBeachesPage(
     page: number,
     pageSize: number,
+    filters?: BeachListFilters,
     prevLinks?: ResourceLinks,
 ): Promise<BeachesPageResult> {
     const q = paginationQuery(page, pageSize)
+    appendFilters(q, filters)
 
     if (page > 1 && prevLinks?.next?.href) {
         const body = await followHref<{

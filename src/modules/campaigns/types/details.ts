@@ -36,6 +36,7 @@ export type CampaignDetailsRegistration = {
 
 export type CampaignDetailsViewerRegistration = {
     id: string
+    userId: string
     role: number
     status: number
     attendance: boolean | null
@@ -98,5 +99,6 @@ export type CampaignDetails = {
     beaches: CampaignDetailsBeach[]
     metrics: CampaignDetailsMetrics
     viewerCanPostComment: boolean
+    viewerCanEnroll: boolean
     viewerRegistration: CampaignDetailsViewerRegistration | null
 }

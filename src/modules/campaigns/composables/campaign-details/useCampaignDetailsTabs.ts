@@ -59,7 +59,7 @@ export function useCampaignDetailsTabs(
     }
 
 // Carrega inscrições.
-    async function loadRegistrations() {
+    async function loadRegistrations(options?: { silent?: boolean }) {
         if (!campaignId.value || !campaign.value) return
         registrationsLoading.value = true
         try {
@@ -73,7 +73,7 @@ export function useCampaignDetailsTabs(
         } catch (e) {
             registrations.value = []
             registrationsTotal.value = 0
-            if (isApiRequestError(e) && e.httpStatus === 403) {
+            if (isApiRequestError(e) && e.httpStatus === 403 && !options?.silent) {
                 tabLoadForbiddenToast()
             }
         } finally {
@@ -203,9 +203,9 @@ export function useCampaignDetailsTabs(
     }
 
 // Repõe a paginação e recarrega as inscrições da primeira página.
-    function reloadRegistrationsFirstPage() {
+    function reloadRegistrationsFirstPage(options?: { silent?: boolean }) {
         registrationsPage.value = 1
-        void loadRegistrations()
+        void loadRegistrations(options)
     }
 
 // Repõe a paginação e recarrega as recolhas da primeira página.

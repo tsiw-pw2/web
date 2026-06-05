@@ -186,7 +186,6 @@ export const SHOWCASE_ERROR_MESSAGE_GROUPS: ShowcaseErrorMessageGroup[] = [
             row("Inscrição — concluir", "Não foi possível concluir a inscrição.", "useCampaignRegistrationActions.ts"),
             row("Inscrição — cancelar", "Não foi possível cancelar a inscrição.", "useCampaignRegistrationActions.ts"),
             row("Inscrição — guardar", "Não foi possível guardar a inscrição.", "useCampaignRegistrationActions.ts"),
-            row("Inscrição — remover", "Não foi possível remover a inscrição.", "useCampaignRegistrationActions.ts"),
             row(
                 "Comentário — visibilidade",
                 "Tenta outra vez.",

@@ -45,6 +45,7 @@ async function fetchWithAuth(path: string, init?: RequestInit, allowSessionRetry
         headers.set("Accept", "application/json")
     }
     applyBearerHeader(headers)
+    const hadAccessToken = Boolean(getAccessToken())
     let res: Response
     try {
         res = await fetch(url, { ...init, headers, credentials: "include" })
@@ -56,7 +57,9 @@ async function fetchWithAuth(path: string, init?: RequestInit, allowSessionRetry
     }
     const restored = await tryRestoreSession()
     if (!restored) {
-        handleSessionExpired()
+        if (hadAccessToken) {
+            handleSessionExpired()
+        }
         return res
     }
     applyBearerHeader(headers)

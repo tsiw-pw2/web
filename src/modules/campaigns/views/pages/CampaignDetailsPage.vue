@@ -46,7 +46,7 @@ useDocumentTitle(browserTitle)
 
 <template>
     <div
-        class="flex min-h-0 flex-1 flex-col gap-6"
+        class="flex min-h-0 flex-1 flex-col gap-6 px-px"
         :class="isInformacoesTab ? 'overflow-hidden' : 'overflow-y-auto overscroll-none'"
     >
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
@@ -100,7 +100,7 @@ useDocumentTitle(browserTitle)
             >
                 <div
                     v-if="isInformacoesTab"
-                    class="scrollbar-hidden flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain"
+                    class="scrollbar-hidden flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-0.5"
                 >
                     <CampaignDetailsInformacoesPanel />
                 </div>

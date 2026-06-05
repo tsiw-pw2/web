@@ -67,7 +67,6 @@ export function useCampaignDetailsPageState() {
         { registrations: tabs.registrations },
         {
             openEditRegistration: registration.openEditRegistration,
-            openDeleteRegistration: registration.openDeleteRegistration,
             myRegistration: registration.myRegistration,
         },
     )

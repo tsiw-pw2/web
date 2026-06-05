@@ -3,6 +3,7 @@ import { useRouter } from "vue-router"
 import { useSettingsUsersPageState } from "@/modules/settings/composables/settings-users/useSettingsUsersPageState"
 import SettingsUsersPageContent from "@/modules/settings/views/components/settings-users/SettingsUsersPageContent.vue"
 import SettingsUsersPageHeader from "@/modules/settings/views/components/settings-users/SettingsUsersPageHeader.vue"
+import SettingsUsersFilteredEmptyState from "@/modules/settings/views/states/SettingsUsersFilteredEmptyState.vue"
 
 const router = useRouter()
 const page = useSettingsUsersPageState()
@@ -15,12 +16,14 @@ const {
     total: usersTotal,
     loading: usersLoading,
     error: usersError,
+    invalidRoleFilter,
+    hasInvalidRoleFilter,
     goToPrevPage,
     goToNextPage,
     reload,
+    clearInvalidRoleFilter,
 } = page
 
-// Navega para os detalhes do utilizador.
 function openUserDetails(userId: string) {
     void router.push({
         name: "settings-user-details",
@@ -46,13 +49,20 @@ function openUserDetails(userId: string) {
             </div>
 
             <SettingsUsersPageHeader
+                v-if="!hasInvalidRoleFilter"
                 :users-error="usersError"
                 :users-loading="usersLoading"
                 @retry="reload"
             />
 
+            <SettingsUsersFilteredEmptyState
+                v-if="hasInvalidRoleFilter && invalidRoleFilter"
+                class="flex min-h-0 flex-1 flex-col"
+                :role="invalidRoleFilter"
+                @clear-filter="clearInvalidRoleFilter"
+            />
             <SettingsUsersPageContent
-                v-if="!usersLoading && !usersError"
+                v-else-if="!usersLoading && !usersError"
                 class="flex min-h-0 flex-1 flex-col"
                 :users="users"
                 :users-page="usersPage"

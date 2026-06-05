@@ -1,11 +1,19 @@
-import { beachesListRef, beachesPage, beachesPageSize, beachesTotal, loadBeachesList } from "@/modules/beaches/composables/beaches-list/beachesListState"
+import {
+    beachesListRef,
+    beachesPage,
+    beachesPageSize,
+    beachesTotal,
+    loadBeachesList,
+    setBeachesListFilters,
+} from "@/modules/beaches/composables/beaches-list/beachesListState"
 import { useBeachesListMutations } from "@/modules/beaches/composables/beaches-list/useBeachesListMutations"
 import { useBeachesPageModals } from "@/modules/beaches/composables/beaches-list/useBeachesPageModals"
 import { usePaginatedListRoute } from "@/shared/composables/usePaginatedListRoute"
 
 export type { BeachListItem, BeachUpsertDraft } from "@/modules/beaches/types/list"
 
-// Composable que gere a lógica de beaches página estado.
+setBeachesListFilters({})
+
 export function useBeachesPageState() {
     const routeApi = usePaginatedListRoute({
         page: beachesPage,
@@ -13,6 +21,7 @@ export function useBeachesPageState() {
         total: beachesTotal,
         fetchPage: loadBeachesList,
     })
+
     const mutations = useBeachesListMutations(routeApi)
     const modals = useBeachesPageModals()
 

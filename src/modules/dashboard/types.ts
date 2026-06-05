@@ -20,7 +20,7 @@ export type DashboardOverview = {
     metrics: {
         campaignCount: number
         beachCount: number
-        volunteerCount: number
+        userCount: number
     }
     cleaningStatsRows: DashboardKeyValueRow[]
     wasteByTypeRows: DashboardKeyValueRow[]

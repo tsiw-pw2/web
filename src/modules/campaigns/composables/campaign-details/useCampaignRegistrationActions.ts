@@ -1,16 +1,21 @@
-import { computed, ref, type Ref } from "vue"
+import { computed, ref, watch, type Ref } from "vue"
 import { toastError, toastSuccess } from "@/infrastructure/appToast"
 import { isApiRequestError } from "@/infrastructure/request"
+import { isApiServiceUnavailableError } from "@/infrastructure/apiErrors"
 import { isEnrollmentClosedStatus, ENROLLABLE_CAMPAIGN_STATUS_KEYS } from "@/modules/campaigns/lib/campaignStatus"
-import { canVolunteerEnroll, hasActiveRegistration } from "@/modules/campaigns/lib/canVolunteerEnroll"
-import { createCampaignRegistration, deleteRegistration, patchRegistration, type PatchRegistrationBody } from "@/modules/campaigns/services/campaignRegistrations"
+import { canSelfEnrollInCampaign } from "@/modules/campaigns/lib/canSelfEnrollInCampaign"
+import { hasActiveRegistration } from "@/modules/campaigns/lib/canVolunteerEnroll"
+import { shouldReloadRegistrationsListAfterChange } from "@/modules/campaigns/lib/shouldReloadRegistrationsListAfterChange"
+import { viewerRegistrationBelongsToProfile } from "@/modules/campaigns/lib/viewerRegistrationOwnership"
+import { mergeCampaignEnrollmentSnapshot } from "@/modules/campaigns/lib/mergeCampaignEnrollmentSnapshot"
+import { createCampaignRegistration, patchRegistration, type PatchRegistrationBody } from "@/modules/campaigns/services/campaignRegistrations"
 import { getCampaignDetails } from "@/modules/campaigns/services/campaignDetails"
 import type { CampaignDetails, CampaignDetailsRegistration, CampaignDetailsViewerRegistration } from "@/modules/campaigns/types/details"
 import type { SettingsProfile } from "@/modules/settings/types/profile"
 import { campaignEnrollmentProfileBlockMessage } from "@/shared/lib/birthDate"
 
-// Mostra toast de erro adequado a falhas de inscrição na API.
-function registrationToastError(e: unknown, fallbackTitle: string) {
+// Mostra toast de erro adequado a falhas de gestão de inscrições (org/admin).
+function registrationManagementToastError(e: unknown, fallbackTitle: string) {
     if (isApiRequestError(e)) {
         if (e.httpStatus === 403) {
             toastError("Não tens permissão para esta ação.")
@@ -28,30 +33,71 @@ function registrationToastError(e: unknown, fallbackTitle: string) {
     toastError(fallbackTitle, "Verifica a ligação e tenta outra vez.")
 }
 
+// Toast para falhas de auto-inscrição — usa mensagem da API, nunca texto de permissão.
+function enrollmentToastError(e: unknown, fallbackTitle: string) {
+    if (isApiRequestError(e)) {
+        if (e.httpStatus === 403 && e.message.trim()) {
+            toastError(e.message)
+            return
+        }
+        if (e.httpStatus === 404) {
+            toastError("Campanha ou inscrição não encontrada.")
+            return
+        }
+        if (e.httpStatus === 400) {
+            toastError(fallbackTitle)
+            return
+        }
+        if (e.httpStatus >= 500) {
+            toastError(fallbackTitle, "Ocorreu um erro no servidor. Tenta outra vez.")
+            return
+        }
+    }
+    if (isApiServiceUnavailableError(e)) {
+        toastError(fallbackTitle, "Verifica a ligação e tenta outra vez.")
+        return
+    }
+    toastError(fallbackTitle, "Ocorreu um erro inesperado. Tenta outra vez.")
+}
+
 // Composable que gere a lógica de campanha inscrição actions.
 export function useCampaignRegistrationActions(
     campaignId: Ref<string>,
     campaign: Ref<CampaignDetails | null>,
     profile: Ref<SettingsProfile | null>,
-    reloadRegistrationsFirstPage: () => void | Promise<void>,
+    reloadRegistrationsFirstPage: (options?: { silent?: boolean }) => void | Promise<void>,
 ) {
     const myRegistration = ref<CampaignDetailsViewerRegistration | null>(null)
     const enrolling = ref(false)
     const canceling = ref(false)
     const savingRegistrationId = ref<string | null>(null)
-    const deletingRegistrationId = ref<string | null>(null)
 
     const editRegistrationOpen = ref(false)
     const editRegistrationTarget = ref<CampaignDetailsRegistration | null>(null)
 
     const cancelRegistrationOpen = ref(false)
-    const deleteRegistrationOpen = ref(false)
-    const deleteRegistrationTarget = ref<CampaignDetailsRegistration | null>(null)
 
-// Sincroniza my inscrição de campanha.
+// Sincroniza my inscrição de campanha (só se pertencer ao perfil autenticado).
     function syncMyRegistrationFromCampaign(c: CampaignDetails | null) {
-        myRegistration.value = c?.viewerRegistration ?? null
+        const reg = c?.viewerRegistration ?? null
+        myRegistration.value = viewerRegistrationBelongsToProfile(reg, profile.value) ? reg : null
     }
+
+    function ownedViewerRegistration(): CampaignDetailsViewerRegistration | null {
+        const reg = campaign.value?.viewerRegistration ?? myRegistration.value
+        return viewerRegistrationBelongsToProfile(reg, profile.value) ? reg : null
+    }
+
+    watch(campaignId, () => {
+        myRegistration.value = null
+    })
+
+    watch(
+        () => profile.value?.id,
+        () => {
+            myRegistration.value = null
+        },
+    )
 
     const canManageRegistrations = computed(() => {
         const c = campaign.value
@@ -60,33 +106,26 @@ export function useCampaignRegistrationActions(
         return p.isAdmin || c.organizer?.id === p.id
     })
 
-    const canEnroll = computed(() => {
-        const c = campaign.value
-        if (!c) return false
-        return canVolunteerEnroll(c, profile.value, myRegistration.value)
-    })
+    const canEnroll = computed(() => canSelfEnrollInCampaign(campaign.value, profile.value))
 
     const showEnrollmentClosed = computed(() => {
         const c = campaign.value
         if (!c || !profile.value) return false
-        if (c.organizer?.id === profile.value.id) return false
         if (canEnroll.value) return false
-        if (hasActiveRegistration(myRegistration.value)) return false
+        if (hasActiveRegistration(ownedViewerRegistration())) return false
         return isEnrollmentClosedStatus(c.editStatus)
     })
 
-    const showMyRegistrationStatus = computed(() => hasActiveRegistration(myRegistration.value))
+    const showMyRegistrationStatus = computed(() => hasActiveRegistration(ownedViewerRegistration()))
 
     const enrollmentProfileBlockReason = computed(() => {
         const c = campaign.value
         const p = profile.value
-        const reg = myRegistration.value
+        const reg = ownedViewerRegistration()
         if (!c || !p || p.isBlocked) return null
-        if (c.organizer?.id === p.id) return null
+        if (c.viewerCanEnroll === true) return null
         if (!ENROLLABLE_CAMPAIGN_STATUS_KEYS.has(c.editStatus)) return null
         if (hasActiveRegistration(reg)) return null
-        if (reg != null && reg.status !== 2) return null
-        if (canVolunteerEnroll(c, p, reg)) return null
         return campaignEnrollmentProfileBlockMessage(p.birthDate)
     })
 
@@ -96,15 +135,15 @@ export function useCampaignRegistrationActions(
         try {
             const d = await getCampaignDetails(campaignId.value)
             if (campaign.value) {
-                campaign.value.metrics = d.metrics
-                campaign.value.viewerCanPostComment = d.viewerCanPostComment
-                campaign.value.viewerRegistration = d.viewerRegistration
+                mergeCampaignEnrollmentSnapshot(campaign.value, d)
             }
             syncMyRegistrationFromCampaign(d)
         } catch {
             /* ignore */
         }
-        await reloadRegistrationsFirstPage()
+        if (shouldReloadRegistrationsListAfterChange(canManageRegistrations.value)) {
+            await reloadRegistrationsFirstPage({ silent: true })
+        }
     }
 
 // Inscreve o utilizador na campanha e sincroniza o estado local.
@@ -112,10 +151,32 @@ export function useCampaignRegistrationActions(
         if (!canEnroll.value || enrolling.value) return
         enrolling.value = true
         try {
-            if (!campaign.value) return
-            const created = await createCampaignRegistration(campaign.value)
+            if (!campaignId.value || !campaign.value) return
+
+            const fresh = await getCampaignDetails(campaignId.value)
+            mergeCampaignEnrollmentSnapshot(campaign.value, fresh)
+            syncMyRegistrationFromCampaign(fresh)
+
+            if (fresh.viewerCanEnroll !== true) {
+                const ownedFresh = viewerRegistrationBelongsToProfile(fresh.viewerRegistration, profile.value)
+                    ? fresh.viewerRegistration
+                    : null
+                if (hasActiveRegistration(ownedFresh)) {
+                    toastError("Já tens uma inscrição nesta campanha.")
+                } else if (!ENROLLABLE_CAMPAIGN_STATUS_KEYS.has(fresh.editStatus)) {
+                    toastError("As inscrições não estão abertas nesta campanha.")
+                } else {
+                    toastError("Não foi possível concluir a inscrição.")
+                }
+                return
+            }
+
+            const created = await createCampaignRegistration(fresh)
+            const profileId = profile.value?.id
+            if (!profileId) return
             myRegistration.value = {
                 id: created.id,
+                userId: profileId,
                 role: created.role,
                 status: created.status,
                 attendance: created.attendance,
@@ -123,7 +184,8 @@ export function useCampaignRegistrationActions(
             toastSuccess("Inscrição registada")
             await refreshCampaignAfterRegistrationChange()
         } catch (e) {
-            registrationToastError(e, "Não foi possível concluir a inscrição.")
+            await refreshCampaignAfterRegistrationChange()
+            enrollmentToastError(e, "Não foi possível concluir a inscrição.")
         } finally {
             enrolling.value = false
         }
@@ -131,22 +193,26 @@ export function useCampaignRegistrationActions(
 
 // Verifica se é possível cel my inscrição.
     async function cancelMyRegistration() {
-        const reg = myRegistration.value
+        const reg = ownedViewerRegistration()
         if (!reg || reg.status === 2 || canceling.value) return
         canceling.value = true
         try {
             const updated = await patchRegistration(reg, { status: 2 })
-            myRegistration.value = {
-                id: updated.id,
-                role: updated.role,
-                status: updated.status,
-                attendance: updated.attendance,
+            const profileId = profile.value?.id
+            if (profileId) {
+                myRegistration.value = {
+                    id: updated.id,
+                    userId: profileId,
+                    role: updated.role,
+                    status: updated.status,
+                    attendance: updated.attendance,
+                }
             }
             toastSuccess("Inscrição cancelada")
             cancelRegistrationOpen.value = false
             await refreshCampaignAfterRegistrationChange()
         } catch (e) {
-            registrationToastError(e, "Não foi possível cancelar a inscrição.")
+            registrationManagementToastError(e, "Não foi possível cancelar a inscrição.")
         } finally {
             canceling.value = false
         }
@@ -170,33 +236,9 @@ export function useCampaignRegistrationActions(
             editRegistrationTarget.value = null
             await refreshCampaignAfterRegistrationChange()
         } catch (e) {
-            registrationToastError(e, "Não foi possível guardar a inscrição.")
+            registrationManagementToastError(e, "Não foi possível guardar a inscrição.")
         } finally {
             savingRegistrationId.value = null
-        }
-    }
-
-// Abre eliminação inscrição.
-    function openDeleteRegistration(row: CampaignDetailsRegistration) {
-        deleteRegistrationTarget.value = row
-        deleteRegistrationOpen.value = true
-    }
-
-// Remove a inscrição seleccionada e actualiza a listagem.
-    async function confirmDeleteRegistration() {
-        const target = deleteRegistrationTarget.value
-        if (!target || deletingRegistrationId.value) return
-        deletingRegistrationId.value = target.id
-        try {
-            await deleteRegistration(target)
-            toastSuccess("Inscrição removida")
-            deleteRegistrationOpen.value = false
-            deleteRegistrationTarget.value = null
-            await refreshCampaignAfterRegistrationChange()
-        } catch (e) {
-            registrationToastError(e, "Não foi possível remover a inscrição.")
-        } finally {
-            deletingRegistrationId.value = null
         }
     }
 
@@ -205,12 +247,9 @@ export function useCampaignRegistrationActions(
         enrolling,
         canceling,
         savingRegistrationId,
-        deletingRegistrationId,
         editRegistrationOpen,
         editRegistrationTarget,
         cancelRegistrationOpen,
-        deleteRegistrationOpen,
-        deleteRegistrationTarget,
         syncMyRegistrationFromCampaign,
         canManageRegistrations,
         canEnroll,
@@ -221,7 +260,5 @@ export function useCampaignRegistrationActions(
         cancelMyRegistration,
         openEditRegistration,
         saveEditRegistration,
-        openDeleteRegistration,
-        confirmDeleteRegistration,
     }
 }

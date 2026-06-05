@@ -3,7 +3,6 @@ import { computed } from "vue"
 import { useCampaignDetailsPageInject } from "@/modules/campaigns/composables/campaign-details/useCampaignDetailsPageInject"
 import CancelRegistrationModal from "@/modules/campaigns/views/components/CancelRegistrationModal.vue"
 import CreateWasteCollectionModal from "@/modules/campaigns/views/components/CreateWasteCollectionModal.vue"
-import DeleteRegistrationModal from "@/modules/campaigns/views/components/DeleteRegistrationModal.vue"
 import DeleteWasteCollectionModal from "@/modules/campaigns/views/components/DeleteWasteCollectionModal.vue"
 import EditRegistrationModal from "@/modules/campaigns/views/components/EditRegistrationModal.vue"
 
@@ -19,10 +18,6 @@ const {
     cancelRegistrationOpen,
     canceling,
     cancelMyRegistration,
-    deleteRegistrationOpen,
-    deleteRegistrationTarget,
-    deletingRegistrationId,
-    confirmDeleteRegistration,
 } = registration
 
 const {
@@ -43,12 +38,6 @@ const {
         @save="saveEditRegistration"
     />
     <CancelRegistrationModal v-model="cancelRegistrationOpen" :busy="canceling" @confirm="cancelMyRegistration" />
-    <DeleteRegistrationModal
-        v-model="deleteRegistrationOpen"
-        :volunteer-name="deleteRegistrationTarget?.user?.name ?? undefined"
-        :busy="Boolean(deletingRegistrationId)"
-        @confirm="confirmDeleteRegistration"
-    />
     <CreateWasteCollectionModal
         v-if="campaign"
         v-model="createWasteCollectionOpen"

@@ -28,7 +28,7 @@ const CAMPAIGN_STATUS_TONE: Record<CampaignStatusKey, string> = {
 export function campaignStatusTableBadge(key: CampaignStatusKey | string | undefined | null): TableValueBadge {
     const k = key as CampaignStatusKey
     const label = campaignStatusLabel(key)
-    if (label === "—") return badge(label, "bg-neutral-100 text-neutral-600")
+    if (label === "-") return badge(label, "bg-neutral-100 text-neutral-600")
     return badge(label, CAMPAIGN_STATUS_TONE[k] ?? "bg-neutral-100 text-neutral-700")
 }
 
@@ -99,7 +99,7 @@ function toneIndexFromString(value: string): number {
 
 export function wasteCategoryTableBadge(categoryName: string): TableValueBadge {
     const trimmed = categoryName.trim()
-    if (!trimmed) return badge("—", "bg-neutral-100 text-neutral-600")
+    if (!trimmed) return badge("-", "bg-neutral-100 text-neutral-600")
     const tone = WASTE_CATEGORY_TONES[toneIndexFromString(trimmed.toLowerCase())]
     return badge(trimmed, tone)
 }

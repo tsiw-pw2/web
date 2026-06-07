@@ -6,11 +6,11 @@ import { userRoleTableBadge } from "@/shared/lib/tableValueBadge"
 
 const profile = inject(settingsProfileKey)
 
-const nameLabel = computed(() => profile?.value?.name?.trim() || "—")
+const nameLabel = computed(() => profile?.value?.name?.trim() || "-")
 
-const emailLabel = computed(() => profile?.value?.email?.trim() || "—")
+const emailLabel = computed(() => profile?.value?.email?.trim() || "-")
 
-const phoneLabel = computed(() => profile?.value?.phone?.trim() || "—")
+const phoneLabel = computed(() => profile?.value?.phone?.trim() || "-")
 
 const roleBadge = computed(() => {
     const p = profile?.value
@@ -43,7 +43,7 @@ const rows = computed(() => [
         <div class="flex items-start justify-between gap-3 pb-2">
             <p class="text-sm font-medium text-neutral-500">Cargo</p>
             <ApiStateBadge v-if="roleBadge" v-bind="roleBadge" />
-            <p v-else class="text-end text-sm font-medium leading-5 text-neutral-950">—</p>
+            <p v-else class="text-end text-sm font-medium leading-5 text-neutral-950">-</p>
         </div>
     </aside>
 </template>

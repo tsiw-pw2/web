@@ -66,10 +66,10 @@ function onDeleteRow(row: CampaignDetailsWasteCollection) {
                     <DataTableTd emphasis>{{ row.waste?.name ?? "Resíduo" }}</DataTableTd>
                     <DataTableTd align="end" class="tabular-nums">{{ row.unitQuantity }}</DataTableTd>
                     <DataTableTd align="end" class="tabular-nums" :class="weightGrams(row)?.isEstimated ? 'text-neutral-600' : ''">
-                        {{ weightGrams(row)?.text ?? "—" }}
+                        {{ weightGrams(row)?.text ?? "-" }}
                     </DataTableTd>
-                    <DataTableTd>{{ row.beach?.name ?? "—" }}</DataTableTd>
-                    <DataTableTd>{{ row.recordedBy?.name ?? "—" }}</DataTableTd>
+                    <DataTableTd>{{ row.beach?.name ?? "-" }}</DataTableTd>
+                    <DataTableTd>{{ row.recordedBy?.name ?? "-" }}</DataTableTd>
                     <DataTableTd :truncate="false" class="whitespace-nowrap tabular-nums">
                         {{ formatDateTimePt(row.createdAt) }}
                     </DataTableTd>

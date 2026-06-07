@@ -15,12 +15,6 @@ const { primaryCtaPath, primaryCtaLabel } = usePublicSiteNav()
             </RouterLink>
 
             <div class="flex items-center gap-4 sm:gap-6">
-                <RouterLink
-                    :to="routePaths.requestAccount"
-                    class="text-sm font-medium text-neutral-700 hover:text-neutral-950"
-                >
-                    Solicitar acesso
-                </RouterLink>
                 <RouterLink :to="primaryCtaPath">
                     <Button class="min-w-[5.5rem]">{{ primaryCtaLabel }}</Button>
                 </RouterLink>

@@ -6,13 +6,13 @@ import RegisterFormCard from "@/modules/auth/views/components/register/RegisterF
 const {
     name,
     email,
+    birthDate,
     password,
     confirmPassword,
     acceptedTerms,
     formError,
     fieldHasError,
     fieldErrorClass,
-    canSubmit,
     isSubmitting,
     submit,
 } = useRegisterPage()
@@ -23,13 +23,13 @@ const {
         <RegisterFormCard
             v-model:name="name"
             v-model:email="email"
+            v-model:birth-date="birthDate"
             v-model:password="password"
             v-model:confirm-password="confirmPassword"
             v-model:accepted-terms="acceptedTerms"
             :form-error="formError"
             :field-has-error="fieldHasError"
             :field-error-class="fieldErrorClass"
-            :can-submit="canSubmit"
             :is-submitting="isSubmitting"
             @submit="submit"
         />

@@ -3,7 +3,6 @@ import type { PaginatedResult } from "@/types/pagination"
 import { href } from "@/infrastructure/apiDiscovery"
 import { apiGet, paginationQuery, unwrapList } from "@/infrastructure/apiClient"
 import type { ResourceLinks } from "@/infrastructure/hypermedia.types"
-import { followHref } from "@/infrastructure/hypermediaClient"
 
 export type WastePageResult = PaginatedResult<WasteListItem> & {
     links?: ResourceLinks
@@ -32,21 +31,10 @@ export async function fetchWastePage(
     page: number,
     pageSize: number,
     filters?: WasteListFilters,
-    prevLinks?: ResourceLinks,
+    _prevLinks?: ResourceLinks,
 ): Promise<WastePageResult> {
     const q = paginationQuery(page, pageSize)
     appendFilters(q, filters)
-
-    if (page > 1 && prevLinks?.next?.href) {
-        const body = await followHref<{
-            data: WasteListItem[]
-            page?: number
-            pageSize?: number
-            total?: number
-            links?: ResourceLinks
-        }>(prevLinks.next, { query: q })
-        return { ...unwrapList(body), links: body.links }
-    }
 
     const path = await href("wasteItems")
     const body = await apiGet<{

@@ -11,6 +11,7 @@ import type {
     CampaignDetailsWasteCollection,
 } from "@/modules/campaigns/types/details"
 import type { ResourceLinks } from "@/infrastructure/hypermedia.types"
+import { canAccessCampaignComments } from "@/modules/campaigns/lib/canAccessCampaignComments"
 
 export type { CampaignDetailsTabId }
 
@@ -108,6 +109,7 @@ export function useCampaignDetailsTabs(
 // Carrega comentários.
     async function loadComments() {
         if (!campaignId.value || !campaign.value) return
+        if (!canAccessCampaignComments(campaign.value)) return
         commentsLoading.value = true
         try {
             const data = await fetchCampaignComments(campaign.value, {

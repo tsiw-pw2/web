@@ -36,6 +36,7 @@ const {
     confirmDeleteCampaign,
     removeCampaign,
     listFilters,
+    districtOptions,
 } = page
 
 const {
@@ -58,6 +59,7 @@ function openCampaign(id: string) {
             v-model:search="campaignsSearch"
             v-model:statuses="campaignsStatuses"
             v-model:district="campaignsDistrict"
+            :district-options="districtOptions"
             class="shrink-0"
         />
         <div class="flex min-h-0 flex-1 flex-col">

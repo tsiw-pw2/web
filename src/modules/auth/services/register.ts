@@ -4,6 +4,8 @@ import { followHref } from "@/infrastructure/hypermediaClient"
 import { extractApiErrorMessage } from "@/infrastructure/hypermedia.types"
 import { API_UNAVAILABLE_NETWORK_MESSAGE, ApiServiceUnavailableError, } from "@/infrastructure/apiErrors"
 import { isApiRequestError } from "@/infrastructure/request"
+import { mapAuthApiMessage } from "@/modules/auth/lib/authApiMessages"
+import { REGISTER_GENERIC_ERROR_MESSAGE } from "@/modules/auth/lib/registerFormConstants"
 
 export class RegisterServiceUnavailableError extends ApiServiceUnavailableError {
     override readonly name = "RegisterServiceUnavailableError"
@@ -31,18 +33,14 @@ function registerErrorMessage(body: unknown): string {
     const credentials = errors?.credentials
     if (Array.isArray(credentials) && credentials.length > 0) {
         const msg = credentials[0]?.trim()
-        if (msg === "Unable to create account" || msg === "Invalid name, email or password") {
-            return "Não foi possível criar a conta. Verifica os dados e tenta novamente."
-        }
-        if (msg && msg.length > 0) {
-            return msg
-        }
+        return mapAuthApiMessage(msg, REGISTER_GENERIC_ERROR_MESSAGE)
+    }
+    const birthDateErrors = errors?.birthDate
+    if (Array.isArray(birthDateErrors) && birthDateErrors.length > 0) {
+        return mapAuthApiMessage(birthDateErrors[0]?.trim(), REGISTER_GENERIC_ERROR_MESSAGE)
     }
     const apiMsg = extractApiErrorMessage(body) ?? ""
-    if (apiMsg.length > 0 && apiMsg !== "Validation error") {
-        return apiMsg
-    }
-    return "Não foi possível criar a conta. Verifica os dados e tenta novamente."
+    return mapAuthApiMessage(apiMsg, REGISTER_GENERIC_ERROR_MESSAGE)
 }
 
 // Regista um novo utilizador e inicia sessão automaticamente.
@@ -50,11 +48,12 @@ export async function registerWithCredentials(
     name: string,
     email: string,
     password: string,
+    birthDate: string,
 ): Promise<void> {
     try {
         await loadApiRoot(true)
         const usersLink = await rootLink("users")
-        await followHref(usersLink, { method: "POST", body: { name, email, password } })
+        await followHref(usersLink, { method: "POST", body: { name, email, password, birthDate } })
         const sessionsLink = await rootLink("sessions")
         const session = await followHref<SessionResponse>(sessionsLink, {
             method: "POST",
@@ -76,7 +75,7 @@ export async function registerWithCredentials(
             throw new RegisterServiceUnavailableError(API_UNAVAILABLE_NETWORK_MESSAGE)
         }
         if (isApiRequestError(e)) {
-            throw new Error(registerErrorMessage({ error_description: e.message }))
+            throw new Error(registerErrorMessage({ message: e.message }))
         }
         throw e
     }

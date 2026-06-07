@@ -62,7 +62,7 @@ export function useCampaignDetailsWaste(
             toastSuccess("Recolha registada")
         } catch (e) {
             if (isApiRequestError(e) && e.httpStatus === 403) {
-                toastError("Não podes registar aqui", "Inscreve-te nesta campanha para registar recolhas.")
+                toastError("Não podes registar aqui", "Só organizadores e administradores podem registar recolhas.")
             } else {
                 toastError("Não foi possível registar", "Verifica os dados e tenta outra vez.")
             }

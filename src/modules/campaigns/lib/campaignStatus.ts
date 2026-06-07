@@ -23,19 +23,30 @@ export const CAMPAIGN_STATUS_SELECT_OPTIONS = CAMPAIGN_STATUS_KEYS.map((value) =
     label: CAMPAIGN_STATUS_LABELS[value],
 }))
 
+export const CAMPAIGN_CREATE_STATUS_KEYS = ["planeada", "aberta_inscricoes"] as const satisfies readonly CampaignStatusKey[]
+
+export type CampaignCreateStatusKey = (typeof CAMPAIGN_CREATE_STATUS_KEYS)[number]
+
+export const CAMPAIGN_CREATE_DEFAULT_STATUS: CampaignCreateStatusKey = "planeada"
+
+export const CAMPAIGN_CREATE_STATUS_SELECT_OPTIONS = CAMPAIGN_CREATE_STATUS_KEYS.map((value) => ({
+    value,
+    label: CAMPAIGN_STATUS_LABELS[value],
+}))
+
 // Devolve o rótulo legível do estado da campanha.
 export function campaignStatusLabel(key: CampaignStatusKey | string | undefined | null): string {
-    if (!key) return "—"
-    return CAMPAIGN_STATUS_LABELS[key as CampaignStatusKey] ?? "—"
+    if (!key) return "-"
+    return CAMPAIGN_STATUS_LABELS[key as CampaignStatusKey] ?? "-"
 }
 
 export const ENROLLABLE_CAMPAIGN_STATUS_KEYS = new Set<CampaignStatusKey>([
     "aberta_inscricoes",
-    "encerrada_inscricoes",
 ])
 
 const ENROLLMENT_CLOSED_STATUS_KEYS = new Set<CampaignStatusKey>([
     "planeada",
+    "encerrada_inscricoes",
     "em_progresso",
     "concluida",
     "cancelada",

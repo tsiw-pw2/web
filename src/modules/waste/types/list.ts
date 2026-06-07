@@ -6,6 +6,8 @@ export type WasteListFilters = {
     unit?: WasteUnitKey[]
 }
 
+import type { ResourceLinks } from "@/infrastructure/hypermedia.types"
+
 export type WasteListItem = {
     id: string
     name: string
@@ -13,6 +15,7 @@ export type WasteListItem = {
     categoryName: string
     unit: string
     averageWeightGrams: number | null
+    links?: ResourceLinks
 }
 
 export type WasteUpsertDraft = {

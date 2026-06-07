@@ -56,7 +56,7 @@ function onRowClick(userId: string) {
                         >
                             <DataTableTd emphasis>{{ u.name }}</DataTableTd>
                             <DataTableTd>{{ u.email }}</DataTableTd>
-                            <DataTableTd>{{ u.phone?.trim() || "—" }}</DataTableTd>
+                            <DataTableTd>{{ u.phone?.trim() || "-" }}</DataTableTd>
                             <DataTableTd :truncate="false">
                                 <ApiStateBadge v-bind="userRoleTableBadge(u)" />
                             </DataTableTd>

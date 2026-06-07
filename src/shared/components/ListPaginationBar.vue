@@ -23,19 +23,18 @@ const canNext = computed(() => props.page < totalPages.value)
 <template>
 
     <div class="flex flex-wrap items-center justify-between gap-3">
+        <p class="text-sm leading-5 text-neutral-600">
+            Página {{ page }} de {{ totalPages }} ({{ total }} no total)
+        </p>
 
-        <p class="text-sm leading-5 text-neutral-600"> Página {{ page }} de {{ totalPages }} ({{ total }} no total) </p>
-
-        <div class="flex items-center gap-2">
-             <Button variant="secondary" type="button" :disabled="!canPrev" @click="emit('prev')"> Anterior </Button> <Button
-                variant="secondary"
-                type="button"
-                :disabled="!canNext"
-                @click="emit('next')"
-                > Seguinte </Button
-            >
+        <div class="flex items-center gap-2 pr-0.5">
+            <Button variant="secondary" type="button" :disabled="!canPrev" @click="emit('prev')">
+                Anterior
+            </Button>
+            <Button variant="secondary" type="button" :disabled="!canNext" @click="emit('next')">
+                Seguinte
+            </Button>
         </div>
-
     </div>
 
 </template>

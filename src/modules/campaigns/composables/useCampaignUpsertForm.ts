@@ -6,24 +6,11 @@ import { beachesListRef, loadBeachesList } from "@/modules/beaches/services/beac
 import { districtSelectOptionsForBeaches } from "@/modules/beaches/lib/districtSelectOptionsForBeaches"
 import { DISTRICT_SELECT_OPTIONS } from "@/shared/constants/districtSelectOptions"
 import { getCampaignDetails } from "@/modules/campaigns/services/campaignDetails"
+import { CAMPAIGN_CREATE_DEFAULT_STATUS } from "@/modules/campaigns/lib/campaignStatus"
 import { toastError } from "@/infrastructure/appToast"
 import { toDateInputValueFromUnknown } from "@/shared/lib/dateInputValue"
 
 export type CampaignUpsertMode = "create" | "edit"
-
-// Resolver data de fim efectiva (vazio = igual ao início).
-function effectiveCampaignEndDate(startDate: string, endDate: string): string {
-    const end = endDate.trim()
-    return end.length > 0 ? end : startDate.trim()
-}
-
-// Validar que a data de fim não é anterior à de início.
-function campaignDatesAreValid(startDate: string, endDate: string): boolean {
-    const start = startDate.trim()
-    if (!start) return false
-    const end = effectiveCampaignEndDate(start, endDate)
-    return end >= start
-}
 
 // Composable que gere a lógica de campanha criação ou actualização formulário.
 export function useCampaignUpsertForm(
@@ -36,6 +23,7 @@ export function useCampaignUpsertForm(
 
     const form = reactive({
         step: 0 as 0 | 1,
+        lockedStepHeight: null as number | null,
         title: "",
         meetingTime: "",
         startDate: "",
@@ -49,15 +37,10 @@ export function useCampaignUpsertForm(
         get isEdit() {
             return isEdit.value
         },
-        get canSubmitBeaches() {
-            return form.selectedBeachIds.length > 0
-        },
         get districtOptions() {
-            if (isEdit.value) return DISTRICT_SELECT_OPTIONS
             return districtSelectOptionsForBeaches(beachesListRef.value)
         },
         get districtPlaceholder() {
-            if (isEdit.value) return "Seleciona um distrito"
             if (form.beachesLoading) return "A carregar distritos…"
             if (form.districtOptions.length === 0) return "Regista praias para escolher um distrito"
             return "Seleciona um distrito"
@@ -76,20 +59,20 @@ export function useCampaignUpsertForm(
                 .sort((a: BeachListItem, b: BeachListItem) => a.name.localeCompare(b.name, "pt"))
         },
         get canStep0Next() {
-            const t = form.title.trim()
-            if (t.length === 0 || t.length > 200) return false
-            if (form.information.length > 8000) return false
+            if (form.title.trim().length === 0) return false
             if (form.meetingTime.trim().length === 0) return false
             if (form.startDate.trim().length === 0) return false
-            if (!campaignDatesAreValid(form.startDate, form.endDate)) return false
             if (!form.status) return false
             if (!form.district) return false
             if (!isEdit.value && form.beachesForDistrict.length === 0) return false
             return true
         },
+        get canSubmitBeaches() {
+            return form.selectedBeachIds.length > 0
+        },
     })
 
-// Aplica detalhes.
+    // Aplica detalhes.
     function applyDetails(d: CampaignDetails) {
         form.title = d.title
         form.meetingTime = d.meetingTime?.trim() ?? ""
@@ -101,7 +84,7 @@ export function useCampaignUpsertForm(
         form.selectedBeachIds = d.beaches.map((b) => b.id)
     }
 
-// Carrega detalhes para edição.
+    // Carrega detalhes para edição.
     async function loadDetailsForEdit(campaignId: string) {
         form.detailsLoading = true
         try {
@@ -118,18 +101,24 @@ export function useCampaignUpsertForm(
         }
     }
 
-// Navega para praia passo.
-    async function goToBeachStep() {
-        if (!form.canStep0Next) {
-            if (form.startDate.trim() && !campaignDatesAreValid(form.startDate, form.endDate)) {
-                toastError("A data de fim deve ser igual ou posterior à data de início.")
-            }
+    // Navega para praia passo.
+    async function goToBeachStep(formEl: HTMLFormElement, stepAreaEl: HTMLElement | null) {
+        if (!form.canStep0Next) return
+        if (!formEl.reportValidity()) return
+
+        if (!isEdit.value && form.district && form.beachesForDistrict.length === 0) {
+            toastError(
+                "Sem praias no distrito",
+                "Não há praias registadas neste distrito. Adiciona praias no separador Praias e volta a tentar.",
+            )
             return
         }
+
         form.beachesLoading = true
         try {
             await loadBeachesList({ page: 1, pageSize: 100 })
             if (!isEdit.value && form.beachesForDistrict.length === 0) return
+            form.lockedStepHeight = stepAreaEl?.offsetHeight ?? null
             form.step = 1
             if (!isEdit.value) {
                 form.selectedBeachIds = []
@@ -139,12 +128,13 @@ export function useCampaignUpsertForm(
         }
     }
 
-// Navega volta para detalhes.
+    // Navega volta para detalhes.
     function goBackToDetails() {
         form.step = 0
+        form.lockedStepHeight = null
     }
 
-// Constrói draft.
+    // Constrói draft.
     function buildDraft(): CampaignCreateDraft {
         const draft: CampaignCreateDraft = {
             title: form.title,
@@ -161,36 +151,39 @@ export function useCampaignUpsertForm(
         return draft
     }
 
-// Conclui o wizard e envia o rascunho final da campanha.
-    function onFinalSubmit() {
+    // Conclui o wizard e envia o rascunho final da campanha.
+    function onFinalSubmit(formEl: HTMLFormElement) {
         if (!form.canSubmitBeaches || !form.district) return
+        if (!formEl.reportValidity()) return
         onComplete(buildDraft())
         open.value = false
     }
 
-// Trata formulário submissão.
-    async function handleFormSubmit() {
+    // Trata formulário submissão.
+    async function handleFormSubmit(formEl: HTMLFormElement | null, stepAreaEl: HTMLElement | null) {
+        if (!formEl) return
         if (form.step === 0) {
-            await goToBeachStep()
+            await goToBeachStep(formEl, stepAreaEl)
             return
         }
-        onFinalSubmit()
+        onFinalSubmit(formEl)
     }
 
-// Repõe formulário.
+    // Repõe formulário.
     function resetForm() {
         form.step = 0
+        form.lockedStepHeight = null
         form.title = ""
         form.meetingTime = ""
         form.startDate = ""
         form.endDate = ""
-        form.status = undefined
+        form.status = isEdit.value ? undefined : CAMPAIGN_CREATE_DEFAULT_STATUS
         form.information = ""
         form.district = undefined
         form.selectedBeachIds = []
     }
 
-// Fecha .
+    // Fecha .
     function close() {
         open.value = false
     }

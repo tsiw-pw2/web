@@ -1,6 +1,7 @@
 import { apiPatch } from "./apiClient"
+import { isApiServiceUnavailableError } from "./apiErrors"
 import { clearApiRootCache, loadApiRoot } from "./apiDiscovery"
-import { setAccessToken } from "./access-token"
+import { getAccessToken, setAccessToken } from "./access-token"
 
 type RefreshBody = {
     token?: string
@@ -23,7 +24,10 @@ export async function tryRestoreSession(): Promise<boolean> {
             clearApiRootCache()
             await loadApiRoot(true)
             return true
-        } catch {
+        } catch (error) {
+            if (getAccessToken() && isApiServiceUnavailableError(error)) {
+                return true
+            }
             return false
         } finally {
             restoreInFlight = null

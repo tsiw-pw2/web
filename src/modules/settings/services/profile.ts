@@ -1,4 +1,5 @@
-import { href } from "@/infrastructure/apiDiscovery"
+import { clearApiRootCache, href } from "@/infrastructure/apiDiscovery"
+import { setAccessToken } from "@/infrastructure/access-token"
 import { apiGet } from "@/infrastructure/apiClient"
 import { followHref, followLink } from "@/infrastructure/hypermediaClient"
 import { getLink } from "@/infrastructure/hypermediaClient"
@@ -90,17 +91,25 @@ export async function updateProfileWithOptionalAvatarFile(payload: {
     })
 }
 
+type PasswordChangeResponse = {
+    token?: string
+}
+
 // Altera a palavra-passe do utilizador autenticado.
 export async function changeProfilePassword(payload: {
     currentPassword: string
     newPassword: string
 }): Promise<void> {
     const current = await apiGet<ProfileResource>(await href("userMe"))
-    await followLink(current, "password", {
+    const body = await followLink<PasswordChangeResponse>(current, "password", {
         method: "PATCH",
         body: {
             currentPassword: payload.currentPassword,
             newPassword: payload.newPassword,
         },
     })
+    if (typeof body?.token === "string" && body.token.length > 0) {
+        setAccessToken(body.token)
+        clearApiRootCache()
+    }
 }

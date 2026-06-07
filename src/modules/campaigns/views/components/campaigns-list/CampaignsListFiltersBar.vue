@@ -6,11 +6,13 @@ import Input from "@/shared/components/ui/Input.vue"
 import { FIELD_CLEAR_BUTTON } from "@/shared/components/ui/select/design"
 import MultiSelect from "@/shared/components/ui/select/MultiSelect.vue"
 import Select from "@/shared/components/ui/select/Select.vue"
-import { DISTRICT_SELECT_OPTIONS } from "@/shared/constants/districtSelectOptions"
-
 const search = defineModel<string>("search", { required: true })
 const statuses = defineModel<CampaignStatusKey[]>("statuses", { required: true })
 const district = defineModel<string>("district", { required: true })
+
+defineProps<{
+    districtOptions: { value: string; label: string }[]
+}>()
 
 function clearSearch() {
     search.value = ""
@@ -56,7 +58,7 @@ function clearSearch() {
                 v-model="district"
                 class="w-full sm:w-[200px]"
                 filter-mode
-                :options="DISTRICT_SELECT_OPTIONS"
+                :options="districtOptions"
                 placeholder="Distrito"
                 clear-label="Limpar distrito"
             />

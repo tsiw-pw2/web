@@ -5,6 +5,7 @@ import { resolvePostAuthRedirect } from "@/modules/auth/lib/postAuthRedirect"
 import { REGISTER_GENERIC_ERROR_MESSAGE } from "@/modules/auth/lib/registerFormConstants"
 import type { useRegisterForm } from "@/modules/auth/composables/register/useRegisterForm"
 import { isRegisterServiceUnavailableError, registerWithCredentials, } from "@/modules/auth/services/register"
+import { validateProfileBirthDate } from "@/shared/lib/birthDate"
 
 // Composable que gere a lógica de registo submissão.
 export function useRegisterSubmit(form: ReturnType<typeof useRegisterForm>) {
@@ -25,12 +26,19 @@ export function useRegisterSubmit(form: ReturnType<typeof useRegisterForm>) {
             return
         }
 
+        const birthDateError = validateProfileBirthDate(form.birthDate.value)
+        if (birthDateError) {
+            form.setFormError(birthDateError)
+            return
+        }
+
         isSubmitting.value = true
         try {
             await registerWithCredentials(
                 form.name.value.trim(),
                 form.email.value.trim(),
                 form.password.value,
+                form.birthDate.value.trim(),
             )
             const destination = await resolvePostAuthRedirect(undefined)
             await router.push(destination)

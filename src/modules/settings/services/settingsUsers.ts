@@ -7,7 +7,7 @@ import {
 import type { SettingsUserRow } from "@/modules/settings/types/settingsUser"
 import { href } from "@/infrastructure/apiDiscovery"
 import { apiGet, apiPatch, paginationQuery, unwrapList } from "@/infrastructure/apiClient"
-import { followHref, followLink, getLink } from "@/infrastructure/hypermediaClient"
+import { followLink, getLink } from "@/infrastructure/hypermediaClient"
 import type { ResourceLinks } from "@/infrastructure/hypermedia.types"
 import { ref } from "vue"
 
@@ -20,9 +20,6 @@ export const settingsUsersTotal = ref(0)
 
 let loadGeneration = 0
 let lastListRoleForReload: string | undefined
-let lastFetchedRole: string | undefined
-let lastFetchedPage = 1
-let listLinks: ResourceLinks | undefined
 
 function normalizeRoleFilter(role?: string): SettingsUsersListRoleFilter | undefined {
     return role === SETTINGS_USERS_LIST_ROLE_VOLUNTEER ? SETTINGS_USERS_LIST_ROLE_VOLUNTEER : undefined
@@ -37,23 +34,7 @@ export function resetSettingsUsersListState(): void {
     settingsUsersPage.value = 1
     settingsUsersPageSize.value = DEFAULT_PAGE_SIZE
     settingsUsersTotal.value = 0
-    listLinks = undefined
     lastListRoleForReload = undefined
-    lastFetchedRole = undefined
-    lastFetchedPage = 1
-}
-
-/** Indica se o pedido pode reutilizar links.next da listagem anterior (testável). */
-export function shouldUseCachedUsersNextLink(opts: {
-    page: number
-    roleFilter: string | undefined
-    lastFetchedRole: string | undefined
-    lastFetchedPage: number
-    hasNextLink: boolean
-}): boolean {
-    if (!opts.hasNextLink || opts.page <= 1) return false
-    if (opts.roleFilter !== opts.lastFetchedRole) return false
-    return opts.page === opts.lastFetchedPage + 1
 }
 
 export async function loadSettingsUsers(opts?: { page?: number; pageSize?: number; role?: string }): Promise<void> {
@@ -61,9 +42,6 @@ export async function loadSettingsUsers(opts?: { page?: number; pageSize?: numbe
     const nextRole = roleExplicit ? normalizeRoleFilter(opts.role) : lastListRoleForReload
 
     if (roleExplicit && nextRole !== lastListRoleForReload) {
-        listLinks = undefined
-        lastFetchedRole = undefined
-        lastFetchedPage = 1
         if (opts?.page == null) {
             settingsUsersPage.value = 1
         }
@@ -89,24 +67,10 @@ export async function loadSettingsUsers(opts?: { page?: number; pageSize?: numbe
         links?: ResourceLinks
     }
 
-    const useNext = shouldUseCachedUsersNextLink({
-        page: settingsUsersPage.value,
-        roleFilter: lastListRoleForReload,
-        lastFetchedRole,
-        lastFetchedPage,
-        hasNextLink: Boolean(listLinks?.next?.href),
-    })
-
-    let body: ListBody
-    if (useNext && listLinks?.next) {
-        body = await followHref<ListBody>(listLinks.next, { query: q })
-    } else {
-        const path = await href("usersCollection")
-        body = await apiGet<ListBody>(path, q)
-    }
+    const path = await href("usersCollection")
+    const body = await apiGet<ListBody>(path, q)
 
     if (gen !== loadGeneration) return
-    listLinks = body.links
     const data = unwrapList<SettingsUserRow>(body)
     users.value = data.items.map((row) => ({
         ...row,
@@ -115,8 +79,6 @@ export async function loadSettingsUsers(opts?: { page?: number; pageSize?: numbe
     settingsUsersTotal.value = data.total
     settingsUsersPage.value = data.page
     settingsUsersPageSize.value = data.pageSize
-    lastFetchedPage = data.page
-    lastFetchedRole = lastListRoleForReload
 }
 
 async function reloadListAfterMutation(): Promise<void> {

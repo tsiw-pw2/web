@@ -5,6 +5,8 @@ import { followHref } from "@/infrastructure/hypermediaClient"
 import { extractApiErrorMessage } from "@/infrastructure/hypermedia.types"
 import { isApiRequestError } from "@/infrastructure/request"
 import { API_UNAVAILABLE_NETWORK_MESSAGE, ApiServiceUnavailableError, } from "@/infrastructure/apiErrors"
+import { LOGIN_GENERIC_ERROR_MESSAGE } from "@/modules/auth/lib/loginFormConstants"
+import { mapAuthApiMessage } from "@/modules/auth/lib/authApiMessages"
 
 export class LoginServiceUnavailableError extends ApiServiceUnavailableError {
     override readonly name = "LoginServiceUnavailableError"
@@ -39,11 +41,10 @@ type SessionResponse = {
 
 // Formata a mensagem de conta bloqueada a partir da resposta da API.
 function blockedAccountMessage(apiMessage: string): string {
-    const trimmed = apiMessage.trim()
-    if (trimmed.length > 0 && trimmed !== "Account blocked") {
-        return trimmed
-    }
-    return "A tua conta foi bloqueada. Contacta a equipa Mariva se precisares de ajuda."
+    return mapAuthApiMessage(
+        apiMessage,
+        "A tua conta foi bloqueada. Contacta a equipa Mariva se precisares de ajuda.",
+    )
 }
 
 // Formata a mensagem de erro amigável para falhas de autenticação.
@@ -52,6 +53,9 @@ function loginFriendlyMessage(status: number, body: unknown): string {
     if (status === 403) {
         return blockedAccountMessage(apiMsg)
     }
+    if (status === 400) {
+        return mapAuthApiMessage(apiMsg, "Preenche o email e a palavra-passe.")
+    }
     if (
         apiMsg === "Invalid credentials" ||
         apiMsg === "Unauthorized" ||
@@ -59,7 +63,7 @@ function loginFriendlyMessage(status: number, body: unknown): string {
     ) {
         return "Credenciais inválidas."
     }
-    return apiMsg
+    return mapAuthApiMessage(apiMsg, LOGIN_GENERIC_ERROR_MESSAGE)
 }
 
 // Inicia sessão com email e palavra-passe e guarda o token.
@@ -86,7 +90,7 @@ export async function loginWithCredentials(email: string, password: string): Pro
             if (e.httpStatus === 403) {
                 throw new LoginAccountBlockedError(blockedAccountMessage(e.message))
             }
-            throw new Error(loginFriendlyMessage(e.httpStatus, { error_description: e.message }))
+            throw new Error(loginFriendlyMessage(e.httpStatus, { message: e.message }))
         }
         if (e instanceof ApiServiceUnavailableError) {
             throw new LoginServiceUnavailableError(API_UNAVAILABLE_NETWORK_MESSAGE)

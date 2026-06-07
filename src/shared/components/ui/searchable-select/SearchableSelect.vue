@@ -17,6 +17,7 @@ const PANEL_MAX_HEIGHT_PX = 240
 
 const props = withDefaults(
     defineProps<{
+        id?: string
         options: SearchableSelectOption[]
         placeholder?: string
         disabled?: boolean
@@ -375,6 +376,7 @@ function setSearchInputRef(el: HTMLInputElement | null) {
     <div :class="cn('relative inline-flex min-w-0', props.class ?? 'w-min')">
         <SelectTrigger
             :listbox-id="listboxId"
+            :trigger-id="props.id"
             :open="open"
             :disabled="disabled || creating"
             :label-class="labelClass"

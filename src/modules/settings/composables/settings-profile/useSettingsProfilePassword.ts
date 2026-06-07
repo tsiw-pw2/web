@@ -1,7 +1,9 @@
 import { computed, ref } from "vue"
 import { changeProfilePassword } from "@/modules/settings/services/profile"
+import { tryRestoreSession } from "@/infrastructure/authSession"
 import { describeListMutationFailure, toastFromListMutationError } from "@/infrastructure/apiMutationToast"
-import { toastSuccess } from "@/infrastructure/appToast"
+import { toastError, toastSuccess } from "@/infrastructure/appToast"
+import { isApiRequestError } from "@/infrastructure/request"
 
 // Composable que gere a lógica de definições perfil palavra-passe.
 export function useSettingsProfilePassword() {
@@ -40,6 +42,7 @@ export function useSettingsProfilePassword() {
         }
         savingPassword.value = true
         try {
+            await tryRestoreSession()
             await changeProfilePassword({
                 currentPassword: currentPassword.value,
                 newPassword: newPassword.value,
@@ -47,8 +50,13 @@ export function useSettingsProfilePassword() {
             resetPasswordForm()
             toastSuccess("Palavra-passe atualizada", "A tua sessão foi renovada com segurança.")
         } catch (e) {
-            passwordSaveError.value = `Não foi possível alterar a palavra-passe. ${describeListMutationFailure(e)}`
-            toastFromListMutationError(e, { mode: "save" })
+            if (isApiRequestError(e) && e.httpStatus === 400 && e.message.includes("palavra-passe actual")) {
+                passwordSaveError.value = e.message
+                toastError("Não foi possível guardar", e.message)
+            } else {
+                passwordSaveError.value = `Não foi possível alterar a palavra-passe. ${describeListMutationFailure(e)}`
+                toastFromListMutationError(e, { mode: "save" })
+            }
         } finally {
             savingPassword.value = false
         }

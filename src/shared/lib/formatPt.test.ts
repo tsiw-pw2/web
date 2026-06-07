@@ -15,7 +15,7 @@ describe("formatDatePtDayMonthSlash", () => {
     })
 
     it("returns em dash for invalid or empty input", () => {
-        expect(formatDatePtDayMonthSlash("")).toBe("—")
-        expect(formatDatePtDayMonthSlash("invalid")).toBe("—")
+        expect(formatDatePtDayMonthSlash("")).toBe("-")
+        expect(formatDatePtDayMonthSlash("invalid")).toBe("-")
     })
 })

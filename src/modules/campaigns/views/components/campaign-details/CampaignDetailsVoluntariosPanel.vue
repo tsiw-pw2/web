@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from "vue"
 import { useCampaignDetailsPageInject } from "@/modules/campaigns/composables/campaign-details/useCampaignDetailsPageInject"
 import { registrationRoleTableBadge, registrationStatusTableBadge } from "@/shared/lib/tableValueBadge"
 import ApiStateBadge from "@/shared/components/ui/ApiStateBadge.vue"
@@ -11,7 +10,7 @@ import ListPaginationBar from "@/shared/components/ListPaginationBar.vue"
 import CampaignDetailsVoluntariosEmptyState from "@/modules/campaigns/views/components/campaign-details/CampaignDetailsVoluntariosEmptyState.vue"
 import ScrollableTableSection from "@/shared/components/ScrollableTableSection.vue"
 
-const { core, tabs, registration, registrationRows } = useCampaignDetailsPageInject()
+const { tabs, registration, registrationRows } = useCampaignDetailsPageInject()
 const {
     registrations,
     registrationsLoading,
@@ -22,8 +21,6 @@ const {
     goRegistrationsNext,
 } = tabs
 const { canManageRegistrations } = registration
-
-const campaign = computed(() => core.campaign.value!)
 </script>
 
 <template>
@@ -35,7 +32,7 @@ const campaign = computed(() => core.campaign.value!)
     >
         <p v-if="registrationsLoading" class="text-sm leading-5 text-neutral-600">A carregar voluntários…</p>
         <CampaignDetailsVoluntariosEmptyState
-            v-else-if="campaign!.metrics.registrationsCount === 0"
+            v-else-if="registrationsTotal === 0"
             :can-manage-registrations="canManageRegistrations"
         />
         <ScrollableTableSection v-else fill-container>
@@ -70,9 +67,9 @@ const campaign = computed(() => core.campaign.value!)
                             :key="row.id"
                             class="border-b border-neutral-200 last:border-b-0"
                         >
-                            <DataTableTd emphasis>{{ row.user?.name ?? "—" }}</DataTableTd>
-                            <DataTableTd>{{ row.user?.email ?? "—" }}</DataTableTd>
-                            <DataTableTd align="end" class="tabular-nums">{{ row.user?.phone ?? "—" }}</DataTableTd>
+                            <DataTableTd emphasis>{{ row.user?.name ?? "-" }}</DataTableTd>
+                            <DataTableTd>{{ row.user?.email ?? "-" }}</DataTableTd>
+                            <DataTableTd align="end" class="tabular-nums">{{ row.user?.phone ?? "-" }}</DataTableTd>
                             <DataTableTd :truncate="false">
                                 <ApiStateBadge v-bind="registrationRoleTableBadge(row.role)" />
                             </DataTableTd>
@@ -81,7 +78,7 @@ const campaign = computed(() => core.campaign.value!)
                                     <ApiStateBadge v-bind="registrationStatusTableBadge(row.status)" />
                                 </span>
                             </DataTableTd>
-                            <DataTableTd>{{ row.attendance === null ? "—" : row.attendance ? "Sim" : "Não" }}</DataTableTd>
+                            <DataTableTd>{{ row.attendance === null ? "-" : row.attendance ? "Sim" : "Não" }}</DataTableTd>
                             <DataTableActionsCell
                                 v-if="canManageRegistrations"
                                 :row-id="row.id"

@@ -1,6 +1,6 @@
 import { getDashboardOverview } from "@/modules/dashboard/services/getOverview"
 import type { DashboardOverview } from "@/modules/dashboard/types"
-import { describeApiLoadFailure } from "@/infrastructure/apiErrors"
+import { describeApiLoadFailure, isApiServiceUnavailableError } from "@/infrastructure/apiErrors"
 import { isApiRequestError } from "@/infrastructure/request"
 import { onMounted, ref } from "vue"
 
@@ -19,6 +19,8 @@ export function useDashboardOverview() {
         } catch (e) {
             if (isApiRequestError(e) && e.httpStatus === 403) {
                 error.value = "Sem acesso a esta área."
+            } else if (isApiServiceUnavailableError(e)) {
+                error.value = e.friendlyMessage
             } else {
                 error.value = describeApiLoadFailure(e, "os dados")
             }

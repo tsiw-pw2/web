@@ -14,7 +14,10 @@ export function describeListMutationFailure(
     }
     if (isApiRequestError(e)) {
         if (e.httpStatus === 403) {
-            return opts.forbiddenDetail ?? "Não tens permissão para esta ação."
+            return (
+                opts.forbiddenDetail ??
+                "Não tens permissão para esta ação. Termina sessão e volta a entrar se o teu papel foi alterado recentemente."
+            )
         }
         if (e.httpStatus === 401) {
             return "A sessão expirou ou deixou de ser válida. Inicia sessão outra vez."

@@ -33,7 +33,7 @@ function registrationManagementToastError(e: unknown, fallbackTitle: string) {
     toastError(fallbackTitle, "Verifica a ligação e tenta outra vez.")
 }
 
-// Toast para falhas de auto-inscrição — usa mensagem da API, nunca texto de permissão.
+// Toast para falhas de auto-inscrição - usa mensagem da API, nunca texto de permissão.
 function enrollmentToastError(e: unknown, fallbackTitle: string) {
     if (isApiRequestError(e)) {
         if (e.httpStatus === 403 && e.message.trim()) {
@@ -84,8 +84,15 @@ export function useCampaignRegistrationActions(
     }
 
     function ownedViewerRegistration(): CampaignDetailsViewerRegistration | null {
-        const reg = campaign.value?.viewerRegistration ?? myRegistration.value
-        return viewerRegistrationBelongsToProfile(reg, profile.value) ? reg : null
+        const snapshot = campaign.value?.viewerRegistration ?? null
+        const local = myRegistration.value
+        const reg =
+            local && viewerRegistrationBelongsToProfile(local, profile.value)
+                ? local
+                : snapshot && viewerRegistrationBelongsToProfile(snapshot, profile.value)
+                  ? snapshot
+                  : null
+        return reg
     }
 
     watch(campaignId, () => {
@@ -127,6 +134,13 @@ export function useCampaignRegistrationActions(
         if (!ENROLLABLE_CAMPAIGN_STATUS_KEYS.has(c.editStatus)) return null
         if (hasActiveRegistration(reg)) return null
         return campaignEnrollmentProfileBlockMessage(p.birthDate)
+    })
+
+    const showAlreadyEnrolledHint = computed(() => {
+        if (canEnroll.value || showMyRegistrationStatus.value) return false
+        if (enrollmentProfileBlockReason.value || showEnrollmentClosed.value) return false
+        const reg = ownedViewerRegistration()
+        return hasActiveRegistration(reg)
     })
 
 // Refresca a campanha e a primeira página de inscrições após mudança de inscrição.
@@ -255,6 +269,7 @@ export function useCampaignRegistrationActions(
         canEnroll,
         showEnrollmentClosed,
         enrollmentProfileBlockReason,
+        showAlreadyEnrolledHint,
         showMyRegistrationStatus,
         enroll,
         cancelMyRegistration,

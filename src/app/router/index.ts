@@ -11,12 +11,6 @@ const router = createRouter({
             meta: { bodyScroll: true, hideChrome: true },
         },
         {
-            path: routePaths.requestAccount,
-            name: "request-account",
-            component: () => import("../../modules/access-request/pages/RequestAccountPage.vue"),
-            meta: { bodyScroll: true, hideChrome: true, pageTitle: "Pedir acesso" },
-        },
-        {
             path: routePaths.login,
             name: "login",
             component: () => import("../../modules/auth/pages/LoginPage.vue"),

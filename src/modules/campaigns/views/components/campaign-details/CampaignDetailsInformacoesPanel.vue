@@ -6,6 +6,7 @@ import { useCampaignDetailsPageInject } from "@/modules/campaigns/composables/ca
 import { beachLocationLine } from "@/modules/campaigns/lib/beachLocationLine"
 import Button from "@/shared/components/ui/Button.vue"
 import FieldLabel from "@/shared/components/ui/FieldLabel.vue"
+import ApiStateBadge from "@/shared/components/ui/ApiStateBadge.vue"
 
 const { core, display, registration, registrationRows } = useCampaignDetailsPageInject()
 
@@ -14,6 +15,7 @@ const {
     showEnrollmentClosed,
     showMyRegistrationStatus,
     enrollmentProfileBlockReason,
+    showAlreadyEnrolledHint,
     canceling,
     cancelRegistrationOpen,
     enrolling,
@@ -22,6 +24,7 @@ const {
 
 const campaign = computed(() => core.campaign.value!)
 const profile = computed(() => core.profile.value)
+const statusUi = computed(() => display.statusUi.value)
 </script>
 
 <template>
@@ -36,7 +39,9 @@ const profile = computed(() => core.profile.value)
                 <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div>
                         <FieldLabel as="span" class="block uppercase tracking-wide font-medium !text-neutral-500">Estado</FieldLabel>
-                        <p class="mt-2 text-sm font-medium leading-5 text-neutral-950">{{ display.campaignPhaseLabel }}</p>
+                        <div class="mt-2">
+                            <ApiStateBadge v-bind="statusUi" />
+                        </div>
                     </div>
                     <div>
                         <FieldLabel as="span" class="block uppercase tracking-wide font-medium !text-neutral-500">Período</FieldLabel>
@@ -53,7 +58,7 @@ const profile = computed(() => core.profile.value)
                     </div>
                     <div class="sm:col-span-2">
                         <FieldLabel as="span" class="block uppercase tracking-wide font-medium !text-neutral-500">Organizador</FieldLabel>
-                        <p class="mt-2 text-sm font-medium leading-5 text-neutral-950">{{ campaign.organizer?.name ?? "—" }}</p>
+                        <p class="mt-2 text-sm font-medium leading-5 text-neutral-950">{{ campaign.organizer?.name ?? "-" }}</p>
                         <p v-if="campaign.organizer?.email" class="mt-1 text-sm leading-5 text-neutral-600">{{ campaign.organizer.email }}</p>
                     </div>
                 </div>
@@ -105,14 +110,10 @@ const profile = computed(() => core.profile.value)
                     <div class="text-neutral-950"> {{ campaign.metrics.commentsCount }} </div>
                 </div>
                 <div
-                    v-if="profile && (canEnroll || showMyRegistrationStatus || enrollmentProfileBlockReason || showEnrollmentClosed)"
+                    v-if="profile && (canEnroll || showMyRegistrationStatus || enrollmentProfileBlockReason || showEnrollmentClosed || showAlreadyEnrolledHint)"
                     class="flex flex-col gap-3"
                 >
                     <div v-if="showMyRegistrationStatus" class="flex flex-col gap-3">
-                        <p class="text-sm leading-5 text-neutral-700">
-                            A tua inscrição:
-                            <span class="font-medium text-neutral-950">{{ registrationRows.myRegistrationStatusLabel }}</span>
-                        </p>
                         <Button
                             type="button"
                             variant="secondary"
@@ -123,6 +124,10 @@ const profile = computed(() => core.profile.value)
                         >
                             Cancelar inscrição
                         </Button>
+                        <p class="text-sm leading-5 text-neutral-700">
+                            A tua inscrição:
+                            <span class="font-medium text-neutral-950">{{ registrationRows.myRegistrationStatusLabel }}</span>
+                        </p>
                     </div>
                     <Button
                         v-else-if="canEnroll"
@@ -140,6 +145,9 @@ const profile = computed(() => core.profile.value)
                         <RouterLink :to="routePaths.settingsProfile" class="font-medium text-neutral-950 underline">
                             Ir ao perfil
                         </RouterLink>
+                    </p>
+                    <p v-else-if="showAlreadyEnrolledHint" class="text-sm leading-5 text-neutral-600">
+                        Já tens uma inscrição nesta campanha.
                     </p>
                     <p v-else-if="showEnrollmentClosed" class="text-sm leading-5 text-neutral-600">
                         As inscrições não estão abertas nesta campanha.

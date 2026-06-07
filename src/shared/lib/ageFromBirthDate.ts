@@ -22,11 +22,11 @@ export function ageFromBirthDate(birthDateIso: string | null | undefined, refere
 // Divide o nome completo em primeiro nome e apelido.
 export function splitDisplayName(fullName: string): { firstName: string; lastName: string } {
     const trimmed = fullName.trim()
-    if (!trimmed) return { firstName: "—", lastName: "—" }
+    if (!trimmed) return { firstName: "-", lastName: "-" }
     const spaceIndex = trimmed.indexOf(" ")
-    if (spaceIndex === -1) return { firstName: trimmed, lastName: "—" }
+    if (spaceIndex === -1) return { firstName: trimmed, lastName: "-" }
     return {
         firstName: trimmed.slice(0, spaceIndex),
-        lastName: trimmed.slice(spaceIndex + 1).trim() || "—",
+        lastName: trimmed.slice(spaceIndex + 1).trim() || "-",
     }
 }

@@ -1,3 +1,5 @@
+import type { ResourceLinks } from "@/infrastructure/hypermedia.types"
+
 export type BeachListItem = {
     id: string
     name: string
@@ -5,6 +7,7 @@ export type BeachListItem = {
     district: string
     latitude: string
     longitude: string
+    links?: ResourceLinks
 }
 
 export type BeachUpsertDraft = {

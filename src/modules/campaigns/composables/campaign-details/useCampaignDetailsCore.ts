@@ -2,6 +2,7 @@ import { useCurrentProfile } from "@/composables/useCurrentProfile"
 import { computed, onMounted, ref, watch, type Ref } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { type CampaignDetailsTabId, DEFAULT_CAMPAIGN_DETAILS_TAB, isCampaignDetailsTabId } from "@/modules/campaigns/lib/campaignDetailsTabs"
+import { canAccessCampaignComments } from "@/modules/campaigns/lib/canAccessCampaignComments"
 import { visibleCampaignDetailsTabs } from "@/modules/campaigns/lib/campaignDetailsTabConfig"
 import { mergeCampaignEnrollmentSnapshot } from "@/modules/campaigns/lib/mergeCampaignEnrollmentSnapshot"
 import { getCampaignDetails } from "@/modules/campaigns/services/campaignDetails"
@@ -24,7 +25,9 @@ export function useCampaignDetailsCore(
 
     const campaignId = computed(() => String(route.params.campaignId ?? ""))
 
-    const visibleTabs = computed(() => visibleCampaignDetailsTabs(canManageRegistrations.value))
+    const visibleTabs = computed(() =>
+        visibleCampaignDetailsTabs(canManageRegistrations.value, campaign.value),
+    )
 
 // Gera rota dos detalhes da campanha para um separador.
     function tabRoute(tab: CampaignDetailsTabId) {
@@ -82,9 +85,12 @@ export function useCampaignDetailsCore(
     )
 
     watch(
-        [activeTab, canManageRegistrations],
-        ([tab, canManage]) => {
+        [activeTab, canManageRegistrations, campaign],
+        ([tab, canManage, c]) => {
             if (tab === "voluntarios" && !canManage) {
+                router.replace(tabRoute(DEFAULT_CAMPAIGN_DETAILS_TAB))
+            }
+            if (tab === "comentarios" && !canAccessCampaignComments(c)) {
                 router.replace(tabRoute(DEFAULT_CAMPAIGN_DETAILS_TAB))
             }
         },

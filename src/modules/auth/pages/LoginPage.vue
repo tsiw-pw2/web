@@ -9,7 +9,6 @@ const {
     credentialsError,
     loginFieldHasError,
     loginFieldErrorClass,
-    canSubmit,
     isSubmitting,
     submit,
 } = useLoginPage()
@@ -23,7 +22,6 @@ const {
             :credentials-error="credentialsError"
             :login-field-has-error="loginFieldHasError"
             :login-field-error-class="loginFieldErrorClass"
-            :can-submit="canSubmit"
             :is-submitting="isSubmitting"
             @submit="submit"
         />

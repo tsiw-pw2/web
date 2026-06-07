@@ -1,4 +1,6 @@
 import type { CampaignDetailsTabId } from "@/modules/campaigns/lib/campaignDetailsTabs"
+import { canAccessCampaignComments } from "@/modules/campaigns/lib/canAccessCampaignComments"
+import type { CampaignLinkParent } from "@/modules/campaigns/services/campaignHypermedia"
 
 export type CampaignDetailsTabConfig = {
     id: CampaignDetailsTabId
@@ -13,10 +15,14 @@ export const CAMPAIGN_DETAILS_TAB_CONFIG: CampaignDetailsTabConfig[] = [
     { id: "comentarios", label: "Comentários" },
 ]
 
-// Lista separadores visíveis consoante permissões de gestão.
-export function visibleCampaignDetailsTabs(canManageRegistrations: boolean): CampaignDetailsTabConfig[] {
-    if (canManageRegistrations) {
-        return CAMPAIGN_DETAILS_TAB_CONFIG
-    }
-    return CAMPAIGN_DETAILS_TAB_CONFIG.filter((t) => t.id !== "voluntarios")
+// Lista separadores visíveis consoante permissões de gestão e hypermedia da campanha.
+export function visibleCampaignDetailsTabs(
+    canManageRegistrations: boolean,
+    campaign?: CampaignLinkParent | null,
+): CampaignDetailsTabConfig[] {
+    return CAMPAIGN_DETAILS_TAB_CONFIG.filter((tab) => {
+        if (tab.id === "voluntarios" && !canManageRegistrations) return false
+        if (tab.id === "comentarios" && !canAccessCampaignComments(campaign)) return false
+        return true
+    })
 }

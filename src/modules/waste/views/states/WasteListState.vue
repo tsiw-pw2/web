@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { computed } from "vue"
 import type { WasteListItem } from "@/modules/waste/types/list"
+import { getLink } from "@/infrastructure/hypermediaClient"
 import { normalizeWasteUnit } from "@/modules/waste/lib/wasteDisplayLabels"
 import { formatWasteCatalogWeight } from "@/modules/waste/lib/wasteWeightForm"
 import { wasteCategoryTableBadge, wasteUnitTableBadge } from "@/shared/lib/tableValueBadge"
@@ -15,6 +17,13 @@ const props = defineProps<{
 }>()
 
 const { canManage } = useCanManageCatalog()
+
+const showActionsColumn = computed(() => canManage.value && props.items.some((row) => getLink(row, "update")))
+
+// Indica se a linha permite editar ou eliminar.
+function rowCanManage(row: WasteListItem) {
+    return canManage.value && Boolean(getLink(row, "update"))
+}
 
 const emit = defineEmits<{
     (e: "edit", wasteId: string): void
@@ -33,7 +42,7 @@ function catalogWeightLabel(row: WasteListItem) {
                 <col class="w-[40%]" />
                 <col class="w-[28%]" />
                 <col class="w-[22%]" />
-                <col v-if="canManage" class="min-w-[7.5rem] w-[10%]" />
+                <col v-if="showActionsColumn" class="min-w-[7.5rem] w-[10%]" />
             </colgroup>
 
             <thead class="sticky top-0 z-10 bg-white">
@@ -42,7 +51,7 @@ function catalogWeightLabel(row: WasteListItem) {
                     <DataTableTh>Nome</DataTableTh>
                     <DataTableTh>Categoria</DataTableTh>
                     <DataTableTh align="end">Medida</DataTableTh>
-                    <DataTableTh v-if="canManage" :padding-end="false" />
+                    <DataTableTh v-if="showActionsColumn" :padding-end="false" />
                 </tr>
 
             </thead>
@@ -66,7 +75,7 @@ function catalogWeightLabel(row: WasteListItem) {
                         </div>
                     </DataTableTd>
                     <DataTableActionsCell
-                        v-if="canManage"
+                        v-if="rowCanManage(row)"
                         :row-id="row.id"
                         @edit="(id: string) => emit('edit', id)"
                         @delete="(id: string) => emit('delete', id)"

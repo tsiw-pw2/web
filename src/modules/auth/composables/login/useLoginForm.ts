@@ -8,34 +8,32 @@ export function useLoginForm() {
     const credentialsError = ref<string | null>(null)
     const isAccountBlockedHighlight = ref(false)
 
-    const canSubmit = computed(() => email.value.trim().length > 0 && password.value.trim().length > 0)
-
     const loginFieldHasError = computed(
         () => credentialsError.value != null || isAccountBlockedHighlight.value,
     )
 
-// Remove o realce visual de conta bloqueada no login.
+    // Remove o realce visual de conta bloqueada no login.
     function clearFieldHighlights() {
         isAccountBlockedHighlight.value = false
     }
 
-// Limpa o erro de credenciais do login.
+    // Limpa o erro de credenciais do login.
     function clearCredentialsError() {
         credentialsError.value = null
     }
 
-// Limpa erros e realces do formulário de login.
+    // Limpa erros e realces do formulário de login.
     function clearErrors() {
         clearCredentialsError()
         clearFieldHighlights()
     }
 
-// Define credentials erro.
+    // Define credentials erro.
     function setCredentialsError(message: string) {
         credentialsError.value = message
     }
 
-// Define conta blocked realce.
+    // Define conta blocked realce.
     function setAccountBlockedHighlight() {
         isAccountBlockedHighlight.value = true
     }
@@ -47,7 +45,6 @@ export function useLoginForm() {
         password,
         credentialsError,
         isAccountBlockedHighlight,
-        canSubmit,
         loginFieldHasError,
         loginFieldErrorClass: LOGIN_FIELD_ERROR_CLASS,
         clearErrors,

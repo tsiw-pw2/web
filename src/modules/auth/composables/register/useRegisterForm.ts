@@ -5,20 +5,11 @@ import { REGISTER_FIELD_ERROR_CLASS, REGISTER_PASSWORD_MIN_LENGTH } from "@/modu
 export function useRegisterForm() {
     const name = ref("")
     const email = ref("")
+    const birthDate = ref("")
     const password = ref("")
     const confirmPassword = ref("")
     const acceptedTerms = ref(false)
     const formError = ref<string | null>(null)
-
-    const canSubmit = computed(() => {
-        return (
-            name.value.trim().length > 0 &&
-            email.value.trim().length > 0 &&
-            password.value.length >= REGISTER_PASSWORD_MIN_LENGTH &&
-            confirmPassword.value === password.value &&
-            acceptedTerms.value
-        )
-    })
 
     const fieldHasError = computed(() => formError.value != null)
 
@@ -32,16 +23,16 @@ export function useRegisterForm() {
         formError.value = message
     }
 
-    watch([name, email, password, confirmPassword, acceptedTerms], clearErrors)
+    watch([name, email, birthDate, password, confirmPassword, acceptedTerms], clearErrors)
 
     return {
         name,
         email,
+        birthDate,
         password,
         confirmPassword,
         acceptedTerms,
         formError,
-        canSubmit,
         fieldHasError,
         fieldErrorClass: REGISTER_FIELD_ERROR_CLASS,
         clearErrors,

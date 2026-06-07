@@ -19,6 +19,7 @@ const PANEL_MAX_HEIGHT_PX = 240
 
 const props = withDefaults(
     defineProps<{
+        id?: string
         options: SelectOption[]
         placeholder?: string
         disabled?: boolean
@@ -272,6 +273,7 @@ function setPanelRef(el: HTMLElement | null) {
     <div :class="cn('relative inline-flex min-w-0', props.class ?? 'w-min')">
         <SelectTrigger
             :listbox-id="listboxId"
+            :trigger-id="props.id"
             :open="open"
             :disabled="disabled"
             :label-class="labelClass"

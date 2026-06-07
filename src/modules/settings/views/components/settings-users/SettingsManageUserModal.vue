@@ -52,7 +52,7 @@ const detailRows = computed(() => {
     return [
         { label: "Nome", value: u.name },
         { label: "E-mail", value: u.email },
-        { label: "Telefone", value: u.phone?.trim() || "—" },
+        { label: "Telefone", value: u.phone?.trim() || "-" },
         { label: "Data de nascimento", value: formatSettingsDateOnly(u.birthDate) },
         { label: "Perfil actual", value: userRoleLabel(u) },
         { label: "Registo na plataforma", value: formatSettingsDateTime(u.createdAt) },

@@ -26,7 +26,7 @@ const slots = useSlots()
             <slot />
         </div>
 
-        <div v-if="slots.footer" class="mt-auto w-full shrink-0 bg-white pt-4">
+        <div v-if="slots.footer" class="mt-auto w-full shrink-0 bg-white px-0.5 pt-4">
             <slot name="footer" />
         </div>
 

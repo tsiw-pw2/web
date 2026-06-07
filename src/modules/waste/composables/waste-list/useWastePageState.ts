@@ -1,4 +1,5 @@
 import { computed, watch } from "vue"
+import { tryRestoreSession } from "@/infrastructure/authSession"
 import { useCurrentProfile } from "@/composables/useCurrentProfile"
 import { wasteItemsListRef, wastePage, wastePageSize, wasteTotal, loadWasteItemsList, setWasteListFilters, } from "@/modules/waste/composables/waste-list/wasteListState"
 import { useWasteListFilters } from "@/modules/waste/composables/waste-list/useWasteListFilters"
@@ -9,13 +10,19 @@ import { usePaginatedListRoute } from "@/shared/composables/usePaginatedListRout
 
 export type { WasteListItem, WasteUpsertDraft } from "@/modules/waste/types/list"
 
+// Carrega a listagem após renovar a sessão (papel no JWT alinhado com a BD).
+async function loadWastePageWithSession(opts?: { page?: number; pageSize?: number }) {
+    await tryRestoreSession()
+    await loadWasteItemsList(opts)
+}
+
 // Composable que gere a lógica de resíduos página estado.
 export function useWastePageState() {
     const routeApi = usePaginatedListRoute({
         page: wastePage,
         pageSize: wastePageSize,
         total: wasteTotal,
-        fetchPage: loadWasteItemsList,
+        fetchPage: loadWastePageWithSession,
     })
 
     const listFilters = useWasteListFilters(() => {

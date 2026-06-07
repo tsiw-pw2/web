@@ -38,14 +38,14 @@ function formatDurationFromDays(diffDays: number): string {
 // Formata campanha duração rótulo.
 export function formatCampaignDurationLabel(startDate: string, endDate: string): string {
     const diffDays = diffDaysInclusive(startDate, endDate)
-    if (diffDays == null) return "—"
+    if (diffDays == null) return "-"
     return formatDurationFromDays(diffDays)
 }
 
 // Formata tooltip data.
 function formatTooltipDate(value: string): string {
     const formatted = formatDatePtDayMonthYear(value)
-    return formatted === value.trim() ? "—" : formatted
+    return formatted === value.trim() ? "-" : formatted
 }
 
 // Formata campanha período tooltip.

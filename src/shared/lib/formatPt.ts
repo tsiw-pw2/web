@@ -18,7 +18,7 @@ export function formatDatePtDayMonthYear(iso: string): string {
 // Formata data pt day month slash.
 export function formatDatePtDayMonthSlash(iso: string): string {
     const trimmed = iso.trim()
-    if (!trimmed) return "—"
+    if (!trimmed) return "-"
 
     const slashFullMatch = trimmed.match(/^(\d{2})\/(\d{2})\/\d{4}$/)
     if (slashFullMatch) {
@@ -26,7 +26,7 @@ export function formatDatePtDayMonthSlash(iso: string): string {
     }
 
     const date = new Date(`${trimmed.slice(0, 10)}T12:00:00Z`)
-    if (Number.isNaN(date.getTime())) return "—"
+    if (Number.isNaN(date.getTime())) return "-"
     const day = String(date.getUTCDate()).padStart(2, "0")
     const month = String(date.getUTCMonth() + 1).padStart(2, "0")
     return `${day}/${month}`
@@ -70,6 +70,6 @@ export function formatCommentTimeAgo(iso: string): string {
 
 // Formata peso kg.
 export function formatWeightKg(kg: number): string {
-    if (!Number.isFinite(kg) || kg <= 0) return "—"
+    if (!Number.isFinite(kg) || kg <= 0) return "-"
     return `${new Intl.NumberFormat("pt-PT", { maximumFractionDigits: 1 }).format(kg)} kg`
 }

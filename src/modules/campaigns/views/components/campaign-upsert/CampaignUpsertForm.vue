@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { toRef } from "vue"
+import { computed, ref, toRef } from "vue"
 import type { CampaignCreateDraft, CampaignListItem } from "@/modules/campaigns/types/list"
 import { useCampaignUpsertForm } from "@/modules/campaigns/composables/useCampaignUpsertForm"
-import { CAMPAIGN_STATUS_SELECT_OPTIONS } from "@/modules/campaigns/lib/campaignStatus"
+import {
+    CAMPAIGN_CREATE_STATUS_SELECT_OPTIONS,
+    CAMPAIGN_STATUS_SELECT_OPTIONS,
+} from "@/modules/campaigns/lib/campaignStatus"
 import Button from "@/shared/components/ui/Button.vue"
 import FieldLabel from "@/shared/components/ui/FieldLabel.vue"
 import Input from "@/shared/components/ui/Input.vue"
@@ -24,6 +27,8 @@ const emit = defineEmits<{
 }>()
 
 const campaignRef = toRef(props, "campaign")
+const formRef = ref<HTMLFormElement | null>(null)
+const stepAreaRef = ref<HTMLElement | null>(null)
 
 const { form, handleFormSubmit, goBackToDetails, close } = useCampaignUpsertForm(
     open,
@@ -32,18 +37,31 @@ const { form, handleFormSubmit, goBackToDetails, close } = useCampaignUpsertForm
     (payload) => emit("submit", payload),
 )
 
-const statusOptions = CAMPAIGN_STATUS_SELECT_OPTIONS
+const statusOptions = computed(() =>
+    props.mode === "create" ? CAMPAIGN_CREATE_STATUS_SELECT_OPTIONS : CAMPAIGN_STATUS_SELECT_OPTIONS,
+)
+
+function onSubmit() {
+    void handleFormSubmit(formRef.value, stepAreaRef.value)
+}
 </script>
 
 <template>
-    <form class="flex flex-col gap-3" @submit.prevent="handleFormSubmit">
-        <div v-if="form.detailsLoading" class="min-h-[28rem] text-sm leading-5 text-neutral-600">
+    <form ref="formRef" class="flex flex-col gap-3" @submit.prevent="onSubmit">
+        <div v-if="form.detailsLoading" class="py-6 text-sm leading-5 text-neutral-600">
             A carregar dados da campanha…
         </div>
 
         <template v-else>
-            <div class="flex min-h-[28rem] flex-col">
-                <div v-show="form.step === 0" class="flex flex-1 flex-col gap-3">
+            <div
+                ref="stepAreaRef"
+                class="flex flex-col"
+                :style="form.lockedStepHeight != null && form.step === 1 ? { height: `${form.lockedStepHeight}px` } : undefined"
+            >
+                <div v-show="form.step === 0" class="flex flex-col gap-3">
+                    <input type="hidden" :value="form.district ?? ''" required />
+                    <input type="hidden" :value="form.status ?? ''" required />
+
                     <div class="flex flex-col gap-1">
                         <FieldLabel required :for="`${fieldPrefix}-title`">Título</FieldLabel>
                         <Input
@@ -51,13 +69,17 @@ const statusOptions = CAMPAIGN_STATUS_SELECT_OPTIONS
                             v-model="form.title"
                             class="w-full"
                             placeholder="Onda de mudança"
+                            maxlength="200"
+                            required
+                            autocomplete="off"
                         />
                     </div>
 
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div class="flex flex-col gap-1">
-                            <FieldLabel required>Distrito</FieldLabel>
+                            <FieldLabel required :for="`${fieldPrefix}-district`">Distrito</FieldLabel>
                             <SearchableSelect
+                                :id="`${fieldPrefix}-district`"
                                 v-model="form.district"
                                 class="w-full"
                                 :options="form.districtOptions"
@@ -75,6 +97,7 @@ const statusOptions = CAMPAIGN_STATUS_SELECT_OPTIONS
                                 type="time"
                                 left-icon="clock"
                                 placeholder="09:30"
+                                required
                             />
                         </div>
                     </div>
@@ -88,6 +111,7 @@ const statusOptions = CAMPAIGN_STATUS_SELECT_OPTIONS
                                 class="w-full"
                                 type="date"
                                 left-icon="calendar"
+                                required
                             />
                         </div>
 
@@ -105,8 +129,14 @@ const statusOptions = CAMPAIGN_STATUS_SELECT_OPTIONS
                     </div>
 
                     <div class="flex flex-col gap-1">
-                        <FieldLabel required>Estado</FieldLabel>
-                        <Select v-model="form.status" class="w-full" :options="statusOptions" placeholder="Estado da campanha" />
+                        <FieldLabel required :for="`${fieldPrefix}-status`">Estado</FieldLabel>
+                        <Select
+                            :id="`${fieldPrefix}-status`"
+                            v-model="form.status"
+                            class="w-full"
+                            :options="statusOptions"
+                            placeholder="Estado da campanha"
+                        />
                     </div>
 
                     <div class="flex flex-col gap-1">
@@ -116,14 +146,24 @@ const statusOptions = CAMPAIGN_STATUS_SELECT_OPTIONS
                             v-model="form.information"
                             class="w-full"
                             placeholder="Ponto de encontro, o que levar (luvas, água...), duração prevista e notas importantes…"
+                            maxlength="8000"
                         />
                     </div>
                 </div>
 
-                <div v-show="form.step === 1" class="flex flex-1 flex-col gap-3">
-                    <p class="text-base font-semibold leading-7 text-neutral-950">{{ form.districtLabel }}</p>
+                <div v-show="form.step === 1" class="flex h-full min-h-0 flex-col gap-3">
+                    <input
+                        type="text"
+                        class="sr-only"
+                        tabindex="-1"
+                        :value="form.selectedBeachIds.length > 0 ? '1' : ''"
+                        :required="form.step === 1"
+                        aria-hidden="true"
+                    />
 
-                    <div class="flex-1 min-h-0 overflow-y-auto">
+                    <p class="shrink-0 text-base font-semibold leading-7 text-neutral-950">{{ form.districtLabel }}</p>
+
+                    <div class="min-h-0 flex-1 overflow-y-auto">
                         <p v-if="form.beachesLoading" class="text-sm leading-5 text-neutral-600">A carregar praias…</p>
 
                         <div v-else-if="form.beachesForDistrict.length === 0" class="text-sm leading-5 text-neutral-600">

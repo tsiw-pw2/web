@@ -35,7 +35,7 @@ const { supportEmail } = legalConfig
         <LegalSection heading="Organizadores e administradores">
             <ul class="list-disc space-y-2 ps-5">
                 <li>
-                    O acesso de organizador é concedido após validação institucional — ver
+                    O acesso de organizador é concedido após validação institucional - ver
                     <RouterLink :to="routePaths.help" class="font-medium text-blue-700 hover:underline">
                         ajuda e contacto
                     </RouterLink

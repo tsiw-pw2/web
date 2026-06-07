@@ -63,7 +63,7 @@ const {
 const browserTitle = computed(() => {
     const name = user.value?.name?.trim() || "Utilizador"
     const tab = SETTINGS_USER_DETAILS_TABS.find((t) => t.id === activeTab.value)?.label
-    return tab ? `${name} — ${tab}` : name
+    return tab ? `${name} - ${tab}` : name
 })
 
 useDocumentTitle(browserTitle)
@@ -89,7 +89,7 @@ const detailRows = computed(() => {
     if (!u) return []
     return [
         { label: "E-mail", value: u.email },
-        { label: "Telefone", value: u.phone?.trim() || "—" },
+        { label: "Telefone", value: u.phone?.trim() || "-" },
         { label: "Data de nascimento", value: formatSettingsDateOnly(u.birthDate) },
         { label: "Registo na plataforma", value: formatSettingsDateTime(u.createdAt) },
         ...(u.isBlocked && u.blockedReason ? [{ label: "Motivo do bloqueio", value: u.blockedReason }] : []),
@@ -151,7 +151,7 @@ async function onUnblockConfirm() {
 function formatCampaignPeriod(start: string, end: string): string {
     const s = formatSettingsDateOnly(start)
     const e = formatSettingsDateOnly(end)
-    if (s === "—" && e === "—") return "—"
+    if (s === "-" && e === "-") return "-"
     if (s === e) return s
     return `${s} – ${e}`
 }
@@ -159,7 +159,7 @@ function formatCampaignPeriod(start: string, end: string): string {
 function attendanceLabel(value: boolean | null): string {
     if (value === true) return "Presente"
     if (value === false) return "Ausente"
-    return "—"
+    return "-"
 }
 
 onMounted(() => {
@@ -323,13 +323,13 @@ watch(
                                         >
                                             {{ row.campaign.title }}
                                         </RouterLink>
-                                        <span v-else>—</span>
+                                        <span v-else>-</span>
                                     </DataTableTd>
                                     <DataTableTd>
                                         {{
                                             row.campaign
                                                 ? formatCampaignPeriod(row.campaign.startDate, row.campaign.endDate)
-                                                : "—"
+                                                : "-"
                                         }}
                                     </DataTableTd>
                                     <DataTableTd :truncate="false">
@@ -337,7 +337,7 @@ watch(
                                             v-if="row.campaign"
                                             v-bind="campaignDetailUiStatusTableBadge(row.campaign.status)"
                                         />
-                                        <span v-else>—</span>
+                                        <span v-else>-</span>
                                     </DataTableTd>
                                     <DataTableTd :truncate="false">
                                         <ApiStateBadge v-bind="registrationStatusTableBadge(row.status)" />

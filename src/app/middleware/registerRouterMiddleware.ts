@@ -1,8 +1,10 @@
 import type { Router } from "vue-router"
 import type { AccessCapability } from "@/modules/auth/lib/accessPolicy"
-import { loadCurrentProfile } from "@/composables/useCurrentProfile"
-import { loadApiRoot } from "@/infrastructure/apiDiscovery"
+import { loadCurrentProfile, wasLastProfileLoadUnavailable } from "@/composables/useCurrentProfile"
+import { getCachedApiRoot, hydrateApiRootFromSession, loadApiRoot } from "@/infrastructure/apiDiscovery"
 import { getAccessToken } from "@/infrastructure/access-token"
+import { isApiServiceUnavailableError } from "@/infrastructure/apiErrors"
+import { hydrateProfileSession } from "@/infrastructure/profileSessionStorage"
 import { registerSessionExpiredHandler } from "@/infrastructure/sessionExpired"
 import { profileHasCapability } from "@/modules/auth/lib/accessPolicy"
 import { resolveDefaultAuthedRoute } from "@/modules/auth/lib/postAuthRedirect"
@@ -28,7 +30,24 @@ async function redirectIfCapabilityDenied(
     if (profileHasCapability(profile, capability)) {
         return true
     }
+    if (getAccessToken()) {
+        const snapshot = hydrateProfileSession()
+        if (profileHasCapability(snapshot, capability) && wasLastProfileLoadUnavailable()) {
+            return true
+        }
+        if (wasLastProfileLoadUnavailable() && !snapshot) {
+            return true
+        }
+    }
     return capabilityFallbackRoute(capability)
+}
+
+function canProceedWithCachedSession(error: unknown): boolean {
+    if (!getAccessToken()) return false
+    if (getCachedApiRoot()) return true
+    hydrateApiRootFromSession()
+    if (getCachedApiRoot()) return true
+    return isApiServiceUnavailableError(error)
 }
 
 function isRouteDebugEnabled(): boolean {
@@ -74,8 +93,10 @@ export function registerRouterMiddleware(router: Router) {
 
         try {
             await loadApiRoot()
-        } catch {
-            return { name: LOGIN_ROUTE_NAME }
+        } catch (error) {
+            if (!canProceedWithCachedSession(error)) {
+                return { name: LOGIN_ROUTE_NAME }
+            }
         }
 
         const capability = to.meta.requiresCapability

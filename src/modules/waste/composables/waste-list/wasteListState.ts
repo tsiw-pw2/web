@@ -20,6 +20,7 @@ let listLinks: ResourceLinks | undefined
 
 export function setWasteListFilters(filters: WasteListFilters) {
     listFilters = filters
+    listLinks = undefined
 }
 
 async function applyPageResult(data: Awaited<ReturnType<typeof fetchWastePage>>) {

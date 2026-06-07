@@ -3,7 +3,7 @@ import type { PaginatedResult } from "@/types/pagination"
 import { href } from "@/infrastructure/apiDiscovery"
 import { apiGet, paginationQuery, unwrapList } from "@/infrastructure/apiClient"
 import type { ResourceLinks } from "@/infrastructure/hypermedia.types"
-import { followHref, getLink } from "@/infrastructure/hypermediaClient"
+import { isValidDistrictCode } from "@/shared/lib/districtCodes"
 
 export type CampaignsPageResult = PaginatedResult<CampaignListItem> & {
     links?: ResourceLinks
@@ -25,26 +25,28 @@ function appendFilters(q: URLSearchParams, filters?: CampaignListFilters) {
     }
 }
 
+function emptyCampaignsPage(page: number, pageSize: number): CampaignsPageResult {
+    return {
+        items: [],
+        page,
+        pageSize,
+        total: 0,
+    }
+}
+
 // Obtém uma página da listagem de campanhas com filtros opcionais.
 export async function fetchCampaignsPage(
     page: number,
     pageSize: number,
     filters?: CampaignListFilters,
-    prevLinks?: ResourceLinks,
+    _prevLinks?: ResourceLinks,
 ): Promise<CampaignsPageResult> {
+    if (filters?.district && !isValidDistrictCode(filters.district)) {
+        return emptyCampaignsPage(page, pageSize)
+    }
+
     const q = paginationQuery(page, pageSize)
     appendFilters(q, filters)
-
-    if (page > 1 && prevLinks?.next?.href) {
-        const body = await followHref<{
-            data: CampaignListItem[]
-            page?: number
-            pageSize?: number
-            total?: number
-            links?: ResourceLinks
-        }>(prevLinks.next, { query: q })
-        return { ...unwrapList(body), links: body.links }
-    }
 
     const path = await href("campaigns")
     const body = await apiGet<{

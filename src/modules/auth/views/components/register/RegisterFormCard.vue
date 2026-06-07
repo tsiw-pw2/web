@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed, ref } from "vue"
 import { RouterLink } from "vue-router"
 import Button from "@/shared/components/ui/Button.vue"
 import FieldLabel from "@/shared/components/ui/FieldLabel.vue"
@@ -8,6 +9,7 @@ import { REGISTER_PASSWORD_MIN_LENGTH } from "@/modules/auth/lib/registerFormCon
 
 const name = defineModel<string>("name", { required: true })
 const email = defineModel<string>("email", { required: true })
+const birthDate = defineModel<string>("birthDate", { required: true })
 const password = defineModel<string>("password", { required: true })
 const confirmPassword = defineModel<string>("confirmPassword", { required: true })
 const acceptedTerms = defineModel<boolean>("acceptedTerms", { required: true })
@@ -16,17 +18,28 @@ defineProps<{
     formError: string | null
     fieldHasError: boolean
     fieldErrorClass: string
-    canSubmit: boolean
     isSubmitting: boolean
 }>()
 
 const emit = defineEmits<{
     submit: []
 }>()
+
+const formRef = ref<HTMLFormElement | null>(null)
+
+const birthDateMax = computed(() => {
+    const today = new Date()
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`
+})
+
+function onSubmit() {
+    if (!formRef.value?.reportValidity()) return
+    emit("submit")
+}
 </script>
 
 <template>
-    <form class="w-full" @submit.prevent="emit('submit')">
+    <form ref="formRef" class="w-full" @submit.prevent="onSubmit">
         <div class="space-y-4">
             <div>
                 <h1 class="text-center text-xl font-semibold leading-8 text-neutral-950">Criar conta</h1>
@@ -43,6 +56,8 @@ const emit = defineEmits<{
                     :class="['mt-2 w-full', fieldHasError && fieldErrorClass]"
                     autocomplete="name"
                     type="text"
+                    name="name"
+                    required
                     placeholder="O teu nome"
                 />
             </div>
@@ -55,7 +70,24 @@ const emit = defineEmits<{
                     :class="['mt-2 w-full', fieldHasError && fieldErrorClass]"
                     autocomplete="email"
                     type="email"
+                    name="email"
+                    required
                     placeholder="support@mariva.com"
+                />
+            </div>
+
+            <div>
+                <FieldLabel class="block" required for="register-birth-date">Data de nascimento</FieldLabel>
+                <Input
+                    id="register-birth-date"
+                    v-model="birthDate"
+                    :class="['mt-2 w-full', fieldHasError && fieldErrorClass]"
+                    autocomplete="bday"
+                    type="date"
+                    name="birthDate"
+                    required
+                    :max="birthDateMax"
+                    left-icon="calendar"
                 />
             </div>
 
@@ -67,6 +99,9 @@ const emit = defineEmits<{
                     :class="['mt-2 w-full', fieldHasError && fieldErrorClass]"
                     autocomplete="new-password"
                     type="password"
+                    name="password"
+                    required
+                    :minlength="REGISTER_PASSWORD_MIN_LENGTH"
                     placeholder="Mínimo 8 caracteres"
                 />
             </div>
@@ -79,11 +114,11 @@ const emit = defineEmits<{
                     :class="['mt-2 w-full', fieldHasError && fieldErrorClass]"
                     autocomplete="new-password"
                     type="password"
+                    name="confirmPassword"
+                    required
+                    :minlength="REGISTER_PASSWORD_MIN_LENGTH"
                     placeholder="Repete a palavra-passe"
                 />
-                <p class="mt-1 text-xs leading-4 text-neutral-500">
-                    A palavra-passe deve ter pelo menos {{ REGISTER_PASSWORD_MIN_LENGTH }} caracteres.
-                </p>
                 <p
                     v-if="formError"
                     role="alert"
@@ -96,6 +131,8 @@ const emit = defineEmits<{
                 <input
                     v-model="acceptedTerms"
                     type="checkbox"
+                    name="acceptedTerms"
+                    required
                     class="mt-0.5 size-4 shrink-0 rounded border-neutral-300 text-blue-600"
                 />
                 <span>
@@ -111,7 +148,7 @@ const emit = defineEmits<{
                 </span>
             </label>
 
-            <Button class="w-full justify-center" type="submit" :disabled="isSubmitting || !canSubmit">
+            <Button class="w-full justify-center" type="submit" :disabled="isSubmitting">
                 Criar conta
             </Button>
 

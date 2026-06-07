@@ -22,8 +22,8 @@ describe("formatCampaignDurationLabel", () => {
     })
 
     it("returns dash for invalid dates", () => {
-        expect(formatCampaignDurationLabel("", "")).toBe("—")
-        expect(formatCampaignDurationLabel("2026-04-18", "2026-04-12")).toBe("—")
+        expect(formatCampaignDurationLabel("", "")).toBe("-")
+        expect(formatCampaignDurationLabel("2026-04-18", "2026-04-12")).toBe("-")
     })
 })
 

@@ -19,6 +19,7 @@ let listLinks: ResourceLinks | undefined
 
 export function setCampaignsListFilters(filters: CampaignListFilters) {
     listFilters = filters
+    listLinks = undefined
 }
 
 async function applyPageResult(data: Awaited<ReturnType<typeof fetchCampaignsPage>>) {

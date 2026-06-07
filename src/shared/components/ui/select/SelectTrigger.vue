@@ -7,6 +7,7 @@ import { SELECT_CLEAR_BUTTON, SELECT_TRIGGER_COMBO, SELECT_TRIGGER_LAYOUT } from
 
 const props = defineProps<{
     listboxId: string
+    triggerId?: string
     open: boolean
     disabled?: boolean
     labelClass: string
@@ -33,7 +34,7 @@ function onShellRef(el: Element | ComponentPublicInstance | null) {
         :class="cn(SELECT_TRIGGER_LAYOUT, disabled && 'pointer-events-none', props.class)"
     >
         <button
-            :id="`${listboxId}-trigger`"
+            :id="triggerId ?? `${listboxId}-trigger`"
             type="button"
             role="combobox"
             :aria-expanded="open"

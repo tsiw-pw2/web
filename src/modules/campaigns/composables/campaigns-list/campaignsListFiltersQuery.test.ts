@@ -25,4 +25,10 @@ describe("readCampaignListFiltersFromQuery", () => {
         const result = readCampaignListFiltersFromQuery({ q: long })
         expect(result.q?.length).toBe(100)
     })
+
+    it("mantém distrito inválido na query para mostrar empty state filtrado", () => {
+        expect(readCampaignListFiltersFromQuery({ district: "bragasss" })).toEqual({
+            district: "bragasss",
+        })
+    })
 })

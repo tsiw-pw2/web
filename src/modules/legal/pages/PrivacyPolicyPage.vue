@@ -36,15 +36,15 @@ const { supportEmail, privacyEmail } = legalConfig
         <LegalSection heading="Finalidades e base legal">
             <ul class="list-disc space-y-2 ps-5">
                 <li>
-                    <span class="font-medium text-neutral-950">Prestação do serviço</span> — criar conta, participar em
+                    <span class="font-medium text-neutral-950">Prestação do serviço</span> - criar conta, participar em
                     campanhas e registar recolhas (execução de contrato ou medidas pré-contratuais).
                 </li>
                 <li>
-                    <span class="font-medium text-neutral-950">Gestão institucional</span> — aprovação de organizadores,
+                    <span class="font-medium text-neutral-950">Gestão institucional</span> - aprovação de organizadores,
                     moderação e segurança da plataforma (interesse legítimo, com salvaguardas).
                 </li>
                 <li>
-                    <span class="font-medium text-neutral-950">Obrigações legais</span> — quando a lei o exigir.
+                    <span class="font-medium text-neutral-950">Obrigações legais</span> - quando a lei o exigir.
                 </li>
             </ul>
         </LegalSection>

@@ -167,5 +167,6 @@ export function useCampaignsListFilters(onFiltersChange: () => void) {
         filters,
         hasActiveFilters,
         clearAllFilters,
+        pushFiltersToRoute,
     }
 }

@@ -1,4 +1,4 @@
-import { apiGet, paginationQuery, unwrapList } from "@/infrastructure/apiClient"
+import { paginationQuery, unwrapList } from "@/infrastructure/apiClient"
 import { followHref, getLink } from "@/infrastructure/hypermediaClient"
 import type { ResourceLinks } from "@/infrastructure/hypermedia.types"
 import type { PaginatedResult } from "@/types/pagination"
@@ -22,20 +22,14 @@ export async function fetchCampaignSubResourcePage<T>(
         if (value != null && value !== "") q.set(key, value)
     }
     const link = getLink(campaign, rel)
-    if (link?.href) {
-        const body = await followHref<{
-            data: T[]
-            page?: number
-            pageSize?: number
-            total?: number
-        }>(link, { query: q })
-        return unwrapList(body)
+    if (!link?.href) {
+        throw new Error(`Campaign sub-resource link "${rel}" not available`)
     }
-    const body = await apiGet<{
+    const body = await followHref<{
         data: T[]
         page?: number
         pageSize?: number
         total?: number
-    }>(`/campaigns/${campaign.id}/${segment}`, q)
+    }>(link, { query: q })
     return unwrapList(body)
 }

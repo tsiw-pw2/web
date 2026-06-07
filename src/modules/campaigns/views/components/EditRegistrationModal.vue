@@ -80,24 +80,18 @@ function onSave() {
     else if (attendance.value === "false") body.attendance = false
     emit("save", body)
 }
-
-// Obtém o nome do voluntário para exibição.
-const volunteerName = () => props.registration?.user?.name?.trim() || "Voluntário"
 </script>
 
 <template>
-    <ModalRoot v-model="open" ariaLabelledby="edit-registration-title" max-width="md">
+    <ModalRoot v-model="open" ariaLabelledby="edit-registration-title">
         <div class="flex items-start justify-between gap-4">
-            <div class="min-w-0">
-                <h3 id="edit-registration-title" class="text-sm font-semibold leading-5 text-neutral-950">
-                    Gerir inscrição
-                </h3>
-                <div class="mt-1 text-xs leading-4 text-neutral-500">{{ volunteerName() }}</div>
-            </div>
+            <h3 id="edit-registration-title" class="text-lg font-semibold leading-7 text-neutral-950">
+                Gerir inscrição
+            </h3>
             <ModalCloseButton @click="close" />
         </div>
 
-        <div class="mt-5 flex flex-col gap-4">
+        <form class="flex flex-col gap-3" @submit.prevent="onSave">
             <div class="flex flex-col gap-1">
                 <FieldLabel class="block" for="edit-reg-status">Estado</FieldLabel>
                 <Select
@@ -128,11 +122,11 @@ const volunteerName = () => props.registration?.user?.name?.trim() || "Voluntár
                     placeholder="Presença"
                 />
             </div>
-        </div>
 
-        <div class="mt-5 flex items-center justify-end gap-2">
-            <Button type="button" variant="secondary" :disabled="saving" @click="close">Cancelar</Button>
-            <Button type="button" variant="primary" :busy="saving" :disabled="saving" @click="onSave">Guardar</Button>
-        </div>
+            <div class="flex items-center justify-end gap-2">
+                <Button type="button" variant="secondary" :disabled="saving" @click="close">Cancelar</Button>
+                <Button type="submit" variant="primary" :busy="saving" :disabled="saving">Guardar</Button>
+            </div>
+        </form>
     </ModalRoot>
 </template>

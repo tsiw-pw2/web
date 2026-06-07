@@ -116,7 +116,7 @@ const campaignDemoItems: CampaignListItem[] = [
     },
     {
         id: "demo-3",
-        title: "Ria de Aveiro — norte",
+        title: "Ria de Aveiro - norte",
         municipality: "Ílhavo",
         beach: "Praia da Barra",
         startDate: "18/06/2026",
@@ -216,7 +216,7 @@ onMounted(() => {
             </nav>
 
             <main class="min-w-0 flex-1">
-                <ShowcaseSection id="buttons" title="Button" description="variant: primary | secondary | danger. disabled: 60% opacidade, sem clique. busy: aria-busy durante um pedido em curso (ex.: guardar) — usar com disabled para evitar duplo envio; leitores de ecrã anunciam que o botão está ocupado.">
+                <ShowcaseSection id="buttons" title="Button" description="variant: primary | secondary | danger. disabled: 60% opacidade, sem clique. busy: aria-busy durante um pedido em curso (ex.: guardar) - usar com disabled para evitar duplo envio; leitores de ecrã anunciam que o botão está ocupado.">
                     <div class="space-y-6">
                         <div v-for="state in ['default', 'disabled', 'busy'] as const" :key="state" class="space-y-2">
                             <p class="text-sm font-medium text-neutral-800">
@@ -350,7 +350,7 @@ onMounted(() => {
                             <h2 id="showcase-modal-title-lg" class="text-lg font-semibold leading-6 text-neutral-950">Modal lg</h2>
                             <ModalCloseButton @click="modalOpenLg = false" />
                         </div>
-                        <p class="text-sm leading-5 text-neutral-600">maxWidth=&quot;lg&quot; — usado em formulários mais largos.</p>
+                        <p class="text-sm leading-5 text-neutral-600">maxWidth=&quot;lg&quot; - usado em formulários mais largos.</p>
                     </ModalRoot>
                 </ShowcaseSection>
 
@@ -369,7 +369,7 @@ onMounted(() => {
                         <Tooltip content-class="!opacity-100">
                             <Button type="button" variant="secondary">Sempre visível</Button>
                             <template #content>
-                                Campanha de limpeza da Praia da Barra — edição 2026
+                                Campanha de limpeza da Praia da Barra - edição 2026
                             </template>
                         </Tooltip>
                         <Tooltip content-class="!opacity-100">
@@ -377,7 +377,7 @@ onMounted(() => {
                                 Título muito longo da campanha…
                             </span>
                             <template #content>
-                                Limpeza costeira Ria de Aveiro — norte, Matosinhos e zona envolvente
+                                Limpeza costeira Ria de Aveiro - norte, Matosinhos e zona envolvente
                             </template>
                         </Tooltip>
                     </div>
@@ -407,7 +407,7 @@ onMounted(() => {
                 >
                     <div class="flex flex-col gap-8">
                         <div>
-                            <p class="mb-3 text-sm font-medium text-neutral-800">Campanha — detalhe (status agrupado na UI)</p>
+                            <p class="mb-3 text-sm font-medium text-neutral-800">Campanha - detalhe (status agrupado na UI)</p>
                             <div class="flex flex-wrap gap-2">
                                 <ApiStateBadge
                                     v-for="s in campaignDetailStatusSamples"
@@ -417,7 +417,7 @@ onMounted(() => {
                             </div>
                         </div>
                         <div>
-                            <p class="mb-3 text-sm font-medium text-neutral-800">Campanha — escrita (status no body)</p>
+                            <p class="mb-3 text-sm font-medium text-neutral-800">Campanha - escrita (status no body)</p>
                             <ul class="grid gap-2 sm:grid-cols-2">
                                 <li
                                     v-for="item in CAMPAIGN_EDIT_STATUS_ITEMS"
@@ -441,7 +441,7 @@ onMounted(() => {
                             <ApiStateBadge v-bind="COMMENT_HIDDEN_BADGE" />
                         </div>
                         <div>
-                            <p class="mb-3 text-sm font-medium text-neutral-800">Inscrição — função e estado (badges na tabela)</p>
+                            <p class="mb-3 text-sm font-medium text-neutral-800">Inscrição - função e estado (badges na tabela)</p>
                             <DataTableScrollWrap>
                                 <table class="w-full min-w-[320px] table-fixed border-collapse text-left">
                                     <thead class="sticky top-0 z-10 bg-white">
@@ -476,7 +476,7 @@ onMounted(() => {
                             </DataTableScrollWrap>
                         </div>
                         <div>
-                            <p class="mb-3 text-sm font-medium text-neutral-800">Resíduo — categoria e unidade (badges na tabela)</p>
+                            <p class="mb-3 text-sm font-medium text-neutral-800">Resíduo - categoria e unidade (badges na tabela)</p>
                             <div class="flex flex-wrap gap-2">
                                 <ApiStateBadge
                                     v-for="c in WASTE_CATEGORY_ITEMS"
@@ -534,7 +534,7 @@ onMounted(() => {
                 <ShowcaseSection id="logo" title="Logo Mariva" description="Variantes usadas na app: ícone no header autenticado e wordmark nas páginas públicas.">
                     <div class="flex flex-col gap-8">
                         <div>
-                            <p class="mb-3 text-sm font-medium text-neutral-800">LogoMark — header (autenticado)</p>
+                            <p class="mb-3 text-sm font-medium text-neutral-800">LogoMark - header (autenticado)</p>
                             <div class="flex flex-wrap items-end gap-8 bg-neutral-950 px-4 py-6">
                                 <div class="flex flex-col items-center gap-2">
                                     <LogoMark />
@@ -547,10 +547,10 @@ onMounted(() => {
                             </div>
                         </div>
                         <div>
-                            <p class="mb-3 text-sm font-medium text-neutral-800">Logo com texto — páginas públicas</p>
+                            <p class="mb-3 text-sm font-medium text-neutral-800">Logo com texto - páginas públicas</p>
                             <div class="flex flex-wrap items-center gap-8 rounded-lg bg-white px-4 py-6 shadow-card">
                                 <img src="/Logo_text.svg" alt="Mariva" class="h-8 w-auto" />
-                                <span class="text-xs text-neutral-500">h-8 w-auto (login, início, solicitar acesso)</span>
+                                <span class="text-xs text-neutral-500">h-8 w-auto (login, início)</span>
                             </div>
                         </div>
                     </div>

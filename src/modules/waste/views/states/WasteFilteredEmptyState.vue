@@ -9,7 +9,7 @@ const emit = defineEmits<{
 <template>
     <ResourceEmptyState
         title="Nenhum resíduo com estes filtros."
-        hint="Ajusta a pesquisa ou limpa os filtros para ver todo o catálogo."
+        hint="Ajusta a pesquisa ou limpa os filtros para ver todo o inventário."
         action-label="Limpar filtros"
         @action="emit('clearFilters')"
     />

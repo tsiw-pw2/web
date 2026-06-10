@@ -20,7 +20,7 @@ export function isWeightGramsInputValid(raw: string | number | null | undefined)
     return parseWeightGramsInput(raw) != null
 }
 
-// Formata resíduos catálogo peso.
+// Formata resíduos do inventário com unidade peso.
 export function formatWasteCatalogWeight(unit: string, averageWeightGrams: number | null): string | null {
     if (averageWeightGrams == null || averageWeightGrams <= 0) return null
     if (normalizeWasteUnit(unit) !== "peso") return null

@@ -1,6 +1,6 @@
 export const beachCreateMutationMessages = {
     successTitle: "Praia criada",
-    successBody: "A praia foi adicionada ao catálogo.",
+    successBody: "A praia foi adicionada ao registo.",
     forbiddenDetail: "Só organizadores e administradores podem criar praias.",
     conflictDetail: "Já existe uma praia com este nome. Escolhe outro nome.",
 } as const

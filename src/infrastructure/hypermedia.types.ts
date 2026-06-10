@@ -25,7 +25,7 @@ export type HypermediaResource = {
     [key: string]: unknown
 }
 
-// Extrai links de um recurso ou listagem (contrato das aulas).
+// Extrai links de um recurso ou listagem (formato hipermedia da API).
 export function getResourceLinks(resource: unknown): ResourceLinks | undefined {
     if (!resource || typeof resource !== "object") return undefined
     const record = resource as Record<string, unknown>

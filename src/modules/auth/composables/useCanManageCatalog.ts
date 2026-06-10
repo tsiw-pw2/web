@@ -2,7 +2,7 @@ import { computed } from "vue"
 import { useCurrentProfile } from "@/composables/useCurrentProfile"
 import { canManageCatalog } from "@/modules/auth/lib/accessPolicy"
 
-// Composable que gere a lógica de can gestão catálogo.
+// Composable que gere a lógica de permissão para gerir registo e inventário.
 export function useCanManageCatalog() {
     const { profile, loadProfile } = useCurrentProfile()
 

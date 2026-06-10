@@ -69,8 +69,12 @@ function onSubmit() {
                 Entrar
             </Button>
 
-            <div class="flex items-center justify-center text-xs text-neutral-600">
+            <div class="flex items-center justify-center gap-2 text-xs text-neutral-600">
                 <RouterLink :to="routePaths.register" class="hover:text-neutral-950">Criar conta?</RouterLink>
+                <span class="text-neutral-400">|</span>
+                <RouterLink :to="routePaths.requestAccount" class="hover:text-neutral-950">
+                    Entrar em contacto
+                </RouterLink>
             </div>
         </div>
     </form>

@@ -28,7 +28,7 @@ const { supportEmail, privacyEmail } = legalConfig
             <ul class="list-disc space-y-2 ps-5">
                 <li>Conta: nome, email, data de nascimento, palavra-passe (armazenada de forma segura), avatar opcional.</li>
                 <li>Campanhas: inscrições, presença, recolhas de resíduos (praia, tipo, quantidades) e comentários.</li>
-                <li>Organizadores: dados de gestão de campanhas, praias e catálogo de resíduos.</li>
+                <li>Organizadores: dados de gestão de campanhas, praias e inventário de resíduos.</li>
                 <li>Técnicos: registos de sessão (tokens de autenticação) e logs de segurança sem conteúdo de palavra-passe.</li>
             </ul>
         </LegalSection>

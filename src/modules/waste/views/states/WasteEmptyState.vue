@@ -20,6 +20,6 @@ const { canManage } = useCanManageCatalog()
     <ResourceEmptyState
         v-else
         title="Sem registos de resíduo."
-        hint="Ainda não há resíduos no catálogo."
+        hint="Ainda não há resíduos no inventário."
     />
 </template>

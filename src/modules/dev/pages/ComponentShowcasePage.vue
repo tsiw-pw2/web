@@ -175,7 +175,7 @@ onMounted(() => {
                         {{
                             showcaseView === "errors"
                                 ? "Referência de copy de erro na web."
-                                : "Componentes partilhados e estados visuais do contrato API."
+                                : "Componentes partilhados e estados visuais da especificação da API."
                         }}
                     </p>
                 </div>
@@ -403,7 +403,7 @@ onMounted(() => {
                 <ShowcaseSection
                     id="api-states"
                     title="Estados da API"
-                    description="Valores e apresentação alinhados ao contrato REST (badges onde a app os usa; restantes como na tabela de detalhe)."
+                    description="Valores e apresentação alinhados à especificação REST da API (badges onde a app os usa; restantes como na tabela de detalhe)."
                 >
                     <div class="flex flex-col gap-8">
                         <div>

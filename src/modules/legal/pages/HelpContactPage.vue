@@ -13,7 +13,7 @@ const { supportEmail, privacyEmail, organizerResponseBusinessDays } = legalConfi
 <template>
     <LegalPublicShell title="Ajuda e contacto">
         <p>
-            Encontra aqui como falar connosco sobre a {{ appName }}.
+            Encontra aqui como falar connosco e como pedir acesso de organizador à {{ appName }}.
         </p>
 
         <LegalSection heading="Suporte">
@@ -39,15 +39,32 @@ const { supportEmail, privacyEmail, organizerResponseBusinessDays } = legalConfi
 
         <LegalSection id="organizadores" heading="Acesso para organizadores">
             <p>
-                Contas de organizador não são criadas automaticamente no registo público. Para pedir permissões de
-                organização, envia email para
-                <a class="font-medium text-blue-700 hover:underline" :href="`mailto:${supportEmail}`">{{ supportEmail }}</a
-                >
-                a partir de um endereço institucional, com nome da organização, responsável e contacto.
+                Contas de organizador não são criadas automaticamente no registo público. O processo é manual para
+                garantir que apenas entidades autorizadas gerem campanhas.
             </p>
+            <ol class="list-decimal space-y-3 ps-5">
+                <li>
+                    Visita
+                    <RouterLink :to="routePaths.requestAccount" class="font-medium text-blue-700 hover:underline">
+                        Solicitar acesso
+                    </RouterLink
+                    >
+                    e copia o modelo de email com os dados da organização.
+                </li>
+                <li>
+                    Envia o email para
+                    <a class="font-medium text-blue-700 hover:underline" :href="`mailto:${supportEmail}`">{{ supportEmail }}</a
+                    >
+                    a partir de um endereço institucional, incluindo nome da organização, responsável e contacto.
+                </li>
+                <li>A equipa valida o pedido (identidade e legitimidade institucional).</li>
+                <li>
+                    Se for aprovado, recebes instruções para activar a conta de organizador. O prazo habitual de resposta
+                    é até {{ organizerResponseBusinessDays }} dias úteis.
+                </li>
+            </ol>
             <p>
-                A equipa valida o pedido e, se for aprovado, atribui o papel na conta existente. O prazo habitual de
-                resposta é até {{ organizerResponseBusinessDays }} dias úteis.
+                Se o pedido for recusado, a resposta será genérica, sem obrigação de detalhar motivos internos de segurança.
             </p>
         </LegalSection>
 

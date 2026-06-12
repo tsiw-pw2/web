@@ -28,12 +28,16 @@ const router = createRouter({
             component: () => import("../../modules/auth/pages/RegisterPage.vue"),
             meta: { bodyScroll: true, hideChrome: true, pageTitle: "Registar" },
         },
-        {
-            path: routePaths.componentShowcase,
-            name: "component-showcase",
-            component: () => import("../../modules/dev/pages/ComponentShowcasePage.vue"),
-            meta: { bodyScroll: true, hideChrome: true, pageTitle: "Componentes" },
-        },
+        ...(import.meta.env.DEV
+            ? [
+                  {
+                      path: routePaths.componentShowcase,
+                      name: "component-showcase",
+                      component: () => import("../../modules/dev/pages/ComponentShowcasePage.vue"),
+                      meta: { bodyScroll: true, hideChrome: true, pageTitle: "Componentes" },
+                  },
+              ]
+            : []),
         {
             path: routePaths.privacy,
             name: "privacy",
@@ -62,7 +66,7 @@ const router = createRouter({
             path: routePaths.campaigns,
             name: "campaigns",
             component: () => import("../../modules/campaigns/views/pages/CampaignsPage.vue"),
-            meta: { requiresAuth: true, pageTitle: "Campanhas" },
+            meta: { guestAllowed: true, pageTitle: "Campanhas" },
         },
         {
             path: "/campanhas/:campaignId",
@@ -81,13 +85,13 @@ const router = createRouter({
             path: routePaths.beaches,
             name: "beaches",
             component: () => import("../../modules/beaches/pages/BeachesPage.vue"),
-            meta: { requiresAuth: true, pageTitle: "Praias" },
+            meta: { requiresAuth: true, requiresCapability: "municipalCatalog", pageTitle: "Praias" },
         },
         {
             path: routePaths.waste,
             name: "waste",
             component: () => import("../../modules/waste/pages/WastePage.vue"),
-            meta: { requiresAuth: true, pageTitle: "Resíduos" },
+            meta: { requiresAuth: true, requiresCapability: "municipalCatalog", pageTitle: "Resíduos" },
         },
         {
             path: routePaths.settings,
@@ -128,7 +132,7 @@ const router = createRouter({
                     path: "utilizadores",
                     name: "settings-users",
                     component: () => import("../../modules/settings/pages/SettingsUsersPage.vue"),
-                    meta: { requiresAuth: true, requiresCapability: "settingsAdmin", pageTitle: "Utilizadores" },
+                    meta: { requiresAuth: true, requiresCapability: "settingsOrgAdmin", pageTitle: "Equipa" },
                 },
                 {
                     path: "utilizadores/:userId",
@@ -143,7 +147,7 @@ const router = createRouter({
                     component: () => import("../../modules/settings/pages/SettingsUserDetailsPage.vue"),
                     meta: {
                         requiresAuth: true,
-                        requiresCapability: "settingsAdmin",
+                        requiresCapability: "settingsOrgAdmin",
                         pageTitle: "Utilizador",
                         pageTitleDynamic: true,
                     },
@@ -152,7 +156,21 @@ const router = createRouter({
                     path: "categorias-residuos",
                     name: "settings-waste-categories",
                     component: () => import("../../modules/settings/pages/SettingsWasteCategoriesPage.vue"),
-                    meta: { requiresAuth: true, requiresCapability: "settingsAdmin", pageTitle: "Categorias de resíduos" },
+                    meta: {
+                        requiresAuth: true,
+                        requiresCapability: "settingsWasteCategories",
+                        pageTitle: "Categorias de resíduos",
+                    },
+                },
+                {
+                    path: "organizacoes",
+                    name: "settings-organizations",
+                    component: () => import("../../modules/settings/pages/SettingsOrganizationsPage.vue"),
+                    meta: {
+                        requiresAuth: true,
+                        requiresCapability: "settingsOrganizations",
+                        pageTitle: "Organizações",
+                    },
                 },
             ],
         },

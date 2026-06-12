@@ -2,7 +2,7 @@ import { computed, ref, watch, type Ref } from "vue"
 import { toastError, toastSuccess } from "@/infrastructure/appToast"
 import { isApiRequestError } from "@/infrastructure/request"
 import { isApiServiceUnavailableError } from "@/infrastructure/apiErrors"
-import { isEnrollmentClosedStatus, ENROLLABLE_CAMPAIGN_STATUS_KEYS } from "@/modules/campaigns/lib/campaignStatus"
+import { isCampaignTerminalStatus, isEnrollmentClosedStatus, ENROLLABLE_CAMPAIGN_STATUS_KEYS } from "@/modules/campaigns/lib/campaignStatus"
 import { canSelfEnrollInCampaign } from "@/modules/campaigns/lib/canSelfEnrollInCampaign"
 import { hasActiveRegistration } from "@/modules/campaigns/lib/canVolunteerEnroll"
 import { shouldReloadRegistrationsListAfterChange } from "@/modules/campaigns/lib/shouldReloadRegistrationsListAfterChange"
@@ -110,7 +110,13 @@ export function useCampaignRegistrationActions(
         const c = campaign.value
         const p = profile.value
         if (!c || !p) return false
-        return p.isAdmin || c.organizer?.id === p.id
+        return p.isOrgAdmin === true || c.organizer?.id === p.id
+    })
+
+    const canEditVolunteerRegistrations = computed(() => {
+        const c = campaign.value
+        if (!c || !canManageRegistrations.value) return false
+        return !isCampaignTerminalStatus(c.editStatus)
     })
 
     const canEnroll = computed(() => canSelfEnrollInCampaign(campaign.value, profile.value))
@@ -124,6 +130,18 @@ export function useCampaignRegistrationActions(
     })
 
     const showMyRegistrationStatus = computed(() => hasActiveRegistration(ownedViewerRegistration()))
+
+    const canCancelMyRegistration = computed(() => {
+        const c = campaign.value
+        if (!c || isCampaignTerminalStatus(c.editStatus)) return false
+        return showMyRegistrationStatus.value
+    })
+
+    const canShowCampaignReport = computed(() => {
+        const c = campaign.value
+        if (!c || !canManageRegistrations.value) return false
+        return c.editStatus === "concluida"
+    })
 
     const enrollmentProfileBlockReason = computed(() => {
         const c = campaign.value
@@ -266,6 +284,9 @@ export function useCampaignRegistrationActions(
         cancelRegistrationOpen,
         syncMyRegistrationFromCampaign,
         canManageRegistrations,
+        canEditVolunteerRegistrations,
+        canCancelMyRegistration,
+        canShowCampaignReport,
         canEnroll,
         showEnrollmentClosed,
         enrollmentProfileBlockReason,

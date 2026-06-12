@@ -1,15 +1,13 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue"
 import type { BeachUpsertDraft } from "@/modules/beaches/types/list"
+import { useBeachOrganizationContext } from "@/modules/beaches/composables/useBeachOrganizationContext"
 import { areBeachCoordinatesValid, beachCoordinateToApiString } from "@/modules/beaches/lib/beachCoordinates"
 import Button from "@/shared/components/ui/Button.vue"
 import FieldLabel from "@/shared/components/ui/FieldLabel.vue"
 import Input from "@/shared/components/ui/Input.vue"
 import ModalCloseButton from "@/shared/components/ui/ModalCloseButton.vue"
 import ModalRoot from "@/shared/components/ui/ModalRoot.vue"
-import Select from "@/shared/components/ui/select/Select.vue"
-import { DISTRICT_SELECT_OPTIONS } from "@/shared/constants/districtSelectOptions"
-import { concelhoSelectOptionsForDistrict } from "@/shared/lib/concelhosByDistrict"
 
 const open = defineModel<boolean>({ required: true })
 
@@ -17,43 +15,38 @@ const emit = defineEmits<{
     create: [payload: BeachUpsertDraft]
 }>()
 
-// Fecha o modal ou painel.
+const {
+    organizationMunicipality,
+    organizationDistrictSlug,
+    organizationDistrictLabel,
+    hasOrganizationLocation,
+} = useBeachOrganizationContext()
+
 function close() {
     open.value = false
 }
 
 const name = ref("")
-const municipality = ref<string | undefined>(undefined)
-const district = ref<string | undefined>(undefined)
 const latitude = ref("")
 const longitude = ref("")
 
-const districtOptions = DISTRICT_SELECT_OPTIONS
-
-const concelhoOptions = computed(() => concelhoSelectOptionsForDistrict(district.value))
-
 const canProceed = computed(() => {
+    if (!hasOrganizationLocation.value) return false
     if (name.value.trim().length === 0) return false
-    if (!municipality.value) return false
-    if (!district.value) return false
     if (!areBeachCoordinatesValid(latitude.value, longitude.value)) return false
     return true
 })
 
-// Repor os campos do formulário.
 function resetForm() {
     name.value = ""
-    municipality.value = undefined
-    district.value = undefined
     latitude.value = ""
     longitude.value = ""
 }
 
-// Valida e submete o formulário.
 function onProceed() {
     const n = name.value.trim()
-    const m = municipality.value
-    const d = district.value
+    const m = organizationMunicipality.value
+    const d = organizationDistrictSlug.value
     const lat = latitude.value
     const lng = longitude.value
     if (!n || !m || !d || !areBeachCoordinatesValid(lat, lng)) return
@@ -66,17 +59,6 @@ function onProceed() {
     })
     close()
 }
-
-watch(
-    district,
-    (next, prev) => {
-        if (!open.value) return
-        if (prev !== undefined && next !== prev) {
-            municipality.value = undefined
-        }
-    },
-    { flush: "sync" },
-)
 
 watch(open, (isOpen) => {
     if (isOpen) resetForm()
@@ -97,19 +79,13 @@ watch(open, (isOpen) => {
             </div>
 
             <div class="flex flex-col gap-1">
-                <FieldLabel required>Distrito</FieldLabel>
-                <Select v-model="district" class="w-full" :options="districtOptions" placeholder="Seleciona um distrito" />
+                <FieldLabel>Distrito</FieldLabel>
+                <p class="text-sm leading-5 text-neutral-950">{{ organizationDistrictLabel ?? "—" }}</p>
             </div>
 
             <div class="flex flex-col gap-1">
-                <FieldLabel required>Concelho</FieldLabel>
-                <Select
-                    v-model="municipality"
-                    class="w-full"
-                    :options="concelhoOptions"
-                    placeholder="Seleciona um concelho"
-                    :disabled="!district"
-                />
+                <FieldLabel>Concelho</FieldLabel>
+                <p class="text-sm leading-5 text-neutral-950">{{ organizationMunicipality ?? "—" }}</p>
             </div>
 
             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">

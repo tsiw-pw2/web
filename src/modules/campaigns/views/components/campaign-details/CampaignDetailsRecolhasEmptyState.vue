@@ -17,11 +17,16 @@ const title = computed(() =>
     props.variant === "filtered" ? "Nenhuma recolha nesta praia" : "Ainda sem recolhas",
 )
 
-const hint = computed(() =>
-    props.variant === "filtered"
+const hint = computed(() => {
+    if (!props.canRecord) {
+        return props.variant === "filtered"
+            ? "Escolhe outra praia no filtro para ver outras recolhas."
+            : "As recolhas registadas pela equipa aparecem aqui."
+    }
+    return props.variant === "filtered"
         ? "Escolhe outra praia no filtro ou regista uma nova recolha para esta praia."
-        : "Regista o que foi apanhado em cada praia durante a ação de limpeza.",
-)
+        : "Regista o que foi apanhado em cada praia durante a ação de limpeza."
+})
 
 const showAction = computed(() => props.canRecord && props.hasBeaches)
 </script>

@@ -18,6 +18,7 @@ const {
     showAlreadyEnrolledHint,
     canceling,
     cancelRegistrationOpen,
+    canCancelMyRegistration,
     enrolling,
     enroll,
 } = registration
@@ -59,7 +60,6 @@ const statusUi = computed(() => display.statusUi.value)
                     <div class="sm:col-span-2">
                         <FieldLabel as="span" class="block uppercase tracking-wide font-medium !text-neutral-500">Organizador</FieldLabel>
                         <p class="mt-2 text-sm font-medium leading-5 text-neutral-950">{{ campaign.organizer?.name ?? "-" }}</p>
-                        <p v-if="campaign.organizer?.email" class="mt-1 text-sm leading-5 text-neutral-600">{{ campaign.organizer.email }}</p>
                     </div>
                 </div>
                 <div v-if="campaign.beaches.length > 0">
@@ -115,6 +115,7 @@ const statusUi = computed(() => display.statusUi.value)
                 >
                     <div v-if="showMyRegistrationStatus" class="flex flex-col gap-3">
                         <Button
+                            v-if="canCancelMyRegistration"
                             type="button"
                             variant="secondary"
                             class="w-full touch-manipulation"

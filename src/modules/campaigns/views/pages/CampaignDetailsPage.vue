@@ -1,4 +1,4 @@
-<script setup lang="ts">import { computed, provide } from "vue"
+<script setup lang="ts">import { computed, provide, ref } from "vue"
 
 import { campaignDetailsPageKey } from "@/modules/campaigns/composables/campaign-details/campaignDetailsPageContext"
 import { useCampaignDetailsPageState } from "@/modules/campaigns/composables/campaign-details/useCampaignDetailsPageState"
@@ -10,6 +10,7 @@ import CampaignDetailsPageModals from "@/modules/campaigns/views/components/camp
 import CampaignDetailsPraiasPanel from "@/modules/campaigns/views/components/campaign-details/CampaignDetailsPraiasPanel.vue"
 import CampaignDetailsRecolhasPanel from "@/modules/campaigns/views/components/campaign-details/CampaignDetailsRecolhasPanel.vue"
 import CampaignDetailsVoluntariosPanel from "@/modules/campaigns/views/components/campaign-details/CampaignDetailsVoluntariosPanel.vue"
+import CampaignReportPreviewModal from "@/modules/campaigns/views/components/campaign-details/CampaignReportPreviewModal.vue"
 import ResourceErrorState from "@/shared/components/states/ResourceErrorState.vue"
 import AnimatedTabBar from "@/shared/components/ui/tabs/AnimatedTabBar.vue"
 import AnimatedTabTrigger from "@/shared/components/ui/tabs/AnimatedTabTrigger.vue"
@@ -18,8 +19,11 @@ import Button from "@/shared/components/ui/Button.vue"
 const pageState = useCampaignDetailsPageState()
 provide(campaignDetailsPageKey, pageState)
 
-const { activeTab, core } = pageState
-const { loading, error, campaign, visibleTabs, tabRoute, goBack, load } = core
+const { activeTab, core, registration } = pageState
+const { loading, error, campaign, visibleTabs, tabRoute, goBack, load, campaignId } = core
+const { canShowCampaignReport } = registration
+
+const reportModalOpen = ref(false)
 
 const tabPanelFillsHeight = computed(
     () => activeTab.value === "voluntarios" || activeTab.value === "recolhas" || activeTab.value === "comentarios",
@@ -47,7 +51,17 @@ useDocumentTitle(browserTitle)
                     {{ campaign?.title ?? "Campanha" }}
                 </h2>
             </div>
-            <Button class="w-full shrink-0 touch-manipulation sm:w-auto" variant="secondary" @click="goBack">Voltar</Button>
+            <div class="flex w-full shrink-0 flex-col gap-2 sm:w-auto sm:flex-row">
+                <Button
+                    v-if="canShowCampaignReport"
+                    class="w-full touch-manipulation sm:w-auto"
+                    variant="primary"
+                    @click="reportModalOpen = true"
+                >
+                    Ver relatório
+                </Button>
+                <Button class="w-full touch-manipulation sm:w-auto" variant="secondary" @click="goBack">Voltar</Button>
+            </div>
         </div>
 
         <div v-if="loading" class="text-sm leading-5 text-neutral-600">A carregar detalhes…</div>
@@ -100,5 +114,10 @@ useDocumentTitle(browserTitle)
                                 </div>
 
         <CampaignDetailsPageModals />
+        <CampaignReportPreviewModal
+            v-if="canShowCampaignReport"
+            v-model="reportModalOpen"
+            :campaign-id="campaignId"
+        />
     </div>
 </template>

@@ -46,7 +46,7 @@ export function useWastePageState() {
     const modals = useWastePageModals()
     const { profile, loadProfile } = useCurrentProfile()
 
-    const isAdmin = computed(() => profile.value?.isAdmin === true)
+    const isAdmin = computed(() => profile.value?.isRoot === true)
 
     void categories.loadCategories()
     void loadProfile()

@@ -27,7 +27,7 @@ export function useCampaignDetailsComments(
 
 // Define comentário visibility.
     async function setCommentVisibility(comment: CampaignDetailsComment, isVisible: boolean) {
-        if (!profile.value?.isAdmin || visibilitySavingId.value) return
+        if (!profile.value?.isOrgAdmin || visibilitySavingId.value) return
         visibilitySavingId.value = comment.id
         try {
             await patchCampaignCommentVisibility(comment, isVisible)

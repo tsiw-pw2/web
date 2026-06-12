@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router"
 import { useSettingsUsersPageState } from "@/modules/settings/composables/settings-users/useSettingsUsersPageState"
+import { profileIsOrgAdmin } from "@/modules/auth/lib/profileCapabilities"
 import SettingsUsersPageContent from "@/modules/settings/views/components/settings-users/SettingsUsersPageContent.vue"
 import SettingsUsersPageHeader from "@/modules/settings/views/components/settings-users/SettingsUsersPageHeader.vue"
-import SettingsUsersFilteredEmptyState from "@/modules/settings/views/states/SettingsUsersFilteredEmptyState.vue"
 
 const router = useRouter()
 const page = useSettingsUsersPageState()
@@ -16,12 +16,9 @@ const {
     total: usersTotal,
     loading: usersLoading,
     error: usersError,
-    invalidRoleFilter,
-    hasInvalidRoleFilter,
+    reload,
     goToPrevPage,
     goToNextPage,
-    reload,
-    clearInvalidRoleFilter,
 } = page
 
 function openUserDetails(userId: string) {
@@ -38,31 +35,24 @@ function openUserDetails(userId: string) {
         role="tabpanel"
         aria-labelledby="settings-tab-users"
         class="flex flex-col gap-6"
-        :class="profile?.isAdmin ? 'min-h-0 flex-1' : ''"
+        :class="profileIsOrgAdmin(profile) ? 'min-h-0 flex-1' : ''"
     >
-        <template v-if="profile?.isAdmin">
+        <template v-if="profileIsOrgAdmin(profile)">
             <div class="flex flex-col gap-1">
-                <h3 class="text-base font-semibold leading-6 text-neutral-950">Lista de utilizadores</h3>
+                <h3 class="text-base font-semibold leading-6 text-neutral-950">Equipa municipal</h3>
                 <p class="text-sm leading-5 text-neutral-600">
-                    Consulta contas registadas e abre o detalhe para rever informação e permissões.
+                    Membros da organização com acesso a campanhas e operações da câmara.
                 </p>
             </div>
 
             <SettingsUsersPageHeader
-                v-if="!hasInvalidRoleFilter"
                 :users-error="usersError"
                 :users-loading="usersLoading"
                 @retry="reload"
             />
 
-            <SettingsUsersFilteredEmptyState
-                v-if="hasInvalidRoleFilter && invalidRoleFilter"
-                class="flex min-h-0 flex-1 flex-col"
-                :role="invalidRoleFilter"
-                @clear-filter="clearInvalidRoleFilter"
-            />
             <SettingsUsersPageContent
-                v-else-if="!usersLoading && !usersError"
+                v-if="!usersLoading && !usersError"
                 class="flex min-h-0 flex-1 flex-col"
                 :users="users"
                 :users-page="usersPage"
@@ -74,7 +64,7 @@ function openUserDetails(userId: string) {
             />
         </template>
         <p v-else class="text-sm leading-5 text-neutral-600">
-            A gestão da lista de utilizadores está disponível apenas para contas de administrador.
+            A gestão da equipa está disponível apenas para administradores da organização.
         </p>
     </div>
 </template>

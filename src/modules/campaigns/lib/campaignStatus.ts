@@ -56,3 +56,11 @@ const ENROLLMENT_CLOSED_STATUS_KEYS = new Set<CampaignStatusKey>([
 export function isEnrollmentClosedStatus(key: CampaignStatusKey): boolean {
     return ENROLLMENT_CLOSED_STATUS_KEYS.has(key)
 }
+
+export const CAMPAIGN_TERMINAL_STATUS_KEYS = new Set<CampaignStatusKey>(["concluida", "cancelada"])
+
+// Campanha concluída ou cancelada: sem alterações a inscrições ou recolhas.
+export function isCampaignTerminalStatus(key: CampaignStatusKey | string | undefined | null): boolean {
+    if (!key) return false
+    return CAMPAIGN_TERMINAL_STATUS_KEYS.has(key as CampaignStatusKey)
+}

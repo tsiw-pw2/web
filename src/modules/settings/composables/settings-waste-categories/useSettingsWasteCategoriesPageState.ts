@@ -1,6 +1,6 @@
 import { computed, inject, onMounted, ref } from "vue"
 import type { WasteCategory } from "@/modules/waste/types/wasteCategory"
-import { canAccessSettingsAdmin } from "@/modules/auth/lib/accessPolicy"
+import { canAccessSettingsWasteCategories } from "@/modules/auth/lib/accessPolicy"
 import { useSettingsWasteCategories } from "@/modules/settings/composables/settings-waste-categories/useSettingsWasteCategories"
 import { settingsProfileKey } from "@/modules/settings/settingsInjection"
 
@@ -24,7 +24,7 @@ export function useSettingsWasteCategoriesPageState() {
     })
 
     onMounted(() => {
-        if (canAccessSettingsAdmin(profile?.value)) {
+        if (canAccessSettingsWasteCategories(profile?.value)) {
             void api.reload()
         }
     })

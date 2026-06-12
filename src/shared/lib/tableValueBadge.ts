@@ -53,12 +53,15 @@ export function registrationRoleTableBadge(role: number): TableValueBadge {
 }
 
 const USER_ROLE_TONE: Record<SettingsUserRoleKey, string> = {
-    admin: "bg-violet-100 text-violet-800",
+    root: "bg-fuchsia-100 text-fuchsia-800",
+    orgAdmin: "bg-violet-100 text-violet-800",
     organizer: "bg-indigo-100 text-indigo-800",
     volunteer: "bg-neutral-100 text-neutral-700",
 }
 
-export function userRoleTableBadge(u: Pick<SettingsUserRow, "isAdmin" | "isOrganizer" | "role">): TableValueBadge {
+export function userRoleTableBadge(
+    u: Pick<SettingsUserRow, "isAdmin" | "isOrganizer" | "isOrgAdmin" | "role">,
+): TableValueBadge {
     const label = userRoleLabel(u)
     const key = u.role ?? settingsUserRoleFromFlags(u)
     return badge(label, USER_ROLE_TONE[key] ?? "bg-neutral-100 text-neutral-700")

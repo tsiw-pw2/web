@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { useCurrentProfile } from "@/composables/useCurrentProfile"
-import { canAccessSettingsAdmin } from "@/modules/auth/lib/accessPolicy"
-import { provide } from "vue"
+import {
+    canAccessSettingsOrgAdmin,
+    canAccessSettingsOrganizations,
+    canAccessSettingsWasteCategories,
+} from "@/modules/auth/lib/accessPolicy"
+import { ANIMATED_TAB_BAR_KEY } from "@/shared/composables/useAnimatedTabIndicator"
+import { inject, nextTick, provide, watch } from "vue"
 import { RouterLink, RouterView, useRoute } from "vue-router"
 import { routePaths } from "@/app/router"
 import { settingsProfileKey } from "@/modules/settings/settingsInjection"
@@ -14,7 +19,21 @@ const { profile, loading: profileLoading, error: profileError, loadProfile } = u
 
 provide(settingsProfileKey, profile)
 
+const tabBar = inject(ANIMATED_TAB_BAR_KEY, null)
+
 void loadProfile()
+
+watch(
+    () => [
+        profile.value?.isRoot,
+        profile.value?.isOrgAdmin,
+        profile.value?.role,
+        profileLoading.value,
+    ],
+    () => {
+        void nextTick(() => tabBar?.updateIndicator())
+    },
+)
 
 function isSettingsTabActive(name: string): boolean {
     if (name === "settings-users") {
@@ -66,7 +85,7 @@ function isSettingsTabActive(name: string): boolean {
                     </AnimatedTabTrigger>
                 </RouterLink>
                 <RouterLink
-                    v-if="canAccessSettingsAdmin(profile)"
+                    v-if="canAccessSettingsWasteCategories(profile)"
                     v-slot="{ isActive, href, navigate }"
                     :to="routePaths.settingsWasteCategories"
                     custom
@@ -83,7 +102,7 @@ function isSettingsTabActive(name: string): boolean {
                     </AnimatedTabTrigger>
                 </RouterLink>
                 <RouterLink
-                    v-if="canAccessSettingsAdmin(profile)"
+                    v-if="canAccessSettingsOrgAdmin(profile)"
                     v-slot="{ href, navigate }"
                     :to="routePaths.settingsUsers"
                     custom
@@ -96,7 +115,24 @@ function isSettingsTabActive(name: string): boolean {
                         :active="isSettingsTabActive('settings-users')"
                         @click="navigate"
                     >
-                        Utilizadores
+                        Equipa
+                    </AnimatedTabTrigger>
+                </RouterLink>
+                <RouterLink
+                    v-if="canAccessSettingsOrganizations(profile)"
+                    v-slot="{ isActive, href, navigate }"
+                    :to="routePaths.settingsOrganizations"
+                    custom
+                >
+                    <AnimatedTabTrigger
+                        id="settings-tab-organizations"
+                        as="a"
+                        role="tab"
+                        :href="href"
+                        :active="isActive"
+                        @click="navigate"
+                    >
+                        Organizações
                     </AnimatedTabTrigger>
                 </RouterLink>
             </AnimatedTabBar>

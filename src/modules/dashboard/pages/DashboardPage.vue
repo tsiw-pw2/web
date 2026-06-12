@@ -34,7 +34,7 @@ watch(
 const showAdminStyleMetrics = computed(() => {
     const p = profile.value
     if (!p) return false
-    return p.isAdmin === true || p.isOrganizer === true
+    return p.isOrganizer === true && p.isRoot !== true
 })
 
 const nextCampaignMoreTo = computed(() => {

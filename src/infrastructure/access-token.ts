@@ -1,4 +1,5 @@
 import { shallowRef } from "vue"
+import { syncActiveOrganizationFromToken } from "./active-organization"
 
 const SESSION_STORAGE_KEY = "mariva.accessToken"
 
@@ -11,6 +12,7 @@ export function hydrateAccessTokenFromSession(): void {
         const stored = sessionStorage.getItem(SESSION_STORAGE_KEY)
         if (typeof stored === "string" && stored.length > 0) {
             accessToken.value = stored
+            syncActiveOrganizationFromToken(stored)
         }
     } catch {
         // sessionStorage indisponível (ex.: modo privado restrito)
@@ -25,6 +27,7 @@ export function getAccessToken(): string | null {
 // Define ou limpa o token de acesso em memória e na sessão do browser.
 export function setAccessToken(token: string | null) {
     accessToken.value = token
+    syncActiveOrganizationFromToken(token)
     try {
         if (token) {
             sessionStorage.setItem(SESSION_STORAGE_KEY, token)

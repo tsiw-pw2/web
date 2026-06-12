@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { provide, ref } from "vue"
+import { onUpdated, provide, ref } from "vue"
 import { cn } from "@/shared/lib/utils"
 import { ANIMATED_TAB_BAR_KEY, useAnimatedTabIndicator } from "@/shared/composables/useAnimatedTabIndicator"
 
@@ -14,6 +14,10 @@ const listRef = ref<HTMLElement | null>(null)
 const { indicatorStyle, transitionsEnabled, registerTab, updateIndicator } = useAnimatedTabIndicator(listRef)
 
 provide(ANIMATED_TAB_BAR_KEY, { registerTab, updateIndicator })
+
+onUpdated(() => {
+    updateIndicator()
+})
 </script>
 
 <template>

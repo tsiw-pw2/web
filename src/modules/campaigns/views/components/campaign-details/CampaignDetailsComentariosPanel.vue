@@ -97,7 +97,7 @@ const profile = computed(() => core.profile.value)
                                                         comment.user?.name ?? "Utilizador"
                                                     }}</span>
                                                     <span
-                                                        v-if="profile?.isAdmin && comment.isVisible === false"
+                                                        v-if="profile?.isOrgAdmin && comment.isVisible === false"
                                                         class="text-[10px] font-medium uppercase tracking-wide text-red-600"
                                                     >Oculto</span>
                                                     <span class="text-xs text-neutral-400" aria-hidden="true">·</span>
@@ -107,7 +107,7 @@ const profile = computed(() => core.profile.value)
                                                     >{{ formatCommentTimeAgo(comment.createdAt) }}</time>
                                                 </div>
                                                 <button
-                                                    v-if="profile?.isAdmin"
+                                                    v-if="profile?.isOrgAdmin"
                                                     type="button"
                                                     class="shrink-0 text-xs font-semibold text-neutral-500 outline-none hover:text-neutral-800 focus-visible:underline disabled:opacity-50"
                                                     :disabled="visibilitySavingId === comment.id"

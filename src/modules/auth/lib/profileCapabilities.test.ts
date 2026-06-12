@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest"
 import {
     effectiveProfileRole,
-    profileIsAdmin,
+    profileIsOrgAdmin,
     profileIsOrganizerOrAdmin,
+    profileIsRoot,
 } from "@/modules/auth/lib/profileCapabilities"
 import type { SettingsProfile } from "@/modules/settings/types/profile"
 
@@ -22,27 +23,21 @@ const baseProfile: SettingsProfile = {
 }
 
 describe("profileCapabilities", () => {
-    it("uses role when present", () => {
-        expect(effectiveProfileRole({ ...baseProfile, role: "admin" })).toBe("admin")
-    })
-
-    it("derives role from flags when role missing", () => {
+    it("effectiveProfileRole prioriza root e admin da org", () => {
+        expect(effectiveProfileRole({ ...baseProfile, isRoot: true })).toBe("root")
         expect(
-            effectiveProfileRole({
-                ...baseProfile,
-                role: undefined as unknown as SettingsProfile["role"],
-                isAdmin: true,
-            }),
-        ).toBe("admin")
+            effectiveProfileRole({ ...baseProfile, isOrgAdmin: true, isOrganizer: true, role: "organizer" }),
+        ).toBe("orgAdmin")
+        expect(effectiveProfileRole({ ...baseProfile, isOrganizer: true, role: "organizer" })).toBe(
+            "organizer",
+        )
     })
 
-    it("profileIsAdmin follows effective role not stale isAdmin flag alone", () => {
-        expect(profileIsAdmin({ ...baseProfile, role: "volunteer", isAdmin: true })).toBe(false)
-        expect(profileIsAdmin({ ...baseProfile, role: "admin", isAdmin: false })).toBe(true)
-    })
-
-    it("profileIsOrganizerOrAdmin", () => {
-        expect(profileIsOrganizerOrAdmin({ ...baseProfile, role: "organizer" })).toBe(true)
-        expect(profileIsOrganizerOrAdmin({ ...baseProfile, role: "volunteer" })).toBe(false)
+    it("profileIsRoot e profileIsOrgAdmin", () => {
+        expect(profileIsRoot({ ...baseProfile, isRoot: true })).toBe(true)
+        expect(profileIsOrgAdmin({ ...baseProfile, isOrgAdmin: true })).toBe(true)
+        expect(profileIsOrganizerOrAdmin({ ...baseProfile, isOrganizer: true, role: "organizer" })).toBe(
+            true,
+        )
     })
 })

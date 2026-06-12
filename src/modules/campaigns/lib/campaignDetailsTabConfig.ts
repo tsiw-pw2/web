@@ -18,7 +18,7 @@ export const CAMPAIGN_DETAILS_TAB_CONFIG: CampaignDetailsTabConfig[] = [
 // Lista separadores visíveis consoante permissões de gestão e hypermedia da campanha.
 export function visibleCampaignDetailsTabs(
     canManageRegistrations: boolean,
-    campaign?: CampaignLinkParent | null,
+    campaign?: (CampaignLinkParent & { editStatus?: string }) | null,
 ): CampaignDetailsTabConfig[] {
     return CAMPAIGN_DETAILS_TAB_CONFIG.filter((tab) => {
         if (tab.id === "voluntarios" && !canManageRegistrations) return false

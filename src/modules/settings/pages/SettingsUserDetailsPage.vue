@@ -4,6 +4,7 @@ import { RouterLink, useRoute, useRouter } from "vue-router"
 import { useSettingsUserDetails } from "@/modules/settings/composables/settings-user-details/useSettingsUserDetails"
 import { formatSettingsDateOnly, formatSettingsDateTime } from "@/modules/settings/lib/formatSettingsDate"
 import { SETTINGS_USER_DETAILS_TABS, settingsUserDetailsTabFromRoute, type SettingsUserDetailsTabId, } from "@/modules/settings/lib/settingsUserDetailsTabs"
+import { profileIsOrgAdmin } from "@/modules/auth/lib/profileCapabilities"
 import { SETTINGS_USER_ROLE_OPTIONS } from "@/modules/settings/lib/settingsUserRole"
 import { userRoleLabel } from "@/modules/settings/lib/userRoleLabel"
 import { blockUser, unblockUser } from "@/modules/settings/services/settingsUsers"
@@ -12,11 +13,6 @@ import BlockUserModal from "@/modules/settings/views/components/BlockUserModal.v
 import UnblockUserModal from "@/modules/settings/views/components/UnblockUserModal.vue"
 import { toastFromListMutationError } from "@/infrastructure/apiMutationToast"
 import { toastSuccess } from "@/infrastructure/appToast"
-import DataTableScrollWrap from "@/shared/components/data-table/DataTableScrollWrap.vue"
-import DataTableTd from "@/shared/components/data-table/DataTableTd.vue"
-import DataTableTh from "@/shared/components/data-table/DataTableTh.vue"
-import ListPaginationBar from "@/shared/components/ListPaginationBar.vue"
-import ScrollableTableSection from "@/shared/components/ScrollableTableSection.vue"
 import ApiStateBadge from "@/shared/components/ui/ApiStateBadge.vue"
 import AnimatedTabBar from "@/shared/components/ui/tabs/AnimatedTabBar.vue"
 import AnimatedTabTrigger from "@/shared/components/ui/tabs/AnimatedTabTrigger.vue"
@@ -24,7 +20,6 @@ import Button from "@/shared/components/ui/Button.vue"
 import FieldLabel from "@/shared/components/ui/FieldLabel.vue"
 import Select from "@/shared/components/ui/select/Select.vue"
 import { userAccountStateBadge } from "@/shared/lib/apiStatePresentation"
-import { campaignDetailUiStatusTableBadge, registrationRoleTableBadge, registrationStatusTableBadge, } from "@/shared/lib/tableValueBadge"
 import { resolveAvatarDisplaySrc } from "@/shared/lib/avatarUrl"
 import { initialsFromDisplayName } from "@/shared/lib/userInitials"
 import { useDocumentTitle } from "@/shared/composables/useDocumentTitle"
@@ -44,19 +39,6 @@ const {
     savingRole,
     canSaveRole,
     saveRole,
-    registrations,
-    registrationsPage,
-    registrationsTotal,
-    registrationsLoading,
-    goRegistrationsPrev,
-    goRegistrationsNext,
-    organizedCampaigns,
-    organizedPage,
-    organizedTotal,
-    organizedLoading,
-    goOrganizedPrev,
-    goOrganizedNext,
-    tabPageSize,
     loadUser,
 } = useSettingsUserDetails(userId, activeTab)
 
@@ -72,7 +54,9 @@ const isBlockModalOpen = ref(false)
 const isUnblockModalOpen = ref(false)
 const blockActionBusy = ref(false)
 
-const roleOptions = SETTINGS_USER_ROLE_OPTIONS.map((o) => ({ value: o.value, label: o.label }))
+const roleOptions = SETTINGS_USER_ROLE_OPTIONS.filter((o) =>
+    o.value === "organizer" || o.value === "orgAdmin",
+).map((o) => ({ value: o.value, label: o.label }))
 
 const isSelf = computed(() => {
     const me = profile?.value
@@ -148,30 +132,16 @@ async function onUnblockConfirm() {
     }
 }
 
-function formatCampaignPeriod(start: string, end: string): string {
-    const s = formatSettingsDateOnly(start)
-    const e = formatSettingsDateOnly(end)
-    if (s === "-" && e === "-") return "-"
-    if (s === e) return s
-    return `${s} – ${e}`
-}
-
-function attendanceLabel(value: boolean | null): string {
-    if (value === true) return "Presente"
-    if (value === false) return "Ausente"
-    return "-"
-}
-
 onMounted(() => {
-    if (!profile?.value?.isAdmin) {
+    if (!profileIsOrgAdmin(profile?.value)) {
         void router.replace({ name: "settings-profile" })
     }
 })
 
 watch(
-    () => profile?.value?.isAdmin,
-    (isAdmin) => {
-        if (isAdmin === false) {
+    () => profileIsOrgAdmin(profile?.value),
+    (allowed) => {
+        if (!allowed) {
             void router.replace({ name: "settings-profile" })
         }
     },
@@ -281,137 +251,15 @@ watch(
                         placeholder="Seleccionar cargo"
                     />
                     <div class="pt-2">
-                        <Button type="button" :disabled="!canSaveRole" @click="saveRole(false)">
+                        <Button
+                            type="button"
+                            :disabled="!canSaveRole"
+                            @click="saveRole(isSelf && (user?.isOrgAdmin === true || user?.role === 'orgAdmin'))"
+                        >
                             {{ savingRole ? "A guardar…" : "Guardar cargo" }}
                         </Button>
                     </div>
                 </div>
-            </div>
-
-            <div v-else-if="activeTab === 'participacoes'" class="flex min-h-0 flex-1 flex-col">
-                <div v-if="registrationsLoading" class="text-sm leading-5 text-neutral-600">A carregar participações…</div>
-                <p v-else-if="registrationsTotal === 0" class="text-sm leading-5 text-neutral-600">
-                    Este utilizador ainda não participou em campanhas.
-                </p>
-                <ScrollableTableSection v-else fill-container>
-                    <DataTableScrollWrap>
-                        <table class="w-full min-w-[920px] table-fixed border-collapse text-left">
-                            <thead class="sticky top-0 z-10 bg-white">
-                                <tr class="border-b border-neutral-200">
-                                    <DataTableTh>Campanha</DataTableTh>
-                                    <DataTableTh>Período</DataTableTh>
-                                    <DataTableTh>Estado da campanha</DataTableTh>
-                                    <DataTableTh>Inscrição</DataTableTh>
-                                    <DataTableTh>Função</DataTableTh>
-                                    <DataTableTh :padding-end="false">Presença</DataTableTh>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr
-                                    v-for="row in registrations"
-                                    :key="row.id"
-                                    class="border-b border-neutral-200 last:border-b-0 hover:bg-neutral-50"
-                                >
-                                    <DataTableTd emphasis>
-                                        <RouterLink
-                                            v-if="row.campaign"
-                                            :to="{
-                                                name: 'campaign-details',
-                                                params: { campaignId: row.campaign.id, tab: 'informacoes' },
-                                            }"
-                                            class="text-blue-600 hover:underline"
-                                        >
-                                            {{ row.campaign.title }}
-                                        </RouterLink>
-                                        <span v-else>-</span>
-                                    </DataTableTd>
-                                    <DataTableTd>
-                                        {{
-                                            row.campaign
-                                                ? formatCampaignPeriod(row.campaign.startDate, row.campaign.endDate)
-                                                : "-"
-                                        }}
-                                    </DataTableTd>
-                                    <DataTableTd :truncate="false">
-                                        <ApiStateBadge
-                                            v-if="row.campaign"
-                                            v-bind="campaignDetailUiStatusTableBadge(row.campaign.status)"
-                                        />
-                                        <span v-else>-</span>
-                                    </DataTableTd>
-                                    <DataTableTd :truncate="false">
-                                        <ApiStateBadge v-bind="registrationStatusTableBadge(row.status)" />
-                                    </DataTableTd>
-                                    <DataTableTd :truncate="false">
-                                        <ApiStateBadge v-bind="registrationRoleTableBadge(row.role)" />
-                                    </DataTableTd>
-                                    <DataTableTd :padding-end="false">{{ attendanceLabel(row.attendance) }}</DataTableTd>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </DataTableScrollWrap>
-                    <template #footer>
-                        <ListPaginationBar
-                            :page="registrationsPage"
-                            :page-size="tabPageSize"
-                            :total="registrationsTotal"
-                            @prev="goRegistrationsPrev"
-                            @next="goRegistrationsNext"
-                        />
-                    </template>
-                </ScrollableTableSection>
-            </div>
-
-            <div v-else-if="activeTab === 'organizadas'" class="flex min-h-0 flex-1 flex-col">
-                <div v-if="organizedLoading" class="text-sm leading-5 text-neutral-600">A carregar campanhas…</div>
-                <p v-else-if="organizedTotal === 0" class="text-sm leading-5 text-neutral-600">
-                    Este utilizador ainda não organizou campanhas.
-                </p>
-                <ScrollableTableSection v-else fill-container>
-                    <DataTableScrollWrap>
-                        <table class="w-full min-w-[720px] table-fixed border-collapse text-left">
-                            <thead class="sticky top-0 z-10 bg-white">
-                                <tr class="border-b border-neutral-200">
-                                    <DataTableTh>Campanha</DataTableTh>
-                                    <DataTableTh>Período</DataTableTh>
-                                    <DataTableTh :padding-end="false">Estado</DataTableTh>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr
-                                    v-for="row in organizedCampaigns"
-                                    :key="row.id"
-                                    class="border-b border-neutral-200 last:border-b-0 hover:bg-neutral-50"
-                                >
-                                    <DataTableTd emphasis>
-                                        <RouterLink
-                                            :to="{
-                                                name: 'campaign-details',
-                                                params: { campaignId: row.id, tab: 'informacoes' },
-                                            }"
-                                            class="text-blue-600 hover:underline"
-                                        >
-                                            {{ row.title }}
-                                        </RouterLink>
-                                    </DataTableTd>
-                                    <DataTableTd>{{ formatCampaignPeriod(row.startDate, row.endDate) }}</DataTableTd>
-                                    <DataTableTd :padding-end="false" :truncate="false">
-                                        <ApiStateBadge v-bind="campaignDetailUiStatusTableBadge(row.status)" />
-                                    </DataTableTd>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </DataTableScrollWrap>
-                    <template #footer>
-                        <ListPaginationBar
-                            :page="organizedPage"
-                            :page-size="tabPageSize"
-                            :total="organizedTotal"
-                            @prev="goOrganizedPrev"
-                            @next="goOrganizedNext"
-                        />
-                    </template>
-                </ScrollableTableSection>
             </div>
         </template>
 

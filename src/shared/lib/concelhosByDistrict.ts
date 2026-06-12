@@ -7,6 +7,11 @@ type MunicipalityRow = {
 
 const rows = municipalities as MunicipalityRow[]
 
+// O pacote portuguese-municipalities marca duplicados com sufixo [n] no nome.
+export function cleanMunicipalityName(name: string): string {
+    return name.replace(/\[\d+\]$/, "").trim()
+}
+
 const SLUG_TO_DISTRICT_LABEL: Record<string, string> = {
     viana_do_castelo: "Viana do Castelo",
     braga: "Braga",
@@ -33,16 +38,24 @@ export function concelhoSelectOptionsForDistrict(districtSlug: string | undefine
     if (!districtSlug) return []
     const districtLabel = SLUG_TO_DISTRICT_LABEL[districtSlug]
     if (!districtLabel) return []
-    const options = rows.filter((r) => r.name && r.district === districtLabel).map((r) => ({ value: r.name!, label: r.name! }))
+    const seen = new Set<string>()
+    const options: { value: string; label: string }[] = []
+    for (const row of rows) {
+        if (!row.name || row.district !== districtLabel) continue
+        const label = cleanMunicipalityName(row.name)
+        if (!label || seen.has(label)) continue
+        seen.add(label)
+        options.push({ value: label, label })
+    }
     options.sort((a, b) => a.label.localeCompare(b.label, "pt"))
     return options
 }
 
 // Obtém o slug do distrito a partir do nome do concelho.
 export function districtSlugFromMunicipalityName(name: string): string | undefined {
-    const trimmed = name.trim()
+    const trimmed = cleanMunicipalityName(name.trim())
     if (!trimmed) return undefined
-    const row = rows.find((r) => r.name === trimmed && r.district)
+    const row = rows.find((r) => r.name && cleanMunicipalityName(r.name) === trimmed && r.district)
     if (!row?.district) return undefined
     const entry = Object.entries(SLUG_TO_DISTRICT_LABEL).find(([, label]) => label === row.district)
     return entry?.[0]

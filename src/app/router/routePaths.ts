@@ -15,6 +15,7 @@ export const routePaths = {
     settingsUsers: "/definicoes/utilizadores",
     settingsUserDetails: "/definicoes/utilizadores/:userId/:tab",
     settingsWasteCategories: "/definicoes/categorias-residuos",
+    settingsOrganizations: "/definicoes/organizacoes",
     privacy: "/privacidade",
     terms: "/termos",
     help: "/ajuda",

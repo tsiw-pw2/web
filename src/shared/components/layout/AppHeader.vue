@@ -1,7 +1,7 @@
 <script setup lang="ts">import { computed, onMounted } from "vue"
 import { routePaths } from "@/app/router"
 import { useCurrentProfile } from "@/composables/useCurrentProfile"
-import { canAccessDashboard } from "@/modules/auth/lib/accessPolicy"
+import { canAccessDashboard, canAccessMunicipalCatalog } from "@/modules/auth/lib/accessPolicy"
 import LogoMark from "@/shared/components/icons/LogoMark.vue"
 import UserMenuDropdown from "@/shared/components/layout/UserMenuDropdown.vue"
 import NavigationButton from "./NavigationButton.vue"
@@ -9,6 +9,7 @@ import NavigationButton from "./NavigationButton.vue"
 const { profile, loadProfile } = useCurrentProfile()
 
 const showDashboard = computed(() => canAccessDashboard(profile.value))
+const showMunicipalCatalog = computed(() => canAccessMunicipalCatalog(profile.value))
 
 const logoHomeTo = computed(() =>
     showDashboard.value ? routePaths.dashboard : routePaths.campaigns,
@@ -30,9 +31,13 @@ onMounted(() => {
                 <nav class="hidden items-center gap-2 md:flex" aria-label="Principal">
                      <NavigationButton v-if="showDashboard" :to="routePaths.dashboard">Dashboard</NavigationButton> <NavigationButton :to="routePaths.campaigns" :active-route-names="['campaigns', 'campaign-details']"
                         > Campanhas </NavigationButton
-                    > <NavigationButton :to="routePaths.beaches">Praias</NavigationButton> <NavigationButton :to="routePaths.waste">Resíduos</NavigationButton> <NavigationButton
+                    > <NavigationButton v-if="showMunicipalCatalog" :to="routePaths.beaches">Praias</NavigationButton> <NavigationButton
+                        v-if="showMunicipalCatalog"
+                        :to="routePaths.waste"
+                        >Resíduos</NavigationButton
+                    > <NavigationButton
                         :to="routePaths.settingsProfile"
-                        :active-route-names="['settings-profile', 'settings-security', 'settings-users', 'settings-user-details', 'settings-waste-categories']"
+                        :active-route-names="['settings-profile', 'settings-security', 'settings-users', 'settings-user-details', 'settings-waste-categories', 'settings-organizations']"
                         >Definições</NavigationButton
                     >
                 </nav>

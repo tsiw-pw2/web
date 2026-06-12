@@ -17,8 +17,14 @@ function resolveAuthenticated(): boolean {
 }
 
 function capabilityFallbackRoute(capability: AccessCapability): { name: string; replace: true } {
-    if (capability === "settingsAdmin") {
+    if (capability === "settingsOrganizations" || capability === "settingsWasteCategories") {
         return { name: "settings-profile", replace: true }
+    }
+    if (capability === "settingsOrgAdmin") {
+        return { name: "settings-profile", replace: true }
+    }
+    if (capability === "municipalCatalog" || capability === "dashboard") {
+        return { name: "campaigns", replace: true }
     }
     return { name: "campaigns", replace: true }
 }
@@ -88,7 +94,7 @@ export function registerRouterMiddleware(router: Router) {
 
         if (to.meta.requiresAuth !== true) return true
         if (!authenticated) {
-            return { name: LOGIN_ROUTE_NAME }
+            return { name: LOGIN_ROUTE_NAME, query: { redirect: to.fullPath } }
         }
 
         try {

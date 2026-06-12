@@ -1,91 +1,73 @@
 import type { SettingsUserRoleKey } from "@/modules/settings/lib/settingsUserRole"
-import { settingsUserRoleFromFlags } from "@/modules/settings/lib/settingsUserRole"
-import {
-    SETTINGS_USERS_LIST_ROLE_VOLUNTEER,
-    type SettingsUsersListRoleFilter,
-} from "@/modules/settings/lib/settingsUsersListRoleQuery"
 import type { SettingsUserRow } from "@/modules/settings/types/settingsUser"
-import { href } from "@/infrastructure/apiDiscovery"
-import { apiGet, apiPatch, paginationQuery, unwrapList } from "@/infrastructure/apiClient"
+import { getActiveOrganizationId } from "@/infrastructure/active-organization"
+import { apiPatch } from "@/infrastructure/apiClient"
 import { followLink, getLink } from "@/infrastructure/hypermediaClient"
 import type { ResourceLinks } from "@/infrastructure/hypermedia.types"
+import {
+    fetchOrganizationMembers,
+    type OrganizationMember,
+} from "@/modules/settings/services/organizations"
 import { ref } from "vue"
-
-const DEFAULT_PAGE_SIZE = 10
 
 const users = ref<SettingsUserRow[]>([])
 export const settingsUsersPage = ref(1)
-export const settingsUsersPageSize = ref(DEFAULT_PAGE_SIZE)
+export const settingsUsersPageSize = ref(10)
 export const settingsUsersTotal = ref(0)
 
 let loadGeneration = 0
-let lastListRoleForReload: string | undefined
 
-function normalizeRoleFilter(role?: string): SettingsUsersListRoleFilter | undefined {
-    return role === SETTINGS_USERS_LIST_ROLE_VOLUNTEER ? SETTINGS_USERS_LIST_ROLE_VOLUNTEER : undefined
-}
-
-export function getSettingsUsersListRoleFilter(): string | undefined {
-    return lastListRoleForReload
+function memberToRow(member: OrganizationMember): SettingsUserRow {
+    const user = member.user
+    const role: SettingsUserRoleKey = member.isOrgAdmin ? "orgAdmin" : "organizer"
+    return {
+        id: user?.id ?? member.userId,
+        membershipId: member.id,
+        organizationId: member.organizationId,
+        name: user?.name ?? "—",
+        email: user?.email ?? "—",
+        phone: null,
+        birthDate: null,
+        avatarUrl: null,
+        role,
+        isAdmin: false,
+        isOrgAdmin: member.isOrgAdmin,
+        isOrganizer: Boolean(user?.isOrganizer),
+        isBlocked: Boolean(user?.isBlocked),
+        blockedReason: null,
+        blockedAt: null,
+        createdAt: member.createdAt,
+        links: (member as OrganizationMember & { links?: ResourceLinks }).links,
+    }
 }
 
 export function resetSettingsUsersListState(): void {
     users.value = []
     settingsUsersPage.value = 1
-    settingsUsersPageSize.value = DEFAULT_PAGE_SIZE
+    settingsUsersPageSize.value = 10
     settingsUsersTotal.value = 0
-    lastListRoleForReload = undefined
 }
 
-export async function loadSettingsUsers(opts?: { page?: number; pageSize?: number; role?: string }): Promise<void> {
-    const roleExplicit = opts != null && Object.prototype.hasOwnProperty.call(opts, "role")
-    const nextRole = roleExplicit ? normalizeRoleFilter(opts.role) : lastListRoleForReload
-
-    if (roleExplicit && nextRole !== lastListRoleForReload) {
-        if (opts?.page == null) {
-            settingsUsersPage.value = 1
-        }
-        lastListRoleForReload = nextRole
-    } else if (roleExplicit) {
-        lastListRoleForReload = nextRole
+export async function loadSettingsUsers(): Promise<void> {
+    const orgId = getActiveOrganizationId()
+    if (!orgId) {
+        resetSettingsUsersListState()
+        return
     }
 
     const gen = ++loadGeneration
-    if (opts?.page != null) settingsUsersPage.value = opts.page
-    if (opts?.pageSize != null) settingsUsersPageSize.value = opts.pageSize
-
-    const q = paginationQuery(settingsUsersPage.value, settingsUsersPageSize.value)
-    if (lastListRoleForReload === SETTINGS_USERS_LIST_ROLE_VOLUNTEER) {
-        q.set("role", SETTINGS_USERS_LIST_ROLE_VOLUNTEER)
-    }
-
-    type ListBody = {
-        data: SettingsUserRow[]
-        page?: number
-        pageSize?: number
-        total?: number
-        links?: ResourceLinks
-    }
-
-    const path = await href("usersCollection")
-    const body = await apiGet<ListBody>(path, q)
-
+    const members = await fetchOrganizationMembers(orgId)
     if (gen !== loadGeneration) return
-    const data = unwrapList<SettingsUserRow>(body)
-    users.value = data.items.map((row) => ({
-        ...row,
-        role: row.role ?? settingsUserRoleFromFlags(row),
-    }))
-    settingsUsersTotal.value = data.total
-    settingsUsersPage.value = data.page
-    settingsUsersPageSize.value = data.pageSize
+
+    const rows = members.map(memberToRow)
+    users.value = rows
+    settingsUsersTotal.value = rows.length
+    settingsUsersPage.value = 1
+    settingsUsersPageSize.value = Math.max(rows.length, 10)
 }
 
 async function reloadListAfterMutation(): Promise<void> {
     await loadSettingsUsers()
-    if (users.value.length === 0 && settingsUsersPage.value > 1) {
-        await loadSettingsUsers({ page: settingsUsersPage.value - 1 })
-    }
 }
 
 function findUserRow(userId: string): (SettingsUserRow & { links?: ResourceLinks }) | undefined {
@@ -95,11 +77,10 @@ function findUserRow(userId: string): (SettingsUserRow & { links?: ResourceLinks
 export async function blockUser(userId: string, reason: string): Promise<void> {
     const row = findUserRow(userId)
     const body = { isBlocked: true, blockedReason: reason }
-    if (row && getLink(row, "update")) {
+    if (row?.links && getLink(row, "update")) {
         await followLink(row, "update", { method: "PATCH", body })
-    } else {
-        const base = await href("usersCollection")
-        await apiPatch(`${base}/${userId}`, body)
+    } else if (row?.organizationId) {
+        await apiPatch(`/organizations/${row.organizationId}/members/${userId}`, body)
     }
     await reloadListAfterMutation()
 }
@@ -107,26 +88,23 @@ export async function blockUser(userId: string, reason: string): Promise<void> {
 export async function unblockUser(userId: string): Promise<void> {
     const row = findUserRow(userId)
     const body = { isBlocked: false }
-    if (row && getLink(row, "update")) {
+    if (row?.links && getLink(row, "update")) {
         await followLink(row, "update", { method: "PATCH", body })
-    } else {
-        const base = await href("usersCollection")
-        await apiPatch(`${base}/${userId}`, body)
+    } else if (row?.organizationId) {
+        await apiPatch(`/organizations/${row.organizationId}/members/${userId}`, body)
     }
     await reloadListAfterMutation()
 }
 
-export async function updateUserRole(userId: string, role: SettingsUserRoleKey): Promise<SettingsUserRow> {
+export async function updateUserOrgAdmin(userId: string, isOrgAdmin: boolean): Promise<void> {
     const row = findUserRow(userId)
-    if (row && getLink(row, "update")) {
-        const updated = await followLink<SettingsUserRow>(row, "update", { method: "PATCH", body: { role } })
-        await reloadListAfterMutation()
-        return updated
+    const body = { isOrgAdmin }
+    if (row?.links && getLink(row, "update")) {
+        await followLink(row, "update", { method: "PATCH", body })
+    } else if (row?.organizationId) {
+        await apiPatch(`/organizations/${row.organizationId}/members/${userId}`, body)
     }
-    const base = await href("usersCollection")
-    const updated = await apiPatch<SettingsUserRow>(`${base}/${userId}`, { role })
     await reloadListAfterMutation()
-    return updated
 }
 
 export { users as settingsUsersRef }

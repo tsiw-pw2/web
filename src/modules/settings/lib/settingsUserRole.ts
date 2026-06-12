@@ -1,19 +1,24 @@
-export type SettingsUserRoleKey = "volunteer" | "organizer" | "admin"
+export type SettingsUserRoleKey = "volunteer" | "organizer" | "orgAdmin" | "root"
 
 export const SETTINGS_USER_ROLE_OPTIONS: { value: SettingsUserRoleKey; label: string }[] = [
     { value: "volunteer", label: "Voluntário" },
     { value: "organizer", label: "Organizador" },
-    { value: "admin", label: "Administrador" },
+    { value: "orgAdmin", label: "Admin da organização" },
+    { value: "root", label: "Root da plataforma" },
 ]
 
-// Função de definições que trata utilizador papel rótulo.
 export function settingsUserRoleLabel(role: SettingsUserRoleKey): string {
     return SETTINGS_USER_ROLE_OPTIONS.find((o) => o.value === role)?.label ?? "Voluntário"
 }
 
-// Função de definições que trata utilizador papel de sinalizadores.
-export function settingsUserRoleFromFlags(u: { isAdmin: boolean; isOrganizer: boolean }): SettingsUserRoleKey {
-    if (u.isAdmin) return "admin"
+export function settingsUserRoleFromFlags(u: {
+    isRoot?: boolean
+    isOrgAdmin?: boolean
+    isAdmin?: boolean
+    isOrganizer: boolean
+}): SettingsUserRoleKey {
+    if (u.isRoot) return "root"
+    if (u.isOrgAdmin) return "orgAdmin"
     if (u.isOrganizer) return "organizer"
     return "volunteer"
 }

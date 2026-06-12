@@ -17,6 +17,8 @@ function normalizeProfile(raw: ProfileResource): SettingsProfile {
         birthDate: raw.birthDate ?? null,
         blockedReason: raw.blockedReason ?? null,
         blockedAt: raw.blockedAt ?? null,
+        organizations: raw.organizations ?? [],
+        isOrgAdmin: raw.isOrgAdmin === true,
     }
 }
 

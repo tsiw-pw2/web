@@ -9,7 +9,6 @@ import {
 import Button from "@/shared/components/ui/Button.vue"
 import FieldLabel from "@/shared/components/ui/FieldLabel.vue"
 import Input from "@/shared/components/ui/Input.vue"
-import SearchableSelect from "@/shared/components/ui/searchable-select/SearchableSelect.vue"
 import Select from "@/shared/components/ui/select/Select.vue"
 import Textarea from "@/shared/components/ui/Textarea.vue"
 
@@ -77,33 +76,6 @@ function onSubmit() {
 
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div class="flex flex-col gap-1">
-                            <FieldLabel required :for="`${fieldPrefix}-district`">Distrito</FieldLabel>
-                            <SearchableSelect
-                                :id="`${fieldPrefix}-district`"
-                                v-model="form.district"
-                                class="w-full"
-                                :options="form.districtOptions"
-                                :placeholder="form.districtPlaceholder"
-                                :disabled="form.beachesLoading || form.districtOptions.length === 0"
-                            />
-                        </div>
-
-                        <div class="flex flex-col gap-1">
-                            <FieldLabel required :for="`${fieldPrefix}-meeting-time`">Hora de encontro</FieldLabel>
-                            <Input
-                                :id="`${fieldPrefix}-meeting-time`"
-                                v-model="form.meetingTime"
-                                class="w-full"
-                                type="time"
-                                left-icon="clock"
-                                placeholder="09:30"
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <div class="flex flex-col gap-1">
                             <FieldLabel required :for="`${fieldPrefix}-start-date`">Data de início</FieldLabel>
                             <Input
                                 :id="`${fieldPrefix}-start-date`"
@@ -128,15 +100,30 @@ function onSubmit() {
                         </div>
                     </div>
 
-                    <div class="flex flex-col gap-1">
-                        <FieldLabel required :for="`${fieldPrefix}-status`">Estado</FieldLabel>
-                        <Select
-                            :id="`${fieldPrefix}-status`"
-                            v-model="form.status"
-                            class="w-full"
-                            :options="statusOptions"
-                            placeholder="Estado da campanha"
-                        />
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div class="flex flex-col gap-1">
+                            <FieldLabel required :for="`${fieldPrefix}-status`">Estado</FieldLabel>
+                            <Select
+                                :id="`${fieldPrefix}-status`"
+                                v-model="form.status"
+                                class="w-full"
+                                :options="statusOptions"
+                                placeholder="Estado da campanha"
+                            />
+                        </div>
+
+                        <div class="flex flex-col gap-1">
+                            <FieldLabel required :for="`${fieldPrefix}-meeting-time`">Hora de encontro</FieldLabel>
+                            <Input
+                                :id="`${fieldPrefix}-meeting-time`"
+                                v-model="form.meetingTime"
+                                class="w-full"
+                                type="time"
+                                left-icon="clock"
+                                placeholder="09:30"
+                                required
+                            />
+                        </div>
                     </div>
 
                     <div class="flex flex-col gap-1">
@@ -161,17 +148,17 @@ function onSubmit() {
                         aria-hidden="true"
                     />
 
-                    <p class="shrink-0 text-base font-semibold leading-7 text-neutral-950">{{ form.districtLabel }}</p>
+                    <p class="shrink-0 text-base font-semibold leading-7 text-neutral-950">{{ form.beachesStepTitle }}</p>
 
                     <div class="min-h-0 flex-1 overflow-y-auto">
                         <p v-if="form.beachesLoading" class="text-sm leading-5 text-neutral-600">A carregar praias…</p>
 
-                        <div v-else-if="form.beachesForDistrict.length === 0" class="text-sm leading-5 text-neutral-600">
-                            Não há praias registadas neste distrito. Adiciona praias no separador Praias e volta a tentar.
+                        <div v-else-if="form.beachesForSelection.length === 0" class="text-sm leading-5 text-neutral-600">
+                            Não há praias registadas para o concelho da tua organização. Adiciona praias no separador Praias e volta a tentar.
                         </div>
 
                         <ul v-else class="list-none space-y-1 p-0">
-                            <li v-for="b in form.beachesForDistrict" :key="b.id">
+                            <li v-for="b in form.beachesForSelection" :key="b.id">
                                 <label class="flex cursor-pointer items-center gap-3 py-1.5">
                                     <input
                                         v-model="form.selectedBeachIds"

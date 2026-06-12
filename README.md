@@ -42,9 +42,11 @@ Abre **[http://localhost:5173](http://localhost:5173)**.
 
 Com seed da API (`pnpm run db:seed` em `api/`):
 
-- Admin: `admin@demo.local` / `Demo2026!`
-- Organizador: `organizador1@demo.local` / `Demo2026!`
-- Voluntário: `vol01.maria.silva@email.pt` / `Demo2026!`
+- Root (plataforma Mariva): `gestao@mariva.pt` / `Demo2026!` — campanhas e organizações (sem praias/resíduos/inscrições)
+- Admin org CM Vila do Conde: `ambiente@viladoconde.pt` / `Demo2026!` — dashboard, campanhas, tab Equipa
+- Organizador (sem admin org): `operacoes@viladoconde.pt` / `Demo2026!` — campanhas; sem tab Equipa
+- Admin org CM Póvoa de Varzim: `ambiente@povoa.varzim.pt` / `Demo2026!`
+- Voluntário: `maria.silva@email.pt` / `Demo2026!`
 
 ---
 

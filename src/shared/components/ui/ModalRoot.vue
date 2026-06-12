@@ -8,7 +8,7 @@ const open = defineModel<boolean>({ required: true })
 const props = withDefaults(
     defineProps<{
         ariaLabelledby: string
-        maxWidth?: "md" | "lg"
+        maxWidth?: "md" | "lg" | "xl" | "3xl"
     }>(),
     {
         maxWidth: "lg",
@@ -22,7 +22,18 @@ function closeFromBackdrop() {
     open.value = false
 }
 
-const maxWidthClass = computed(() => (props.maxWidth === "md" ? "max-w-md" : "max-w-lg"))
+const maxWidthClass = computed(() => {
+    switch (props.maxWidth) {
+        case "md":
+            return "max-w-md"
+        case "xl":
+            return "max-w-4xl"
+        case "3xl":
+            return "max-w-6xl"
+        default:
+            return "max-w-lg"
+    }
+})
 
 let escapeKeyHandler: ((e: KeyboardEvent) => void) | null = null
 

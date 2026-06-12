@@ -4,7 +4,7 @@ import { computed, onMounted } from "vue"
 import { useRoute } from "vue-router"
 import { routePaths } from "@/app/router"
 import { useCurrentProfile } from "@/composables/useCurrentProfile"
-import { canAccessDashboard } from "@/modules/auth/lib/accessPolicy"
+import { canAccessDashboard, canAccessMunicipalCatalog } from "@/modules/auth/lib/accessPolicy"
 import MobileNavBeachesIcon from "@/shared/components/icons/mobile-nav/MobileNavBeachesIcon.vue"
 import MobileNavCampaignsIcon from "@/shared/components/icons/mobile-nav/MobileNavCampaignsIcon.vue"
 import MobileNavDashboardIcon from "@/shared/components/icons/mobile-nav/MobileNavDashboardIcon.vue"
@@ -22,6 +22,7 @@ const allTabs: {
     label: string
     icon: Component
     requiresDashboard?: boolean
+    requiresMunicipalCatalog?: boolean
 }[] = [
     {
         to: routePaths.dashboard,
@@ -41,12 +42,14 @@ const allTabs: {
         names: ["beaches"],
         label: "Praias",
         icon: MobileNavBeachesIcon,
+        requiresMunicipalCatalog: true,
     },
     {
         to: routePaths.waste,
         names: ["waste"],
         label: "Resíduos",
         icon: MobileNavWasteIcon,
+        requiresMunicipalCatalog: true,
     },
     {
         to: routePaths.settingsProfile,
@@ -58,7 +61,12 @@ const allTabs: {
 
 const tabs = computed(() => {
     const canDashboard = canAccessDashboard(profile.value)
-    return allTabs.filter((tab) => !tab.requiresDashboard || canDashboard)
+    const canCatalog = canAccessMunicipalCatalog(profile.value)
+    return allTabs.filter((tab) => {
+        if (tab.requiresDashboard && !canDashboard) return false
+        if (tab.requiresMunicipalCatalog && !canCatalog) return false
+        return true
+    })
 })
 
 onMounted(() => {

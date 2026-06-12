@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { canAccessSettingsAdmin } from "@/modules/auth/lib/accessPolicy"
+import { canAccessSettingsWasteCategories } from "@/modules/auth/lib/accessPolicy"
 import { useSettingsWasteCategoriesPageState } from "@/modules/settings/composables/settings-waste-categories/useSettingsWasteCategoriesPageState"
 import SettingsWasteCategoriesInlineTable from "@/modules/settings/views/components/settings-waste-categories/SettingsWasteCategoriesInlineTable.vue"
 import SettingsWasteCategoryDeleteModal from "@/modules/settings/views/components/settings-waste-categories/SettingsWasteCategoryDeleteModal.vue"
@@ -44,9 +44,9 @@ const {
         role="tabpanel"
         aria-labelledby="settings-tab-waste-categories"
         class="flex flex-col gap-4"
-        :class="canAccessSettingsAdmin(profile) ? 'min-h-0 flex-1' : ''"
+        :class="canAccessSettingsWasteCategories(profile) ? 'min-h-0 flex-1' : ''"
     >
-        <template v-if="canAccessSettingsAdmin(profile)">
+        <template v-if="canAccessSettingsWasteCategories(profile)">
             <ResourceErrorState
                 v-if="error"
                 class="py-6"

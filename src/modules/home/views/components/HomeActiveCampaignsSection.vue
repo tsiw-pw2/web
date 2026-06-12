@@ -11,8 +11,7 @@ const props = defineProps<{
     loginPath: string
 }>()
 
-const isAuthenticatedRef = computed(() => props.isAuthenticated)
-const { points, loading, error } = useHomeActiveCampaignsMap(isAuthenticatedRef)
+const { points, loading, error } = useHomeActiveCampaignsMap()
 
 const selectedPointId = ref<string | null>(null)
 
@@ -35,12 +34,16 @@ watch(
     { immediate: true },
 )
 
-const campaignDetailsPath = computed(() => {
+const enrollPath = computed(() => {
     const campaignId = selectedPoint.value?.campaignId
     if (!campaignId) return null
+    const target = `/campanhas/${campaignId}/informacoes`
+    if (props.isAuthenticated) {
+        return { name: "campaign-details" as const, params: { campaignId, tab: "informacoes" } }
+    }
     return {
-        name: "campaign-details" as const,
-        params: { campaignId, tab: "informacoes" },
+        path: props.loginPath,
+        query: { redirect: target },
     }
 })
 </script>
@@ -62,19 +65,7 @@ const campaignDetailsPath = computed(() => {
                     @select="selectedPointId = $event"
                 />
 
-                <div
-                    v-if="!isAuthenticated"
-                    class="absolute inset-0 flex flex-col items-center justify-center gap-4 rounded-2xl bg-neutral-950/75 px-6 text-center"
-                >
-                    <p class="max-w-md text-sm leading-6 text-neutral-200 sm:text-base">
-                        Inicia sessão para ver campanhas ativas no mapa e inscrever-te numa ação perto de ti.
-                    </p>
-                    <RouterLink :to="loginPath">
-                        <Button>Entrar</Button>
-                    </RouterLink>
-                </div>
-
-                <p v-else-if="loading" class="absolute inset-x-0 top-4 text-center text-sm text-neutral-300">
+                <p v-if="loading" class="absolute inset-x-0 top-4 text-center text-sm text-neutral-300">
                     A carregar campanhas…
                 </p>
                 <p v-else-if="error" class="absolute inset-x-0 top-4 text-center text-sm text-red-300">
@@ -88,7 +79,7 @@ const campaignDetailsPath = computed(() => {
                 </p>
 
                 <div
-                    v-if="isAuthenticated && selectedPoint"
+                    v-if="selectedPoint"
                     class="pointer-events-none absolute bottom-4 right-4 left-4 sm:left-auto sm:w-[min(100%,22rem)]"
                 >
                     <div class="pointer-events-auto rounded-xl border border-neutral-200 bg-white p-4 text-neutral-950 shadow-lg">
@@ -105,8 +96,8 @@ const campaignDetailsPath = computed(() => {
                                 </dd>
                             </div>
                         </dl>
-                        <RouterLink v-if="campaignDetailsPath" :to="campaignDetailsPath" class="mt-4 inline-flex">
-                            <Button>Inscrição</Button>
+                        <RouterLink v-if="enrollPath && selectedPoint.campaignId" :to="enrollPath" class="mt-4 inline-flex">
+                            <Button>Inscrever</Button>
                         </RouterLink>
                     </div>
                 </div>

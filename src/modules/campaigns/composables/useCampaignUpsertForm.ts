@@ -2,17 +2,25 @@ import { computed, reactive, watch, type Ref } from "vue"
 import type { CampaignCreateDraft, CampaignListItem } from "@/modules/campaigns/types/list"
 import type { BeachListItem } from "@/modules/beaches/types/list"
 import type { CampaignDetails } from "@/modules/campaigns/types/details"
+import { useCurrentProfile } from "@/composables/useCurrentProfile"
+import { getActiveOrganizationId } from "@/infrastructure/active-organization"
 import { beachesListRef, loadBeachesList } from "@/modules/beaches/services/beachesList"
-import { districtSelectOptionsForBeaches } from "@/modules/beaches/lib/districtSelectOptionsForBeaches"
-import { DISTRICT_SELECT_OPTIONS } from "@/shared/constants/districtSelectOptions"
 import { getCampaignDetails } from "@/modules/campaigns/services/campaignDetails"
 import { CAMPAIGN_CREATE_DEFAULT_STATUS } from "@/modules/campaigns/lib/campaignStatus"
 import { toastError } from "@/infrastructure/appToast"
 import { toDateInputValueFromUnknown } from "@/shared/lib/dateInputValue"
+import { DISTRICT_SELECT_OPTIONS } from "@/shared/constants/districtSelectOptions"
 
 export type CampaignUpsertMode = "create" | "edit"
 
-// Composable que gere a lógica de campanha criação ou actualização formulário.
+function normalizeMunicipality(value: string): string {
+    return value.trim().toLocaleLowerCase("pt-PT")
+}
+
+function sortBeachesByName(beaches: BeachListItem[]): BeachListItem[] {
+    return beaches.slice().sort((a, b) => a.name.localeCompare(b.name, "pt"))
+}
+
 export function useCampaignUpsertForm(
     open: Ref<boolean>,
     mode: CampaignUpsertMode,
@@ -20,6 +28,13 @@ export function useCampaignUpsertForm(
     onComplete: (payload: CampaignCreateDraft) => void,
 ) {
     const isEdit = computed(() => mode === "edit")
+    const { profile } = useCurrentProfile()
+
+    const activeOrganizationMunicipality = computed(() => {
+        const orgId = getActiveOrganizationId()
+        if (!orgId) return null
+        return profile.value?.organizations?.find((org) => org.id === orgId)?.municipality ?? null
+    })
 
     const form = reactive({
         step: 0 as 0 | 1,
@@ -37,26 +52,28 @@ export function useCampaignUpsertForm(
         get isEdit() {
             return isEdit.value
         },
-        get districtOptions() {
-            return districtSelectOptionsForBeaches(beachesListRef.value)
+        get beachesStepTitle() {
+            if (isEdit.value) {
+                const code = form.district
+                if (!code) return "Praias"
+                return DISTRICT_SELECT_OPTIONS.find((option) => option.value === code)?.label ?? "Praias"
+            }
+            return activeOrganizationMunicipality.value ?? "Praias do concelho"
         },
-        get districtPlaceholder() {
-            if (form.beachesLoading) return "A carregar distritos…"
-            if (form.districtOptions.length === 0) return "Regista praias para escolher um distrito"
-            return "Seleciona um distrito"
-        },
-        get districtLabel() {
-            const d = form.district
-            if (!d) return ""
-            return DISTRICT_SELECT_OPTIONS.find((o) => o.value === d)?.label ?? ""
-        },
-        get beachesForDistrict(): BeachListItem[] {
-            const d = form.district
-            if (!d) return []
-            return beachesListRef.value
-                .filter((b: BeachListItem) => b.district === d)
-                .slice()
-                .sort((a: BeachListItem, b: BeachListItem) => a.name.localeCompare(b.name, "pt"))
+        get beachesForSelection(): BeachListItem[] {
+            if (isEdit.value && form.district) {
+                return sortBeachesByName(
+                    beachesListRef.value.filter((beach) => beach.district === form.district),
+                )
+            }
+            const municipality = activeOrganizationMunicipality.value
+            if (!municipality) return []
+            const target = normalizeMunicipality(municipality)
+            return sortBeachesByName(
+                beachesListRef.value.filter(
+                    (beach) => normalizeMunicipality(beach.municipality) === target,
+                ),
+            )
         },
         get canStep0Next() {
             if (form.title.trim().length === 0) return false
@@ -64,7 +81,7 @@ export function useCampaignUpsertForm(
             if (form.startDate.trim().length === 0) return false
             if (!form.status) return false
             if (!form.district) return false
-            if (!isEdit.value && form.beachesForDistrict.length === 0) return false
+            if (!isEdit.value && form.beachesForSelection.length === 0) return false
             return true
         },
         get canSubmitBeaches() {
@@ -72,7 +89,12 @@ export function useCampaignUpsertForm(
         },
     })
 
-    // Aplica detalhes.
+    function syncDistrictFromOrganization() {
+        if (isEdit.value) return
+        const beaches = form.beachesForSelection
+        form.district = beaches[0]?.district
+    }
+
     function applyDetails(d: CampaignDetails) {
         form.title = d.title
         form.meetingTime = d.meetingTime?.trim() ?? ""
@@ -84,7 +106,6 @@ export function useCampaignUpsertForm(
         form.selectedBeachIds = d.beaches.map((b) => b.id)
     }
 
-    // Carrega detalhes para edição.
     async function loadDetailsForEdit(campaignId: string) {
         form.detailsLoading = true
         try {
@@ -101,15 +122,14 @@ export function useCampaignUpsertForm(
         }
     }
 
-    // Navega para praia passo.
     async function goToBeachStep(formEl: HTMLFormElement, stepAreaEl: HTMLElement | null) {
         if (!form.canStep0Next) return
         if (!formEl.reportValidity()) return
 
-        if (!isEdit.value && form.district && form.beachesForDistrict.length === 0) {
+        if (!isEdit.value && form.beachesForSelection.length === 0) {
             toastError(
-                "Sem praias no distrito",
-                "Não há praias registadas neste distrito. Adiciona praias no separador Praias e volta a tentar.",
+                "Sem praias no concelho",
+                "Não há praias registadas para o concelho da tua organização. Adiciona praias no separador Praias e volta a tentar.",
             )
             return
         }
@@ -117,7 +137,8 @@ export function useCampaignUpsertForm(
         form.beachesLoading = true
         try {
             await loadBeachesList({ page: 1, pageSize: 100 })
-            if (!isEdit.value && form.beachesForDistrict.length === 0) return
+            syncDistrictFromOrganization()
+            if (!isEdit.value && form.beachesForSelection.length === 0) return
             form.lockedStepHeight = stepAreaEl?.offsetHeight ?? null
             form.step = 1
             if (!isEdit.value) {
@@ -128,13 +149,11 @@ export function useCampaignUpsertForm(
         }
     }
 
-    // Navega volta para detalhes.
     function goBackToDetails() {
         form.step = 0
         form.lockedStepHeight = null
     }
 
-    // Constrói draft.
     function buildDraft(): CampaignCreateDraft {
         const draft: CampaignCreateDraft = {
             title: form.title,
@@ -151,7 +170,6 @@ export function useCampaignUpsertForm(
         return draft
     }
 
-    // Conclui o wizard e envia o rascunho final da campanha.
     function onFinalSubmit(formEl: HTMLFormElement) {
         if (!form.canSubmitBeaches || !form.district) return
         if (!formEl.reportValidity()) return
@@ -159,17 +177,16 @@ export function useCampaignUpsertForm(
         open.value = false
     }
 
-    // Trata formulário submissão.
     async function handleFormSubmit(formEl: HTMLFormElement | null, stepAreaEl: HTMLElement | null) {
         if (!formEl) return
         if (form.step === 0) {
+            syncDistrictFromOrganization()
             await goToBeachStep(formEl, stepAreaEl)
             return
         }
         onFinalSubmit(formEl)
     }
 
-    // Repõe formulário.
     function resetForm() {
         form.step = 0
         form.lockedStepHeight = null
@@ -183,7 +200,6 @@ export function useCampaignUpsertForm(
         form.selectedBeachIds = []
     }
 
-    // Fecha .
     function close() {
         open.value = false
     }
@@ -196,6 +212,7 @@ export function useCampaignUpsertForm(
             form.beachesLoading = true
             try {
                 await loadBeachesList({ page: 1, pageSize: 100 })
+                syncDistrictFromOrganization()
             } finally {
                 form.beachesLoading = false
             }
@@ -204,16 +221,6 @@ export function useCampaignUpsertForm(
             }
         },
         { immediate: true },
-    )
-
-    watch(
-        () => form.districtOptions,
-        (options) => {
-            if (!form.district) return
-            if (!options.some((option) => option.value === form.district)) {
-                form.district = undefined
-            }
-        },
     )
 
     return {

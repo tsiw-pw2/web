@@ -42,7 +42,7 @@ const isSelf = computed(() => {
 
 const canChangeRole = computed(() => {
     if (!props.user || props.saving) return false
-    if (isSelf.value && props.user.isAdmin) return false
+    if (isSelf.value && props.user.isOrgAdmin) return false
     return selectedRole.value != null && selectedRole.value !== props.user.role
 })
 
@@ -124,10 +124,10 @@ function onSave() {
                     v-model="selectedRole"
                     class="w-full"
                     :options="roleOptions"
-                    :disabled="saving || (isSelf && user.isAdmin)"
+                    :disabled="saving || (isSelf && user.isOrgAdmin)"
                     placeholder="Seleccionar cargo"
                 />
-                <p v-if="isSelf && user.isAdmin" class="text-sm leading-5 text-neutral-500">
+                <p v-if="isSelf && user.isOrgAdmin" class="text-sm leading-5 text-neutral-500">
                     Não podes remover o teu próprio acesso de administrador.
                 </p>
             </div>

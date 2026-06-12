@@ -4,7 +4,6 @@ import type { ResourceLinks } from "@/infrastructure/hypermedia.types"
 export type CampaignDetailsOrganizer = {
     id: string
     name: string
-    email: string
 }
 
 export type CampaignDetailsBeach = {

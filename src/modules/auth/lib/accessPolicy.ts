@@ -1,50 +1,86 @@
 import type { SettingsProfile } from "@/modules/settings/types/profile"
 import type { SettingsUserRoleKey } from "@/modules/settings/lib/settingsUserRole"
-import { effectiveProfileRole, profileIsAdmin } from "@/modules/auth/lib/profileCapabilities"
+import {
+    effectiveProfileRole,
+    profileIsMunicipalStaff,
+    profileIsOrgAdmin,
+    profileIsRoot,
+} from "@/modules/auth/lib/profileCapabilities"
 
-export type AccessCapability = "dashboard" | "settingsAdmin"
-
-const CAPABILITY_ROLES: Record<AccessCapability, ReadonlySet<SettingsUserRoleKey>> = {
-    dashboard: new Set(["admin", "organizer"]),
-    settingsAdmin: new Set(["admin"]),
-}
+export type AccessCapability =
+    | "dashboard"
+    | "settingsOrgAdmin"
+    | "settingsOrganizations"
+    | "settingsWasteCategories"
+    | "municipalCatalog"
 
 export function profileRole(profile: SettingsProfile | null | undefined): SettingsUserRoleKey | null {
     return effectiveProfileRole(profile)
+}
+
+export function canAccessDashboard(profile: SettingsProfile | null | undefined): boolean {
+    if (profileIsRoot(profile)) return false
+    return profileIsMunicipalStaff(profile)
+}
+
+export function canAccessMunicipalCatalog(profile: SettingsProfile | null | undefined): boolean {
+    if (profileIsRoot(profile)) return false
+    return profileIsMunicipalStaff(profile)
+}
+
+export function canAccessSettingsOrgAdmin(profile: SettingsProfile | null | undefined): boolean {
+    return profileIsOrgAdmin(profile)
+}
+
+export function canAccessSettingsOrganizations(profile: SettingsProfile | null | undefined): boolean {
+    return profileIsRoot(profile)
+}
+
+/** Categorias globais de resíduos — admin da org, não root. */
+export function canAccessSettingsWasteCategories(profile: SettingsProfile | null | undefined): boolean {
+    if (profileIsRoot(profile)) return false
+    return profileIsOrgAdmin(profile)
 }
 
 export function profileHasCapability(
     profile: SettingsProfile | null | undefined,
     capability: AccessCapability,
 ): boolean {
-    const role = profileRole(profile)
-    if (!role) return false
-    return CAPABILITY_ROLES[capability].has(role)
-}
-
-export function canAccessDashboard(profile: SettingsProfile | null | undefined): boolean {
-    const role = profileRole(profile)
-    if (!role || role === "volunteer") return false
-    return profileHasCapability(profile, "dashboard")
-}
-
-export function canAccessSettingsAdmin(profile: SettingsProfile | null | undefined): boolean {
-    return profileIsAdmin(profile)
+    if (capability === "settingsOrganizations") {
+        return canAccessSettingsOrganizations(profile)
+    }
+    if (capability === "settingsWasteCategories") {
+        return canAccessSettingsWasteCategories(profile)
+    }
+    if (capability === "settingsOrgAdmin") {
+        return canAccessSettingsOrgAdmin(profile)
+    }
+    if (capability === "municipalCatalog") {
+        return canAccessMunicipalCatalog(profile)
+    }
+    if (capability === "dashboard") {
+        return canAccessDashboard(profile)
+    }
+    return false
 }
 
 export function canManageCatalog(profile: SettingsProfile | null | undefined): boolean {
-    const role = profileRole(profile)
-    return role === "admin" || role === "organizer"
+    return canAccessMunicipalCatalog(profile)
 }
 
-export function defaultAuthedRouteName(profile: SettingsProfile | null | undefined): "dashboard" | "campaigns" {
+export function defaultAuthedRouteName(
+    profile: SettingsProfile | null | undefined,
+): "dashboard" | "campaigns" {
     return canAccessDashboard(profile) ? "dashboard" : "campaigns"
 }
 
 const BLOCKED_PATH_PREFIXES: { prefix: string; capability: AccessCapability }[] = [
     { prefix: "/dashboard", capability: "dashboard" },
-    { prefix: "/definicoes/utilizadores", capability: "settingsAdmin" },
-    { prefix: "/definicoes/categorias-residuos", capability: "settingsAdmin" },
+    { prefix: "/praias", capability: "municipalCatalog" },
+    { prefix: "/residuos", capability: "municipalCatalog" },
+    { prefix: "/definicoes/utilizadores", capability: "settingsOrgAdmin" },
+    { prefix: "/definicoes/categorias-residuos", capability: "settingsWasteCategories" },
+    { prefix: "/definicoes/organizacoes", capability: "settingsOrganizations" },
 ]
 
 export function isPathAllowedForProfile(path: string, profile: SettingsProfile | null | undefined): boolean {
@@ -55,4 +91,14 @@ export function isPathAllowedForProfile(path: string, profile: SettingsProfile |
         }
     }
     return true
+}
+
+// Compatibilidade com código legado que ainda referencia settingsAdmin.
+export function canAccessSettingsAdmin(profile: SettingsProfile | null | undefined): boolean {
+    return canAccessSettingsOrgAdmin(profile) || canAccessSettingsOrganizations(profile)
+}
+
+/** @deprecated usar canAccessSettingsOrganizations */
+export function canAccessSettingsRoot(profile: SettingsProfile | null | undefined): boolean {
+    return canAccessSettingsOrganizations(profile)
 }

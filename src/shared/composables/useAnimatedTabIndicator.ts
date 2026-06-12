@@ -64,14 +64,22 @@ export function useAnimatedTabIndicator(containerRef: Ref<HTMLElement | null | u
     }
 
 // Regista separador.
+    const registrationVersion = ref(0)
+
+    function bumpRegistrations() {
+        registrationVersion.value += 1
+    }
+
     function registerTab(id: symbol, el: HTMLElement | null, isActive: () => boolean) {
         if (!el) {
             registrations.value.delete(id)
+            bumpRegistrations()
             void nextTick(update)
             return
         }
         registrations.value.set(id, { el, isActive })
         resizeObserver?.observe(el)
+        bumpRegistrations()
         void nextTick(update)
     }
 
@@ -98,7 +106,7 @@ export function useAnimatedTabIndicator(containerRef: Ref<HTMLElement | null | u
         window.removeEventListener("resize", onWindowResize)
     })
 
-    watch(registrations, () => void nextTick(update), { deep: true })
+    watch(registrationVersion, () => void nextTick(update))
 
     const indicatorStyle = computed(() => ({
         transform: `translateX(${offsetX.value}px)`,

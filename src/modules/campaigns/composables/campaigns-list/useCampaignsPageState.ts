@@ -2,14 +2,11 @@ import { campaignsListRef, campaignsPage, campaignsPageSize, campaignsTotal, loa
 import { useCampaignsListFilters } from "@/modules/campaigns/composables/campaigns-list/useCampaignsListFilters"
 import { useCampaignsListMutations } from "@/modules/campaigns/composables/campaigns-list/useCampaignsListMutations"
 import { useCampaignsPageModals } from "@/modules/campaigns/composables/campaigns-list/useCampaignsPageModals"
-import { beachesListRef, loadBeachesList } from "@/modules/beaches/services/beachesList"
-import { districtSelectOptionsForBeaches } from "@/modules/beaches/lib/districtSelectOptionsForBeaches"
 import { usePaginatedListRoute } from "@/shared/composables/usePaginatedListRoute"
-import { computed, onMounted, watch } from "vue"
+import { watch } from "vue"
 
 export type { CampaignCreateDraft, CampaignListItem } from "@/modules/campaigns/types/list"
 
-// Composable que gere a lógica de campanhas página estado.
 export function useCampaignsPageState() {
     const routeApi = usePaginatedListRoute({
         page: campaignsPage,
@@ -37,20 +34,6 @@ export function useCampaignsPageState() {
     const mutations = useCampaignsListMutations(routeApi)
     const modals = useCampaignsPageModals()
 
-    const districtOptions = computed(() => districtSelectOptionsForBeaches(beachesListRef.value))
-
-    onMounted(() => {
-        void loadBeachesList({ page: 1, pageSize: 100 })
-    })
-
-    watch(districtOptions, (options) => {
-        const selected = listFilters.district.value
-        if (!selected) return
-        if (options.some((option) => option.value === selected)) return
-        listFilters.district.value = ""
-        void listFilters.pushFiltersToRoute()
-    })
-
     return {
         ...routeApi,
         campaigns: campaignsListRef,
@@ -63,7 +46,6 @@ export function useCampaignsPageState() {
         createCampaignWithToast: mutations.createCampaignWithToast,
         saveCampaignWithToast: mutations.saveCampaignWithToast,
         listFilters,
-        districtOptions,
         ...modals,
     }
 }

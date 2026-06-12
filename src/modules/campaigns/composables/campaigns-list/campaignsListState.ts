@@ -1,6 +1,7 @@
 import type { CampaignCreateDraft, CampaignListFilters, CampaignListItem } from "@/modules/campaigns/types/list"
 import type { ResourceLinks } from "@/infrastructure/hypermedia.types"
 import { ref } from "vue"
+import { getAccessToken } from "@/infrastructure/access-token"
 import { toastListPossiblyStale } from "@/infrastructure/appToast"
 import { createCampaign } from "@/modules/campaigns/services/campaigns/createCampaign"
 import { deleteCampaign } from "@/modules/campaigns/services/campaigns/deleteCampaign"
@@ -52,6 +53,7 @@ async function tryFetchAndApply(opts?: { page?: number; pageSize?: number }): Pr
 }
 
 export async function loadCampaignsList(opts?: { page?: number; pageSize?: number }): Promise<void> {
+    if (!getAccessToken()) return
     const gen = ++loadGeneration
     if (opts?.page != null) campaignsPage.value = opts.page
     if (opts?.pageSize != null) campaignsPageSize.value = opts.pageSize

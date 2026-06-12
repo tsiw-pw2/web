@@ -1,5 +1,6 @@
 import { getApiBaseUrl } from "./config"
 import { getAccessToken } from "./access-token"
+import { getActiveOrganizationId, ORG_HEADER_NAME } from "./active-organization"
 import { tryRestoreSession } from "./authSession"
 import { handleSessionExpired } from "./sessionExpired"
 import { ApiServiceUnavailableError, apiUnavailableMessageFromResponse, shouldTreatResponseAsUnavailable } from "./apiErrors"
@@ -35,6 +36,10 @@ function applyBearerHeader(headers: Headers) {
     const token = getAccessToken()
     if (token) {
         headers.set("Authorization", `Bearer ${token}`)
+    }
+    const orgId = getActiveOrganizationId()
+    if (orgId) {
+        headers.set(ORG_HEADER_NAME, orgId)
     }
 }
 
@@ -137,8 +142,12 @@ export async function apiPut<T>(path: string, body?: unknown): Promise<T> {
     return readJsonResponse<T>(res)
 }
 
-export async function apiDelete(path: string): Promise<void> {
-    const res = await fetchWithAuth(path, { method: "DELETE" })
+export async function apiDelete(path: string, body?: unknown): Promise<void> {
+    const res = await fetchWithAuth(path, {
+        method: "DELETE",
+        headers: body !== undefined ? { "Content-Type": "application/json" } : undefined,
+        body: body !== undefined ? JSON.stringify(body) : undefined,
+    })
     await readJsonResponse<null>(res)
 }
 

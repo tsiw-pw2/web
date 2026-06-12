@@ -6,17 +6,15 @@ describe("readCampaignListFiltersFromQuery", () => {
         expect(readCampaignListFiltersFromQuery({})).toEqual({})
     })
 
-    it("parses q, status and district", () => {
+    it("parses q and status", () => {
         expect(
             readCampaignListFiltersFromQuery({
                 q: "  esposende ",
                 status: ["em_progresso", "invalid", "aberta_inscricoes"],
-                district: "braga",
             }),
         ).toEqual({
             q: "esposende",
             status: ["em_progresso", "aberta_inscricoes"],
-            district: "braga",
         })
     })
 
@@ -26,9 +24,4 @@ describe("readCampaignListFiltersFromQuery", () => {
         expect(result.q?.length).toBe(100)
     })
 
-    it("mantém distrito inválido na query para mostrar empty state filtrado", () => {
-        expect(readCampaignListFiltersFromQuery({ district: "bragasss" })).toEqual({
-            district: "bragasss",
-        })
-    })
 })

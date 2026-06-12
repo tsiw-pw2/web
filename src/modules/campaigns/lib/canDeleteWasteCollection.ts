@@ -1,16 +1,22 @@
 import type { CampaignDetails, CampaignDetailsWasteCollection } from "@/modules/campaigns/types/details"
+import { isCampaignTerminalStatus } from "@/modules/campaigns/lib/campaignStatus"
+import { profileIsOrgAdmin } from "@/modules/auth/lib/profileCapabilities"
+import { getLink } from "@/infrastructure/hypermediaClient"
 import type { SettingsProfile } from "@/modules/settings/types/profile"
 
-// Verifica se é possível eliminação resíduos recolha.
+// Alinhado com a API: só gestor da campanha (organizador ou admin org) pode apagar recolhas.
 export function canDeleteWasteCollection(
     campaign: CampaignDetails | null,
     profile: SettingsProfile | null,
     row: CampaignDetailsWasteCollection,
 ): boolean {
     if (!campaign || !profile || profile.isBlocked) return false
-    if (profile.isAdmin) return true
-    if (campaign.organizer?.id === profile.id) return true
-    if (row.recordedBy?.id === profile.id) return true
-    const reg = campaign.viewerRegistration
-    return reg != null && (reg.status === 0 || reg.status === 1)
+    if (isCampaignTerminalStatus(campaign.editStatus)) return false
+
+    if (row.links) {
+        return Boolean(getLink(row, "delete"))
+    }
+
+    if (profileIsOrgAdmin(profile)) return true
+    return campaign.organizer?.id === profile.id
 }

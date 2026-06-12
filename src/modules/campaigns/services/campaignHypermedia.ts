@@ -12,7 +12,7 @@ export type CampaignLinkParent = {
 export async function fetchCampaignSubResourcePage<T>(
     campaign: CampaignLinkParent,
     rel: string,
-    segment: string,
+    _segment: string,
     page: number,
     pageSize: number,
     extraParams?: Record<string, string | undefined>,

@@ -6,7 +6,7 @@ function readEmail(value: string | undefined, fallback: string): string {
     return fallback
 }
 
-const defaultSupport = "support@mariva.com"
+const defaultSupport = "support@mariva.pt"
 
 const supportEmail = readEmail(import.meta.env.VITE_SUPPORT_EMAIL, defaultSupport)
 const privacyEmail = readEmail(import.meta.env.VITE_PRIVACY_EMAIL, supportEmail)

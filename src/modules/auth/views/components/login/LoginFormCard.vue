@@ -41,7 +41,7 @@ function onSubmit() {
                     type="email"
                     name="email"
                     required
-                    placeholder="support@mariva.com"
+                    placeholder="support@mariva.pt"
                 />
             </div>
 

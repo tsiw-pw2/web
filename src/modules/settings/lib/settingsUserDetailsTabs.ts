@@ -1,7 +1,7 @@
 export const SETTINGS_USER_DETAILS_TABS = [
     { id: "informacao", label: "Informação" },
     { id: "participacoes", label: "Participações" },
-    { id: "organizadas", label: "Organizadas" },
+    { id: "organizadas", label: "Campanhas organizadas" },
 ] as const
 
 export type SettingsUserDetailsTabId = (typeof SETTINGS_USER_DETAILS_TABS)[number]["id"]

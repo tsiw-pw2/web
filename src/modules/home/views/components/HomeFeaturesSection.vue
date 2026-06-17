@@ -14,14 +14,14 @@
             <div class="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-3 sm:gap-6">
                 <article class="flex flex-col items-center text-center">
                     <div
-                        class="flex size-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-600"
+                        class="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600"
                         aria-hidden="true"
                     >
-                        <svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <svg class="size-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
                             <path
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
-                                d="M3 18.5 12 6.5l9 12M6 18.5h12M9 14.5h6"
+                                d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
                             />
                         </svg>
                     </div>
@@ -31,14 +31,14 @@
 
                 <article class="flex flex-col items-center text-center">
                     <div
-                        class="flex size-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-600"
+                        class="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600"
                         aria-hidden="true"
                     >
-                        <svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <svg class="size-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
                             <path
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
-                                d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 8 0M19 8v6M22 11h-6"
+                                d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z"
                             />
                         </svg>
                     </div>
@@ -48,14 +48,14 @@
 
                 <article class="flex flex-col items-center text-center">
                     <div
-                        class="flex size-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-600"
+                        class="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600"
                         aria-hidden="true"
                     >
-                        <svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <svg class="size-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
                             <path
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
-                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z"
+                                d="M7.74998 16.25H16.25M17.25 3.75H6.75C5.09315 3.75 3.75 5.09315 3.75 6.75V17.25C3.75 18.9069 5.09315 20.25 6.75 20.25H17.25C18.9069 20.25 20.25 18.9069 20.25 17.25V6.75C20.25 5.09315 18.9069 3.75 17.25 3.75ZM7.74998 9.24998V7.74998H9.24998V9.24998H7.74998Z"
                             />
                         </svg>
                     </div>

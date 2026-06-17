@@ -7,6 +7,11 @@ type MunicipalityRow = {
 
 const rows = municipalities as MunicipalityRow[]
 
+// O pacote portuguese-municipalities inclui sufixos tipo "[2]" em alguns nomes (notas de rodapé).
+function normalizeMunicipalityName(name: string): string {
+    return name.replace(/\[\d+\]$/, "").trim()
+}
+
 const SLUG_TO_DISTRICT_LABEL: Record<string, string> = {
     viana_do_castelo: "Viana do Castelo",
     braga: "Braga",
@@ -33,7 +38,18 @@ export function concelhoSelectOptionsForDistrict(districtSlug: string | undefine
     if (!districtSlug) return []
     const districtLabel = SLUG_TO_DISTRICT_LABEL[districtSlug]
     if (!districtLabel) return []
-    const options = rows.filter((r) => r.name && r.district === districtLabel).map((r) => ({ value: r.name!, label: r.name! }))
+    const seen = new Set<string>()
+    const options = rows
+        .filter((r) => r.name && r.district === districtLabel)
+        .map((r) => {
+            const label = normalizeMunicipalityName(r.name!)
+            return { value: label, label }
+        })
+        .filter((o) => {
+            if (seen.has(o.value)) return false
+            seen.add(o.value)
+            return true
+        })
     options.sort((a, b) => a.label.localeCompare(b.label, "pt"))
     return options
 }
@@ -42,7 +58,7 @@ export function concelhoSelectOptionsForDistrict(districtSlug: string | undefine
 export function districtSlugFromMunicipalityName(name: string): string | undefined {
     const trimmed = name.trim()
     if (!trimmed) return undefined
-    const row = rows.find((r) => r.name === trimmed && r.district)
+    const row = rows.find((r) => r.name && normalizeMunicipalityName(r.name) === trimmed && r.district)
     if (!row?.district) return undefined
     const entry = Object.entries(SLUG_TO_DISTRICT_LABEL).find(([, label]) => label === row.district)
     return entry?.[0]

@@ -8,7 +8,6 @@ import Button from "@/shared/components/ui/Button.vue"
 
 const props = defineProps<{
     isAuthenticated: boolean
-    loginPath: string
 }>()
 
 const isAuthenticatedRef = computed(() => props.isAuthenticated)
@@ -62,19 +61,7 @@ const campaignDetailsPath = computed(() => {
                     @select="selectedPointId = $event"
                 />
 
-                <div
-                    v-if="!isAuthenticated"
-                    class="absolute inset-0 flex flex-col items-center justify-center gap-4 rounded-2xl bg-neutral-950/75 px-6 text-center"
-                >
-                    <p class="max-w-md text-sm leading-6 text-neutral-200 sm:text-base">
-                        Inicia sessão para ver campanhas ativas no mapa e inscrever-te numa ação perto de ti.
-                    </p>
-                    <RouterLink :to="loginPath">
-                        <Button>Entrar</Button>
-                    </RouterLink>
-                </div>
-
-                <p v-else-if="loading" class="absolute inset-x-0 top-4 text-center text-sm text-neutral-300">
+                <p v-if="loading" class="absolute inset-x-0 top-4 text-center text-sm text-neutral-300">
                     A carregar campanhas…
                 </p>
                 <p v-else-if="error" class="absolute inset-x-0 top-4 text-center text-sm text-red-300">

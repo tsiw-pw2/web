@@ -4,7 +4,6 @@ import HomeFeaturesSection from "@/modules/home/views/components/HomeFeaturesSec
 import HomeHeroSection from "@/modules/home/views/components/HomeHeroSection.vue"
 import PublicSiteFooter from "@/shared/components/layout/PublicSiteFooter.vue"
 import PublicSiteHeader from "@/shared/components/layout/PublicSiteHeader.vue"
-import { routePaths } from "@/app/router"
 import { usePublicSiteNav } from "@/shared/composables/usePublicSiteNav"
 
 const { isAuthenticated } = usePublicSiteNav()
@@ -15,7 +14,7 @@ const { isAuthenticated } = usePublicSiteNav()
         <PublicSiteHeader />
         <main class="flex-1">
             <HomeHeroSection />
-            <HomeActiveCampaignsSection :is-authenticated="isAuthenticated" :login-path="routePaths.login" />
+            <HomeActiveCampaignsSection :is-authenticated="isAuthenticated" />
             <HomeFeaturesSection />
         </main>
         <PublicSiteFooter />

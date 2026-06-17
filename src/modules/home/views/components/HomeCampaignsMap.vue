@@ -101,7 +101,7 @@ onBeforeUnmount(() => {
 <template>
     <div
         ref="mapRoot"
-        class="h-[min(420px,52vh)] w-full overflow-hidden rounded-2xl bg-neutral-800"
+        class="relative isolate z-0 h-[min(420px,52vh)] w-full overflow-hidden rounded-2xl bg-neutral-800"
         aria-label="Mapa de campanhas ativas"
     />
 </template>

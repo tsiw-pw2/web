@@ -231,27 +231,40 @@ watch(
         <p v-else-if="error" class="text-sm leading-5 text-red-600">{{ error }}</p>
 
         <template v-else-if="user">
-            <AnimatedTabBar ariaLabel="Secções do utilizador" class="-mx-1 px-1">
-                <RouterLink
-                    v-for="tab in SETTINGS_USER_DETAILS_TABS"
-                    :key="tab.id"
-                    v-slot="{ isActive, href, navigate }"
-                    :to="tabRoute(tab.id)"
-                    custom
-                >
-                    <AnimatedTabTrigger
-                        as="a"
-                        role="tab"
-                        :href="href"
-                        :active="isActive"
-                        @click="navigate"
+            <div class="flex min-h-0 flex-1 flex-col gap-6">
+                <AnimatedTabBar ariaLabel="Secções do utilizador" class="min-w-0 shrink-0 -mx-1 px-1">
+                    <RouterLink
+                        v-for="tab in SETTINGS_USER_DETAILS_TABS"
+                        :key="tab.id"
+                        v-slot="{ isActive, href, navigate }"
+                        :to="tabRoute(tab.id)"
+                        custom
                     >
-                        {{ tab.label }}
-                    </AnimatedTabTrigger>
-                </RouterLink>
-            </AnimatedTabBar>
+                        <AnimatedTabTrigger
+                            :id="`user-details-tab-${tab.id}`"
+                            as="a"
+                            role="tab"
+                            :href="href"
+                            :active="isActive"
+                            :aria-controls="`user-details-panel-${tab.id}`"
+                            @click="navigate"
+                        >
+                            {{ tab.label }}
+                        </AnimatedTabTrigger>
+                    </RouterLink>
+                </AnimatedTabBar>
 
-            <div v-if="activeTab === 'informacao'" class="flex flex-col gap-6">
+                <div
+                    class="flex min-h-0 flex-col"
+                    :class="activeTab === 'informacao' ? '' : 'min-h-0 flex-1'"
+                >
+            <div
+                v-if="activeTab === 'informacao'"
+                id="user-details-panel-informacao"
+                role="tabpanel"
+                aria-labelledby="user-details-tab-informacao"
+                class="flex flex-col gap-6"
+            >
                 <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     <div
                         v-for="card in metricCards"
@@ -288,7 +301,13 @@ watch(
                 </div>
             </div>
 
-            <div v-else-if="activeTab === 'participacoes'" class="flex min-h-0 flex-1 flex-col">
+            <div
+                v-else-if="activeTab === 'participacoes'"
+                id="user-details-panel-participacoes"
+                role="tabpanel"
+                aria-labelledby="user-details-tab-participacoes"
+                class="flex min-h-0 flex-1 flex-col"
+            >
                 <div v-if="registrationsLoading" class="text-sm leading-5 text-neutral-600">A carregar participações…</div>
                 <p v-else-if="registrationsTotal === 0" class="text-sm leading-5 text-neutral-600">
                     Este utilizador ainda não participou em campanhas.
@@ -362,7 +381,13 @@ watch(
                 </ScrollableTableSection>
             </div>
 
-            <div v-else-if="activeTab === 'organizadas'" class="flex min-h-0 flex-1 flex-col">
+            <div
+                v-else-if="activeTab === 'organizadas'"
+                id="user-details-panel-organizadas"
+                role="tabpanel"
+                aria-labelledby="user-details-tab-organizadas"
+                class="flex min-h-0 flex-1 flex-col"
+            >
                 <div v-if="organizedLoading" class="text-sm leading-5 text-neutral-600">A carregar campanhas…</div>
                 <p v-else-if="organizedTotal === 0" class="text-sm leading-5 text-neutral-600">
                     Este utilizador ainda não organizou campanhas.
@@ -412,6 +437,8 @@ watch(
                         />
                     </template>
                 </ScrollableTableSection>
+            </div>
+                </div>
             </div>
         </template>
 

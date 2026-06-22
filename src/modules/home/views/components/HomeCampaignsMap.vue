@@ -2,7 +2,16 @@
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
+import "leaflet.markercluster"
+import "leaflet.markercluster/dist/MarkerCluster.css"
+import "leaflet.markercluster/dist/MarkerCluster.Default.css"
 import type { HomeCampaignMapPoint } from "@/modules/home/types/homeCampaignMap"
+import {
+    homeCampaignClusterHtml,
+    homeCampaignMapPinAnchor,
+    homeCampaignMapPinHtml,
+    homeCampaignMapPinSize,
+} from "@/modules/home/lib/homeCampaignMapPin"
 import { configureLeafletDefaultIcon } from "@/shared/lib/configureLeafletDefaultIcon"
 
 const props = defineProps<{
@@ -17,41 +26,46 @@ const emit = defineEmits<{
 const mapRoot = ref<HTMLElement | null>(null)
 
 let map: L.Map | null = null
-let markerLayer: L.LayerGroup | null = null
+let markerCluster: L.MarkerClusterGroup | null = null
 
 function parseCoord(value: string): number | null {
     const n = Number(value)
     return Number.isFinite(n) ? n : null
 }
 
-function markerHtml(isSelected: boolean): string {
-    const color = isSelected ? "#2A4DEB" : "#EF233C"
-    const size = isSelected ? 14 : 12
-    return `<span style="display:block;width:${size}px;height:${size}px;border-radius:9999px;background:${color};border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.35)"></span>`
+function createPointMarker(point: HomeCampaignMapPoint): L.Marker {
+    const lat = parseCoord(point.latitude)
+    const lng = parseCoord(point.longitude)
+    if (lat == null || lng == null) {
+        throw new Error("Invalid coordinates")
+    }
+
+    const isSelected = props.selectedPointId === point.id
+    const [iconWidth, iconHeight] = homeCampaignMapPinSize(isSelected)
+    const [anchorX, anchorY] = homeCampaignMapPinAnchor(isSelected)
+    const marker = L.marker([lat, lng], {
+        icon: L.divIcon({
+            className: "home-campaign-marker",
+            html: homeCampaignMapPinHtml(isSelected),
+            iconSize: [iconWidth, iconHeight],
+            iconAnchor: [anchorX, anchorY],
+        }),
+    })
+    marker.on("click", () => emit("select", point.id))
+    return marker
 }
 
 function syncMarkers() {
-    if (!map || !markerLayer) return
-    markerLayer.clearLayers()
+    if (!map || !markerCluster) return
+    markerCluster.clearLayers()
     const latLngs: L.LatLngExpression[] = []
 
     for (const point of props.points) {
         const lat = parseCoord(point.latitude)
         const lng = parseCoord(point.longitude)
         if (lat == null || lng == null) continue
-        const position: L.LatLngExpression = [lat, lng]
-        latLngs.push(position)
-        const isSelected = props.selectedPointId === point.id
-        const marker = L.marker(position, {
-            icon: L.divIcon({
-                className: "home-campaign-marker",
-                html: markerHtml(isSelected),
-                iconSize: [isSelected ? 14 : 12, isSelected ? 14 : 12],
-                iconAnchor: [isSelected ? 7 : 6, isSelected ? 7 : 6],
-            }),
-        })
-        marker.on("click", () => emit("select", point.id))
-        marker.addTo(markerLayer)
+        latLngs.push([lat, lng])
+        markerCluster.addLayer(createPointMarker(point))
     }
 
     if (latLngs.length === 0) {
@@ -76,7 +90,23 @@ onMounted(() => {
         attribution: "&copy; OpenStreetMap",
         maxZoom: 19,
     }).addTo(map)
-    markerLayer = L.layerGroup().addTo(map)
+
+    markerCluster = L.markerClusterGroup({
+        maxClusterRadius: 42,
+        disableClusteringAtZoom: 12,
+        spiderfyOnMaxZoom: true,
+        showCoverageOnHover: false,
+        zoomToBoundsOnClick: true,
+        iconCreateFunction(cluster) {
+            return L.divIcon({
+                className: "home-campaign-cluster-marker",
+                html: homeCampaignClusterHtml(cluster.getChildCount()),
+                iconSize: [40, 40],
+                iconAnchor: [20, 20],
+            })
+        },
+    })
+    map.addLayer(markerCluster)
     syncMarkers()
     requestAnimationFrame(() => map?.invalidateSize())
 })
@@ -92,9 +122,10 @@ watch(
 )
 
 onBeforeUnmount(() => {
+    markerCluster?.clearLayers()
     map?.remove()
     map = null
-    markerLayer = null
+    markerCluster = null
 })
 </script>
 
@@ -110,5 +141,26 @@ onBeforeUnmount(() => {
 :deep(.home-campaign-marker) {
     background: transparent;
     border: none;
+}
+
+:deep(.home-campaign-cluster-marker) {
+    background: transparent;
+    border: none;
+}
+
+:deep(.home-campaign-cluster) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 9999px;
+    background: #2563eb;
+    border: 2px solid #ffffff;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
 }
 </style>

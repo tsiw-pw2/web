@@ -1,4 +1,4 @@
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch, type InjectionKey, type Ref, } from "vue"
+import { nextTick, onBeforeUnmount, onMounted, ref, type InjectionKey, type Ref } from "vue"
 
 type TabRegistration = {
     el: HTMLElement
@@ -12,104 +12,265 @@ export type AnimatedTabBarContext = {
 
 export const ANIMATED_TAB_BAR_KEY: InjectionKey<AnimatedTabBarContext> = Symbol("animatedTabBar")
 
+const TRANSITION_MS = 300
+
+function easeOut(t: number): number {
+    return 1 - (1 - t) ** 3
+}
+
+function measureTab(tab: HTMLElement, track: HTMLElement): { x: number; w: number } {
+    const trackRect = track.getBoundingClientRect()
+    const tabRect = tab.getBoundingClientRect()
+    return {
+        x: tabRect.left - trackRect.left,
+        w: tabRect.width,
+    }
+}
+
+function getTargetScroll(scrollport: HTMLElement, tab: HTMLElement): number {
+    const tabLeft = tab.offsetLeft
+    const tabWidth = tab.offsetWidth
+    const viewWidth = scrollport.clientWidth
+    const maxScroll = scrollport.scrollWidth - viewWidth
+    if (maxScroll <= 0) return 0
+
+    const targetScroll = tabLeft - (viewWidth - tabWidth) / 2
+    return Math.max(0, Math.min(targetScroll, maxScroll))
+}
+
+function needsScroll(scrollport: HTMLElement, tab: HTMLElement): boolean {
+    const padding = 4
+    const sp = scrollport.getBoundingClientRect()
+    const tabRect = tab.getBoundingClientRect()
+    return tabRect.left < sp.left + padding || tabRect.right > sp.right - padding
+}
+
+function paintIndicator(el: HTMLElement, x: number, w: number, visible: boolean) {
+    el.style.transition = "none"
+    el.style.transform = `translateX(${x}px)`
+    el.style.width = `${w}px`
+    el.style.opacity = visible ? "1" : "0"
+}
+
 // Composable que gere a lógica de animado separador indicador.
-export function useAnimatedTabIndicator(containerRef: Ref<HTMLElement | null | undefined>) {
-    const registrations = ref(new Map<symbol, TabRegistration>())
-    const offsetX = ref(0)
-    const width = ref(0)
-    const visible = ref(false)
-    const transitionsEnabled = ref(false)
+export function useAnimatedTabIndicator(
+    trackRef: Ref<HTMLElement | null | undefined>,
+    scrollportRef: Ref<HTMLElement | null | undefined>,
+    indicatorRef: Ref<HTMLElement | null | undefined>,
+) {
+    const registrations = new Map<symbol, TabRegistration>()
 
     let resizeObserver: ResizeObserver | null = null
-    let enableTransitionsFrame = 0
+    let enableAnimationFrame = 0
+    let updateFrame = 0
+    let scrollAnimationFrame = 0
+    let previousActiveEl: HTMLElement | null = null
+    let hasPositionedOnce = false
+    let canAnimate = false
+    let isAnimating = false
+    let pendingUpdate = false
+    let currentX = 0
+    let currentW = 0
+    let indicatorAnimation: Animation | null = null
 
-// Ativa transições do indicador após o layout estabilizar.
-    function scheduleEnableTransitions() {
-        if (transitionsEnabled.value) return
-        cancelAnimationFrame(enableTransitionsFrame)
-        enableTransitionsFrame = requestAnimationFrame(() => {
-            enableTransitionsFrame = requestAnimationFrame(() => {
-                transitionsEnabled.value = true
+    function findActiveTab(): TabRegistration | null {
+        for (const tab of registrations.values()) {
+            if (tab.isActive()) return tab
+        }
+        return null
+    }
+
+    function cancelRunningAnimations() {
+        indicatorAnimation?.cancel()
+        indicatorAnimation = null
+        cancelAnimationFrame(scrollAnimationFrame)
+        scrollAnimationFrame = 0
+    }
+
+    function finishAnimation(nextX: number, nextW: number, activeEl: HTMLElement) {
+        const el = indicatorRef.value
+        if (el) paintIndicator(el, nextX, nextW, nextW > 0)
+
+        currentX = nextX
+        currentW = nextW
+        previousActiveEl = activeEl
+        hasPositionedOnce = true
+        isAnimating = false
+        indicatorAnimation = null
+
+        if (pendingUpdate) {
+            pendingUpdate = false
+            scheduleUpdate()
+        }
+    }
+
+    function snapTo(nextX: number, nextW: number, activeEl: HTMLElement) {
+        cancelRunningAnimations()
+        const el = indicatorRef.value
+        if (!el) return
+
+        currentX = nextX
+        currentW = nextW
+        paintIndicator(el, nextX, nextW, nextW > 0)
+        previousActiveEl = activeEl
+        hasPositionedOnce = true
+    }
+
+    function animateScrollLeft(scrollport: HTMLElement, targetScroll: number) {
+        const startScroll = scrollport.scrollLeft
+        const delta = targetScroll - startScroll
+        if (Math.abs(delta) < 1) return
+
+        const startTime = performance.now()
+
+        function tick(now: number) {
+            const t = Math.min(1, (now - startTime) / TRANSITION_MS)
+            scrollport.scrollLeft = startScroll + delta * easeOut(t)
+            if (t < 1) {
+                scrollAnimationFrame = requestAnimationFrame(tick)
+            } else {
+                scrollAnimationFrame = 0
+            }
+        }
+
+        scrollAnimationFrame = requestAnimationFrame(tick)
+    }
+
+    function animateTo(
+        startX: number,
+        startW: number,
+        nextX: number,
+        nextW: number,
+        activeEl: HTMLElement,
+    ) {
+        const el = indicatorRef.value
+        const scrollport = scrollportRef.value
+        if (!el) {
+            snapTo(nextX, nextW, activeEl)
+            return
+        }
+
+        cancelRunningAnimations()
+        isAnimating = true
+
+        paintIndicator(el, startX, startW, startW > 0)
+
+        indicatorAnimation = el.animate(
+            [
+                { transform: `translateX(${startX}px)`, width: `${startW}px`, offset: 0 },
+                { transform: `translateX(${nextX}px)`, width: `${nextW}px`, offset: 1 },
+            ],
+            { duration: TRANSITION_MS, easing: "ease-out", fill: "forwards" },
+        )
+
+        if (scrollport && needsScroll(scrollport, activeEl)) {
+            animateScrollLeft(scrollport, getTargetScroll(scrollport, activeEl))
+        }
+
+        indicatorAnimation.onfinish = () => finishAnimation(nextX, nextW, activeEl)
+        indicatorAnimation.oncancel = () => {
+            isAnimating = false
+            indicatorAnimation = null
+        }
+    }
+
+    function update() {
+        if (isAnimating) {
+            pendingUpdate = true
+            return
+        }
+        pendingUpdate = false
+
+        const track = trackRef.value
+        if (!track) return
+
+        const activeTab = findActiveTab()
+        if (!activeTab) {
+            const el = indicatorRef.value
+            if (el) paintIndicator(el, currentX, currentW, false)
+            previousActiveEl = null
+            return
+        }
+
+        const activeEl = activeTab.el
+        const { x: nextX, w: nextW } = measureTab(activeEl, track)
+
+        if (!hasPositionedOnce || !canAnimate) {
+            snapTo(nextX, nextW, activeEl)
+            return
+        }
+
+        if (activeEl === previousActiveEl) {
+            snapTo(nextX, nextW, activeEl)
+            return
+        }
+
+        animateTo(currentX, currentW, nextX, nextW, activeEl)
+    }
+
+    function scheduleUpdate() {
+        cancelAnimationFrame(updateFrame)
+        void nextTick(() => {
+            updateFrame = requestAnimationFrame(() => {
+                updateFrame = 0
+                update()
             })
         })
     }
 
-// Actualiza .
-    function update() {
-        const container = containerRef.value
-        if (!container) return
-
-        let activeTab: TabRegistration | null = null
-        for (const tab of registrations.value.values()) {
-            if (tab.isActive()) {
-                activeTab = tab
-                break
-            }
-        }
-
-        if (!activeTab) {
-            visible.value = false
-            return
-        }
-
-        const containerRect = container.getBoundingClientRect()
-        const tabRect = activeTab.el.getBoundingClientRect()
-        offsetX.value = tabRect.left - containerRect.left + container.scrollLeft
-        width.value = tabRect.width
-        visible.value = width.value > 0
-
-        if (visible.value) {
-            scheduleEnableTransitions()
-        }
-    }
-
-// Regista separador.
     function registerTab(id: symbol, el: HTMLElement | null, isActive: () => boolean) {
         if (!el) {
-            registrations.value.delete(id)
-            void nextTick(update)
+            registrations.delete(id)
+            scheduleUpdate()
             return
         }
-        registrations.value.set(id, { el, isActive })
-        resizeObserver?.observe(el)
-        void nextTick(update)
+
+        registrations.set(id, { el, isActive })
+        scheduleUpdate()
     }
 
-// Recalcula o indicador quando a janela é redimensionada.
     function onWindowResize() {
-        update()
+        if (isAnimating) {
+            pendingUpdate = true
+            return
+        }
+        scheduleUpdate()
     }
 
     onMounted(() => {
-        transitionsEnabled.value = false
-        resizeObserver = new ResizeObserver(() => update())
-        if (containerRef.value) {
-            resizeObserver.observe(containerRef.value)
+        canAnimate = false
+        resizeObserver = new ResizeObserver(() => {
+            if (isAnimating) {
+                pendingUpdate = true
+                return
+            }
+            scheduleUpdate()
+        })
+        if (trackRef.value) {
+            resizeObserver.observe(trackRef.value)
         }
-        containerRef.value?.addEventListener("scroll", update, { passive: true })
         window.addEventListener("resize", onWindowResize, { passive: true })
-        void nextTick(update)
+
+        cancelAnimationFrame(enableAnimationFrame)
+        enableAnimationFrame = requestAnimationFrame(() => {
+            enableAnimationFrame = requestAnimationFrame(() => {
+                canAnimate = true
+                scheduleUpdate()
+            })
+        })
     })
 
     onBeforeUnmount(() => {
-        cancelAnimationFrame(enableTransitionsFrame)
+        cancelRunningAnimations()
+        cancelAnimationFrame(enableAnimationFrame)
+        cancelAnimationFrame(updateFrame)
         resizeObserver?.disconnect()
-        containerRef.value?.removeEventListener("scroll", update)
+        resizeObserver = null
         window.removeEventListener("resize", onWindowResize)
     })
 
-    watch(registrations, () => void nextTick(update), { deep: true })
-
-    const indicatorStyle = computed(() => ({
-        transform: `translateX(${offsetX.value}px)`,
-        width: `${width.value}px`,
-        opacity: visible.value ? 1 : 0,
-    }))
-
     return {
-        indicatorStyle,
-        transitionsEnabled,
         registerTab,
-        updateIndicator: update,
+        updateIndicator: scheduleUpdate,
     }
 }

@@ -163,6 +163,13 @@ export function useCampaignUpsertForm(
     async function handleFormSubmit(formEl: HTMLFormElement | null, stepAreaEl: HTMLElement | null) {
         if (!formEl) return
         if (form.step === 0) {
+            if (!form.canStep0Next) return
+            if (!formEl.reportValidity()) return
+            if (isEdit.value) {
+                onComplete(buildDraft())
+                open.value = false
+                return
+            }
             await goToBeachStep(formEl, stepAreaEl)
             return
         }

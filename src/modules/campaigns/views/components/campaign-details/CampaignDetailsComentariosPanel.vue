@@ -70,7 +70,7 @@ const profile = computed(() => core.profile.value)
                             v-if="profile && !canPostComment"
                             class="mb-3 text-xs leading-5 text-neutral-500"
                         >
-                            Só o organizador, moderadores ou voluntários inscritos nesta campanha podem publicar aqui.
+                            Só o organizador, moderadores ou voluntários inscritos nesta campanha podem publicar comentários após a conclusão.
                         </p>
 
                         <div v-if="commentsLoading" class="py-6 text-center text-sm text-neutral-500">A carregar comentários…</div>

@@ -1,5 +1,6 @@
 export const routePaths = {
     home: "/",
+    requestAccount: "/solicitar-acesso",
     login: "/entrar",
     register: "/registar",
     componentShowcase: "/componentes",

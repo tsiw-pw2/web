@@ -3,15 +3,16 @@ import { computed, ref, watch } from "vue"
 import { RouterLink } from "vue-router"
 import { useHomeActiveCampaignsMap } from "@/modules/home/composables/useHomeActiveCampaignsMap"
 import { formatHomeCampaignDate } from "@/modules/home/lib/formatHomeCampaignDate"
+import { campaignStatusLabel } from "@/modules/campaigns/lib/campaignStatus"
 import HomeCampaignsMap from "@/modules/home/views/components/HomeCampaignsMap.vue"
 import Button from "@/shared/components/ui/Button.vue"
+import { routePaths } from "@/app/router"
 
 const props = defineProps<{
     isAuthenticated: boolean
 }>()
 
-const isAuthenticatedRef = computed(() => props.isAuthenticated)
-const { points, loading, error } = useHomeActiveCampaignsMap(isAuthenticatedRef)
+const { points, loading, error } = useHomeActiveCampaignsMap()
 
 const selectedPointId = ref<string | null>(null)
 
@@ -42,15 +43,27 @@ const campaignDetailsPath = computed(() => {
         params: { campaignId, tab: "informacoes" },
     }
 })
+
+const loginWithRedirect = computed(() => {
+    const campaignId = selectedPoint.value?.campaignId
+    if (!campaignId) return { path: routePaths.login }
+    return {
+        path: routePaths.login,
+        query: {
+            redirect: `/campanhas/${campaignId}/informacoes`,
+        },
+    }
+})
 </script>
 
 <template>
-    <section class="bg-neutral-950 text-white">
+    <section id="mapa" class="bg-neutral-950 text-white scroll-mt-20">
         <div class="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 sm:py-16">
             <div class="mx-auto max-w-3xl text-center">
                 <h2 class="text-2xl font-semibold leading-8 sm:text-3xl">Campanhas ativas em todo o país</h2>
                 <p class="mt-3 text-sm leading-6 text-neutral-300 sm:text-base">
-                    Explore iniciativas de limpeza organizadas por municípios e junte-se à sua comunidade.
+                    Explore no mapa iniciativas de limpeza organizadas por municípios. Para se inscrever, precisa de
+                    conta.
                 </p>
             </div>
 
@@ -75,11 +88,12 @@ const campaignDetailsPath = computed(() => {
                 </p>
 
                 <div
-                    v-if="isAuthenticated && selectedPoint"
-                    class="pointer-events-none absolute bottom-4 right-4 left-4 sm:left-auto sm:w-[min(100%,22rem)]"
+                    v-if="selectedPoint"
+                    class="pointer-events-none absolute inset-x-4 bottom-4 z-20 sm:inset-x-auto sm:right-4 sm:w-[min(100%,22rem)]"
                 >
                     <div class="pointer-events-auto rounded-xl border border-neutral-200 bg-white p-4 text-neutral-950 shadow-lg">
                         <h3 class="text-base font-semibold leading-6">{{ selectedPoint.title }}</h3>
+                        <p class="mt-1 text-sm leading-5 text-neutral-600">{{ selectedPoint.beachName }}</p>
                         <dl class="mt-3 grid grid-cols-2 gap-3 text-sm">
                             <div>
                                 <dt class="font-medium text-neutral-500">Localização</dt>
@@ -91,10 +105,21 @@ const campaignDetailsPath = computed(() => {
                                     {{ formatHomeCampaignDate(selectedPoint.startDate) }}
                                 </dd>
                             </div>
+                            <div class="col-span-2">
+                                <dt class="font-medium text-neutral-500">Estado</dt>
+                                <dd class="mt-0.5 font-medium text-neutral-950">
+                                    {{ campaignStatusLabel(selectedPoint.status) }}
+                                </dd>
+                            </div>
                         </dl>
-                        <RouterLink v-if="campaignDetailsPath" :to="campaignDetailsPath" class="mt-4 inline-flex">
-                            <Button>Inscrição</Button>
-                        </RouterLink>
+                        <div class="mt-4 flex flex-col gap-2 sm:flex-row">
+                            <RouterLink v-if="isAuthenticated && campaignDetailsPath" :to="campaignDetailsPath" class="inline-flex">
+                                <Button class="w-full sm:w-auto">Ver campanha</Button>
+                            </RouterLink>
+                            <RouterLink v-else :to="loginWithRedirect" class="inline-flex">
+                                <Button class="w-full sm:w-auto">Inscrever-se</Button>
+                            </RouterLink>
+                        </div>
                     </div>
                 </div>
             </div>

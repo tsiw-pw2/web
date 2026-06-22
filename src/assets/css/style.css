@@ -40,6 +40,19 @@
         user-select: none;
         -webkit-user-select: none;
     }
+
+    .input-shadow:has(:disabled),
+    .select-shadow:has(:disabled) {
+        opacity: 0.6;
+        cursor: not-allowed;
+        user-select: none;
+        -webkit-user-select: none;
+    }
+
+    select:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
 }
 
 .shadow-badge {

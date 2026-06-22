@@ -2,6 +2,7 @@
 import { computed, ref, toRef } from "vue"
 import type { CampaignCreateDraft, CampaignListItem } from "@/modules/campaigns/types/list"
 import { useCampaignUpsertForm } from "@/modules/campaigns/composables/useCampaignUpsertForm"
+import { beachesListRef } from "@/modules/beaches/services/beachesList"
 import {
     CAMPAIGN_CREATE_STATUS_SELECT_OPTIONS,
     CAMPAIGN_STATUS_SELECT_OPTIONS,
@@ -40,6 +41,10 @@ const { form, handleFormSubmit, goBackToDetails, close } = useCampaignUpsertForm
 const statusOptions = computed(() =>
     props.mode === "create" ? CAMPAIGN_CREATE_STATUS_SELECT_OPTIONS : CAMPAIGN_STATUS_SELECT_OPTIONS,
 )
+
+function beachNameById(beachId: string): string {
+    return beachesListRef.value.find((b) => b.id === beachId)?.name ?? beachId
+}
 
 function onSubmit() {
     void handleFormSubmit(formRef.value, stepAreaRef.value)
@@ -149,9 +154,22 @@ function onSubmit() {
                             maxlength="8000"
                         />
                     </div>
+                    <div v-if="form.isEdit" class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm leading-5 text-amber-900">
+                        Alterar as praias associadas não está disponível nesta versão. Os dados abaixo são apenas
+                        informativos.
+                    </div>
+
+                    <div v-if="form.isEdit && form.selectedBeachIds.length > 0" class="flex flex-col gap-1">
+                        <FieldLabel as="span">Praias associadas</FieldLabel>
+                        <ul class="list-disc space-y-1 pl-5 text-sm leading-5 text-neutral-700">
+                            <li v-for="beachId in form.selectedBeachIds" :key="beachId">
+                                {{ beachNameById(beachId) }}
+                            </li>
+                        </ul>
+                    </div>
                 </div>
 
-                <div v-show="form.step === 1" class="flex h-full min-h-0 flex-col gap-3">
+                <div v-show="form.step === 1 && !form.isEdit" class="flex h-full min-h-0 flex-col gap-3">
                     <input
                         type="text"
                         class="sr-only"
@@ -188,7 +206,7 @@ function onSubmit() {
             </div>
 
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                <nav class="flex min-w-0 justify-center sm:justify-start" aria-label="Passos da campanha">
+                <nav v-if="!form.isEdit" class="flex min-w-0 justify-center sm:justify-start" aria-label="Passos da campanha">
                     <div class="flex items-center gap-2 rounded-full bg-white p-1.5 shadow-card">
                         <span
                             class="h-2 shrink-0 rounded-full"
@@ -203,14 +221,20 @@ function onSubmit() {
                     </div>
                 </nav>
 
-                <div class="flex shrink-0 items-center justify-end gap-2">
+                <div class="flex shrink-0 flex-col items-stretch justify-end gap-2 sm:flex-row sm:items-center">
                     <template v-if="form.step === 0">
-                        <Button type="button" variant="secondary" @click="close">Cancelar</Button>
-                        <Button type="submit" :disabled="!form.canStep0Next || form.beachesLoading">Próximo</Button>
+                        <Button type="button" variant="secondary" class="w-full sm:w-auto" @click="close">Cancelar</Button>
+                        <Button
+                            type="submit"
+                            class="w-full sm:w-auto"
+                            :disabled="!form.canStep0Next || form.beachesLoading"
+                        >
+                            {{ form.isEdit ? submitLabel : "Próximo" }}
+                        </Button>
                     </template>
                     <template v-else>
-                        <Button type="button" variant="secondary" @click="goBackToDetails">Voltar</Button>
-                        <Button type="submit" :disabled="!form.canSubmitBeaches">{{ submitLabel }}</Button>
+                        <Button type="button" variant="secondary" class="w-full sm:w-auto" @click="goBackToDetails">Voltar</Button>
+                        <Button type="submit" class="w-full sm:w-auto" :disabled="!form.canSubmitBeaches">{{ submitLabel }}</Button>
                     </template>
                 </div>
             </div>

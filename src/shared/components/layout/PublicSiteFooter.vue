@@ -16,7 +16,12 @@ const currentYear = new Date().getFullYear()
                     <img src="/Logo_text.svg" alt="Mariva" class="h-8 w-auto" />
                 </RouterLink>
                 <nav class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm font-medium text-neutral-700">
-                    <RouterLink :to="routePaths.campaigns" class="hover:text-neutral-950">Campanhas</RouterLink>
+                    <RouterLink :to="{ path: routePaths.home, hash: '#mapa' }" class="hover:text-neutral-950">
+                        Explorar no mapa
+                    </RouterLink>
+                    <RouterLink :to="routePaths.requestAccount" class="hover:text-neutral-950">
+                        Solicitar acesso
+                    </RouterLink>
                     <RouterLink :to="primaryCtaPath" class="hover:text-neutral-950">{{ primaryCtaLabel }}</RouterLink>
                 </nav>
             </div>

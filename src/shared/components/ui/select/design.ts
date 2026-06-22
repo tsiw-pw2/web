@@ -1,7 +1,7 @@
 import { cn } from "@/shared/lib/utils"
 
 export const SELECT_TRIGGER_LAYOUT =
-    "flex h-[34px] w-full min-w-0 items-center gap-1 rounded-lg bg-white px-2 text-sm font-medium leading-5 outline-none select-shadow focus-within:outline-none disabled:cursor-not-allowed disabled:select-none disabled:opacity-60"
+    "select-shadow flex h-[34px] w-full min-w-0 items-center gap-1 rounded-lg bg-white px-2 text-sm font-medium leading-5 outline-none focus-within:outline-none"
 
 export const SELECT_TRIGGER_COMBO =
     "flex min-h-0 min-w-0 flex-1 cursor-pointer items-center gap-1 border-0 bg-transparent p-0 text-start text-sm font-medium leading-5 outline-none disabled:cursor-not-allowed disabled:select-none"

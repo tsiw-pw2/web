@@ -1,10 +1,9 @@
 import type { Router } from "vue-router"
 import type { AccessCapability } from "@/modules/auth/lib/accessPolicy"
-import { loadCurrentProfile, wasLastProfileLoadUnavailable } from "@/composables/useCurrentProfile"
+import { loadCurrentProfile } from "@/composables/useCurrentProfile"
 import { getCachedApiRoot, hydrateApiRootFromSession, loadApiRoot } from "@/infrastructure/apiDiscovery"
 import { getAccessToken } from "@/infrastructure/access-token"
 import { isApiServiceUnavailableError } from "@/infrastructure/apiErrors"
-import { hydrateProfileSession } from "@/infrastructure/profileSessionStorage"
 import { registerSessionExpiredHandler } from "@/infrastructure/sessionExpired"
 import { profileHasCapability } from "@/modules/auth/lib/accessPolicy"
 import { resolveDefaultAuthedRoute } from "@/modules/auth/lib/postAuthRedirect"
@@ -29,15 +28,6 @@ async function redirectIfCapabilityDenied(
     const profile = await loadCurrentProfile({ force: true })
     if (profileHasCapability(profile, capability)) {
         return true
-    }
-    if (getAccessToken()) {
-        const snapshot = hydrateProfileSession()
-        if (profileHasCapability(snapshot, capability) && wasLastProfileLoadUnavailable()) {
-            return true
-        }
-        if (wasLastProfileLoadUnavailable() && !snapshot) {
-            return true
-        }
     }
     return capabilityFallbackRoute(capability)
 }

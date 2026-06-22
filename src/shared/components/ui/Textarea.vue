@@ -21,7 +21,7 @@ const modelValue = defineModel<string | undefined>()
                 'flex h-[94px] min-h-[94px] min-w-0 cursor-text rounded-lg bg-white px-2 py-[7px]',
                 'text-sm font-medium leading-5 outline-none input-shadow',
                 'w-min',
-                'has-[:disabled]:cursor-not-allowed has-[:disabled]:select-none has-[:disabled]:opacity-60',
+                'has-[:disabled]:cursor-not-allowed has-[:disabled]:select-none',
                 props.class,
             )
         "

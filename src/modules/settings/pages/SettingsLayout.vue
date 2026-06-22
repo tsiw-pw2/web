@@ -79,7 +79,7 @@ function isSettingsTabActive(name: string): boolean {
                         :active="isActive"
                         @click="navigate"
                     >
-                        Categorias de resíduos
+                        Categorias
                     </AnimatedTabTrigger>
                 </RouterLink>
                 <RouterLink

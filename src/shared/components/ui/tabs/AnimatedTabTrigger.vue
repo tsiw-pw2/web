@@ -40,7 +40,13 @@ onBeforeUnmount(() => {
     tabBar?.registerTab(registrationId, null, () => false)
 })
 
-watch(() => props.active, () => tabBar?.updateIndicator())
+watch(
+    () => props.active,
+    () => {
+        tabBar?.updateIndicator()
+    },
+    { flush: "post" },
+)
 watch(elRef, syncRegistration)
 </script>
 

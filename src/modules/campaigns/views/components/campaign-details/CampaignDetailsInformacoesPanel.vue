@@ -4,9 +4,12 @@ import { RouterLink } from "vue-router"
 import { routePaths } from "@/app/router"
 import { useCampaignDetailsPageInject } from "@/modules/campaigns/composables/campaign-details/useCampaignDetailsPageInject"
 import { beachLocationLine } from "@/modules/campaigns/lib/beachLocationLine"
+import { canAccessCampaignComments } from "@/modules/campaigns/lib/canAccessCampaignComments"
 import Button from "@/shared/components/ui/Button.vue"
 import FieldLabel from "@/shared/components/ui/FieldLabel.vue"
 import ApiStateBadge from "@/shared/components/ui/ApiStateBadge.vue"
+import CalendarIcon from "@/shared/components/icons/CalendarIcon.vue"
+import MapPinIcon from "@/shared/components/icons/MapPinIcon.vue"
 
 const { core, display, registration, registrationRows } = useCampaignDetailsPageInject()
 
@@ -25,6 +28,8 @@ const {
 const campaign = computed(() => core.campaign.value!)
 const profile = computed(() => core.profile.value)
 const statusUi = computed(() => display.statusUi.value)
+const showCommentsMetric = computed(() => canAccessCampaignComments(campaign.value))
+const organizerPhone = computed(() => campaign.value.organizer?.phone?.trim() || "")
 </script>
 
 <template>
@@ -45,7 +50,10 @@ const statusUi = computed(() => display.statusUi.value)
                     </div>
                     <div>
                         <FieldLabel as="span" class="block uppercase tracking-wide font-medium !text-neutral-500">Período</FieldLabel>
-                        <p class="mt-2 text-sm font-medium leading-5 text-neutral-950">{{ display.campaignPeriodLabel }}</p>
+                        <div class="mt-2 flex items-center gap-1">
+                            <CalendarIcon :size="20" :stroke-width="1.5" class="text-neutral-500" />
+                            <p class="text-sm font-medium leading-5 text-neutral-950">{{ display.campaignPeriodLabel }}</p>
+                        </div>
                     </div>
                     <div>
                         <FieldLabel as="span" class="block uppercase tracking-wide font-medium !text-neutral-500">Distrito</FieldLabel>
@@ -53,13 +61,20 @@ const statusUi = computed(() => display.statusUi.value)
                     </div>
                     <div>
                         <FieldLabel as="span" class="block uppercase tracking-wide font-medium !text-neutral-500">Local de encontro</FieldLabel>
-                        <p class="mt-2 text-sm font-medium leading-5 text-neutral-950">{{ campaign.meetingLocation }}</p>
-                        <p v-if="campaign.meetingTime" class="mt-1 text-sm leading-5 text-neutral-600">Hora: {{ campaign.meetingTime }}</p>
+                        <div class="mt-2 flex items-start gap-1">
+                            <MapPinIcon :size="20" :stroke-width="1.5" class="mt-0.5 text-neutral-500" />
+                            <div class="min-w-0">
+                                <p class="text-sm font-medium leading-5 text-neutral-950">{{ campaign.meetingLocation }}</p>
+                                <p v-if="campaign.meetingTime" class="mt-1 text-sm leading-5 text-neutral-600">{{ campaign.meetingTime }}</p>
+                            </div>
+                        </div>
                     </div>
                     <div class="sm:col-span-2">
                         <FieldLabel as="span" class="block uppercase tracking-wide font-medium !text-neutral-500">Organizador</FieldLabel>
                         <p class="mt-2 text-sm font-medium leading-5 text-neutral-950">{{ campaign.organizer?.name ?? "-" }}</p>
-                        <p v-if="campaign.organizer?.email" class="mt-1 text-sm leading-5 text-neutral-600">{{ campaign.organizer.email }}</p>
+                        <p v-if="organizerPhone" class="mt-1 text-sm leading-5 text-neutral-600">
+                            Telemóvel: <span class="tabular-nums text-neutral-950">{{ organizerPhone }}</span>
+                        </p>
                     </div>
                 </div>
                 <div v-if="campaign.beaches.length > 0">
@@ -105,7 +120,7 @@ const statusUi = computed(() => display.statusUi.value)
                         {{ display.formatWeightKg(campaign.metrics.totalImpactWeightKg ?? campaign.metrics.totalWasteWeightKg) }}
                     </div>
                 </div>
-                <div class="flex items-center justify-between">
+                <div v-if="showCommentsMetric" class="flex items-center justify-between">
                     <p class="font-medium text-neutral-500"> Comentários </p>
                     <div class="text-neutral-950"> {{ campaign.metrics.commentsCount }} </div>
                 </div>

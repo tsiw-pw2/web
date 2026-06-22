@@ -49,7 +49,7 @@ const inputTextClass = computed(() =>
                 'flex h-[34px] w-full min-w-0 gap-1 cursor-text items-center rounded-lg bg-white px-2',
                 'text-sm font-medium leading-5 outline-none input-shadow',
                 '[&_svg]:shrink-0 [&_svg]:text-neutral-500',
-                'has-[:disabled]:cursor-not-allowed has-[:disabled]:select-none has-[:disabled]:opacity-60',
+                'has-[:disabled]:cursor-not-allowed has-[:disabled]:select-none',
                 props.class,
             )
         "

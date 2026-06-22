@@ -6,8 +6,8 @@
                     Uma forma mais simples de agir pelo ambiente
                 </h2>
                 <p class="mt-4 text-sm leading-6 text-neutral-600 sm:text-base sm:leading-7">
-                    As campanhas são organizadas por entidades locais e abertas à participação de todos. Crie ou
-                    participe em iniciativas de limpeza de praias com poucos cliques.
+                    As campanhas são organizadas por municípios e abertas à participação de voluntários. Explore o mapa
+                    na homepage ou registe-se para se inscrever.
                 </p>
             </div>
 
@@ -25,8 +25,8 @@
                             />
                         </svg>
                     </div>
-                    <h3 class="mt-4 text-base font-semibold text-neutral-950">Descobre campanhas</h3>
-                    <p class="mt-2 text-sm leading-5 text-neutral-600">Vê iniciativas de limpeza na tua região.</p>
+                    <h3 class="mt-4 text-base font-semibold text-neutral-950">Descobre campanhas no mapa</h3>
+                    <p class="mt-2 text-sm leading-5 text-neutral-600">Vê onde há iniciativas activas na costa.</p>
                 </article>
 
                 <article class="flex flex-col items-center text-center">
@@ -59,8 +59,8 @@
                             />
                         </svg>
                     </div>
-                    <h3 class="mt-4 text-base font-semibold text-neutral-950">Participe ou crie campanhas</h3>
-                    <p class="mt-2 text-sm leading-5 text-neutral-600">Junta-te ou organiza ações de limpeza.</p>
+                    <h3 class="mt-4 text-base font-semibold text-neutral-950">Participe como voluntário</h3>
+                    <p class="mt-2 text-sm leading-5 text-neutral-600">Inscreva-se nas campanhas abertas na sua zona.</p>
                 </article>
             </div>
         </div>

@@ -16,16 +16,27 @@ const { primaryCtaPath, primaryCtaLabel } = usePublicSiteNav()
                 campanhas de limpeza de praias.
             </h1>
             <p class="mt-4 max-w-xl text-base leading-6 text-neutral-600 sm:text-lg sm:leading-7">
-                Uma plataforma simples para criar, gerir e participar em campanhas ambientais em todo o país.
+                Uma plataforma simples para municípios gerirem campanhas e para voluntários se juntarem a iniciativas
+                ambientais em todo o país.
             </p>
             <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <RouterLink :to="primaryCtaPath" class="w-full sm:w-auto">
                     <Button class="w-full sm:w-auto">{{ primaryCtaLabel }}</Button>
                 </RouterLink>
-                <RouterLink :to="routePaths.campaigns" class="w-full sm:w-auto">
-                    <Button class="w-full sm:w-auto" variant="secondary">Ver campanhas</Button>
-                </RouterLink>
+                <a href="#mapa" class="w-full sm:w-auto">
+                    <Button class="w-full sm:w-auto" variant="secondary">Explorar no mapa</Button>
+                </a>
             </div>
+            <p class="mt-4 text-sm leading-5 text-neutral-500 hidden">
+                <strong class="font-medium text-neutral-700">Voluntários:</strong> registe-se e inscreva-se nas campanhas
+                abertas.
+                <strong class="mt-1 block font-medium text-neutral-700">Organizadores:</strong> acesso reservado a
+                contas municipais —
+                <RouterLink :to="routePaths.requestAccount" class="text-blue-600 hover:underline">
+                    pedir acesso
+                </RouterLink>
+                .
+            </p>
         </div>
     </section>
 </template>

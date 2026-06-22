@@ -14,7 +14,8 @@ export async function createApplication() {
     hydrateAccessTokenFromSession()
     hydrateApiRootFromSession()
     hydrateCurrentProfileFromSession()
-    await tryRestoreSession()
+    // Não bloquear o mount à espera da API (ex.: Render free tier a acordar).
+    void tryRestoreSession()
     const app = createApp(App)
     registerPlugins(app)
     registerRouterMiddleware(router)

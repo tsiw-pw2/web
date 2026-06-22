@@ -2,6 +2,7 @@ import type { CampaignListFilters, CampaignListItem } from "@/modules/campaigns/
 import type { PaginatedResult } from "@/types/pagination"
 import { href } from "@/infrastructure/apiDiscovery"
 import { apiGet, paginationQuery, unwrapList } from "@/infrastructure/apiClient"
+import { getLink } from "@/infrastructure/hypermediaClient"
 import type { ResourceLinks } from "@/infrastructure/hypermedia.types"
 import { isValidDistrictCode } from "@/shared/lib/districtCodes"
 

@@ -1,5 +1,5 @@
 import { computed, ref, watch } from "vue"
-import { REGISTER_FIELD_ERROR_CLASS, REGISTER_PASSWORD_MIN_LENGTH } from "@/modules/auth/lib/registerFormConstants"
+import { REGISTER_FIELD_ERROR_CLASS } from "@/modules/auth/lib/registerFormConstants"
 
 // Composable que gere a lógica de registo formulário.
 export function useRegisterForm() {

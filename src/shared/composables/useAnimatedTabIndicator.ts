@@ -1,4 +1,4 @@
-import { nextTick, onBeforeUnmount, onMounted, ref, type InjectionKey, type Ref } from "vue"
+import { nextTick, onBeforeUnmount, onMounted, type InjectionKey, type Ref } from "vue"
 
 type TabRegistration = {
     el: HTMLElement
